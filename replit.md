@@ -102,8 +102,11 @@ This is a full-stack web application designed to assist pharmacists with clinica
 
 ## Changelog
 
-- June 30, 2025. Initial setup
+- June 30, 2025. Initial setup - Created pharmaceutical consultation system with in-memory storage
+- June 30, 2025. Database integration - Added PostgreSQL database with authentic pharmaceutical data from user's CSV file
+- June 30, 2025. Real medication data - Integrated authentic medication information including Ibuprofen, Diclofenac, and Paracetamol with real contraindications, dosage limits, and safety warnings
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Data preference: Use only authentic pharmaceutical data from authorized sources - user will provide more real medication data over time.
