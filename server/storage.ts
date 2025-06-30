@@ -9,6 +9,8 @@ import {
   type Consultation,
   type InsertConsultation
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Patient operations
@@ -30,358 +32,123 @@ export interface IStorage {
   getRecentConsultations(limit?: number): Promise<Consultation[]>;
 }
 
-export class MemStorage implements IStorage {
-  private patients: Map<number, Patient>;
-  private medications: Map<number, Medication>;
-  private consultations: Map<number, Consultation>;
-  private currentPatientId: number;
-  private currentMedicationId: number;
-  private currentConsultationId: number;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.patients = new Map();
-    this.medications = new Map();
-    this.consultations = new Map();
-    this.currentPatientId = 1;
-    this.currentMedicationId = 1;
-    this.currentConsultationId = 1;
-    
-    // Initialize with common medications
+    // Initialize medications in database on first run
     this.initializeMedications();
   }
 
-  private initializeMedications() {
-    const commonMedications: InsertMedication[] = [
-      // Pain & Fever Management
+  private async initializeMedications() {
+    // Check if medications already exist in database
+    const existingMeds = await db.select().from(medications).limit(1);
+    if (existingMeds.length > 0) {
+      return; // Already initialized
+    }
+    // Real pharmaceutical data from diagnostic tool CSV
+    const authenticMedications: InsertMedication[] = [
       {
-        name: "Acetaminophen (Tylenol)",
-        genericName: "acetaminophen",
-        category: "analgesic",
-        dosageForm: "tablet",
-        strength: "500mg",
-        indications: ["pain", "fever", "headache", "muscle aches", "back pain", "arthritis", "cold symptoms"],
-        contraindications: ["liver disease", "alcohol dependency"],
-        interactions: ["warfarin", "alcohol"],
-        sideEffects: ["nausea", "rash"],
-        maxDailyDose: "3000mg",
-        pregnancyCategory: "B",
-        isOTC: true,
-      },
-      {
-        name: "Ibuprofen (Advil)",
+        name: "Ibuprofen (Brufen)",
         genericName: "ibuprofen",
-        category: "NSAID",
-        dosageForm: "tablet",
-        strength: "200mg",
-        indications: ["pain", "inflammation", "fever", "headache", "muscle aches", "back pain", "arthritis", "menstrual cramps"],
-        contraindications: ["kidney disease", "heart disease", "stomach ulcers"],
-        interactions: ["ACE inhibitors", "warfarin", "lithium"],
-        sideEffects: ["stomach upset", "dizziness", "rash"],
-        maxDailyDose: "1200mg",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      {
-        name: "Naproxen (Aleve)",
-        genericName: "naproxen",
-        category: "NSAID",
-        dosageForm: "tablet",
-        strength: "220mg",
-        indications: ["pain", "inflammation", "fever", "arthritis", "muscle aches", "back pain", "menstrual cramps"],
-        contraindications: ["kidney disease", "heart disease", "stomach ulcers"],
-        interactions: ["ACE inhibitors", "warfarin", "lithium"],
-        sideEffects: ["stomach upset", "dizziness", "headache"],
-        maxDailyDose: "660mg",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Allergy & Cold Medications
-      {
-        name: "Diphenhydramine (Benadryl)",
-        genericName: "diphenhydramine",
-        category: "antihistamine",
-        dosageForm: "capsule",
-        strength: "25mg",
-        indications: ["allergies", "itching", "sleep aid", "cold symptoms", "runny nose", "sneezing"],
-        contraindications: ["narrow-angle glaucoma", "prostate enlargement"],
-        interactions: ["sedatives", "alcohol", "MAO inhibitors"],
-        sideEffects: ["drowsiness", "dry mouth", "blurred vision"],
-        maxDailyDose: "300mg",
-        pregnancyCategory: "B",
-        isOTC: true,
-      },
-      {
-        name: "Loratadine (Claritin)",
-        genericName: "loratadine",
-        category: "antihistamine",
-        dosageForm: "tablet",
-        strength: "10mg",
-        indications: ["allergic rhinitis", "urticaria", "allergies", "runny nose", "sneezing", "itchy eyes"],
-        contraindications: ["liver disease"],
-        interactions: ["ketoconazole", "erythromycin"],
-        sideEffects: ["headache", "fatigue", "dry mouth"],
-        maxDailyDose: "10mg",
-        pregnancyCategory: "B",
-        isOTC: true,
-      },
-      {
-        name: "Cetirizine (Zyrtec)",
-        genericName: "cetirizine",
-        category: "antihistamine",
-        dosageForm: "tablet",
-        strength: "10mg",
-        indications: ["allergies", "allergic rhinitis", "urticaria", "runny nose", "sneezing", "itchy eyes"],
-        contraindications: ["kidney disease"],
-        interactions: ["alcohol", "sedatives"],
-        sideEffects: ["drowsiness", "dry mouth", "fatigue"],
-        maxDailyDose: "10mg",
-        pregnancyCategory: "B",
-        isOTC: true,
-      },
-      
-      // Cough & Cold
-      {
-        name: "Guaifenesin (Mucinex)",
-        genericName: "guaifenesin",
-        category: "expectorant",
-        dosageForm: "tablet",
-        strength: "400mg",
-        indications: ["cough", "chest congestion", "cold symptoms", "bronchitis"],
-        contraindications: [],
-        interactions: [],
-        sideEffects: ["nausea", "vomiting", "dizziness"],
+        category: "analgesis and antiinflammation",
+        dosageForm: "600mg tablet",
+        strength: "600mg",
+        indications: ["pain", "inflammation", "osteoarthritis", "rheumatoid arthritis", "arthritis of the spine", "ankylosing spondylitis", "swollen joints", "frozen shoulder", "bursitis", "muscle pain"],
+        contraindications: ["asthma", "urticuria", "angioedema", "peptic ulcer", "stomach ulcer", "acidity", "gastric bleeding"],
+        interactions: ["NSAIDs", "blood thinners"],
+        sideEffects: ["stomach upset", "gastric bleeding", "ulcers"],
         maxDailyDose: "2400mg",
         pregnancyCategory: "C",
         isOTC: true,
       },
       {
-        name: "Dextromethorphan (Robitussin DM)",
-        genericName: "dextromethorphan",
-        category: "cough suppressant",
-        dosageForm: "syrup",
-        strength: "15mg/5ml",
-        indications: ["dry cough", "cold symptoms", "cough"],
-        contraindications: ["MAO inhibitors"],
-        interactions: ["MAO inhibitors", "SSRIs"],
-        sideEffects: ["drowsiness", "nausea", "dizziness"],
-        maxDailyDose: "120mg",
+        name: "Ibuprofen Rapid (Brufen)",
+        genericName: "ibuprofen",
+        category: "analgesis and antiinflammation",
+        dosageForm: "400mg softgel capsule",
+        strength: "400mg",
+        indications: ["headache", "pain management", "period pain", "back pain", "muscular pain", "rheumatoid pain", "fever", "cold and flu symptoms", "arthritis"],
+        contraindications: ["pregnancy", "heart attack history", "heart conditions", "diabetes"],
+        interactions: ["heart medications", "diabetes medications"],
+        sideEffects: ["stomach upset", "cardiovascular effects"],
+        maxDailyDose: "1200mg",
         pregnancyCategory: "C",
         isOTC: true,
       },
       {
-        name: "Pseudoephedrine (Sudafed)",
-        genericName: "pseudoephedrine",
-        category: "decongestant",
+        name: "Diclofenac Sodium",
+        genericName: "diclofenac sodium",
+        category: "analgesis and antiinflammation",
         dosageForm: "tablet",
-        strength: "30mg",
-        indications: ["nasal congestion", "sinus congestion", "cold symptoms"],
-        contraindications: ["hypertension", "heart disease", "diabetes"],
-        interactions: ["MAO inhibitors", "blood pressure medications"],
-        sideEffects: ["nervousness", "insomnia", "increased heart rate"],
-        maxDailyDose: "240mg",
+        strength: "50mg",
+        indications: ["pain", "inflammation", "arthritis", "muscle pain", "joint pain"],
+        contraindications: ["hypertension", "cardiovascular issues", "heart disease", "high blood pressure"],
+        interactions: ["blood pressure medications", "heart medications"],
+        sideEffects: ["cardiovascular effects", "hypertension"],
+        maxDailyDose: "150mg",
         pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Digestive Health
-      {
-        name: "Omeprazole (Prilosec)",
-        genericName: "omeprazole",
-        category: "PPI",
-        dosageForm: "capsule",
-        strength: "20mg",
-        indications: ["GERD", "peptic ulcer", "heartburn", "acid reflux", "stomach pain"],
-        contraindications: [],
-        interactions: ["clopidogrel", "warfarin", "digoxin"],
-        sideEffects: ["headache", "diarrhea", "abdominal pain"],
-        maxDailyDose: "40mg",
-        pregnancyCategory: "C",
-        isOTC: true,
+        isOTC: false,
       },
       {
-        name: "Famotidine (Pepcid AC)",
-        genericName: "famotidine",
-        category: "H2 blocker",
+        name: "Paracetamol",
+        genericName: "paracetamol",
+        category: "analgesic",
         dosageForm: "tablet",
-        strength: "20mg",
-        indications: ["heartburn", "acid reflux", "GERD", "stomach pain"],
-        contraindications: ["kidney disease"],
-        interactions: ["ketoconazole", "digoxin"],
-        sideEffects: ["headache", "dizziness", "constipation"],
-        maxDailyDose: "40mg",
+        strength: "500mg",
+        indications: ["pain", "fever", "headache", "muscle aches", "cold symptoms", "flu symptoms"],
+        contraindications: ["liver disease", "severe liver impairment"],
+        interactions: ["warfarin", "alcohol"],
+        sideEffects: ["liver toxicity with overdose"],
+        maxDailyDose: "4000mg",
         pregnancyCategory: "B",
-        isOTC: true,
-      },
-      {
-        name: "Simethicone (Gas-X)",
-        genericName: "simethicone",
-        category: "antiflatulent",
-        dosageForm: "tablet",
-        strength: "80mg",
-        indications: ["gas", "bloating", "stomach discomfort"],
-        contraindications: [],
-        interactions: [],
-        sideEffects: ["minimal"],
-        maxDailyDose: "500mg",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      {
-        name: "Loperamide (Imodium)",
-        genericName: "loperamide",
-        category: "antidiarrheal",
-        dosageForm: "capsule",
-        strength: "2mg",
-        indications: ["diarrhea", "loose stools"],
-        contraindications: ["bacterial infections", "bloody diarrhea"],
-        interactions: ["opioids"],
-        sideEffects: ["constipation", "dizziness", "nausea"],
-        maxDailyDose: "16mg",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Sleep & Anxiety
-      {
-        name: "Melatonin",
-        genericName: "melatonin",
-        category: "sleep aid",
-        dosageForm: "tablet",
-        strength: "3mg",
-        indications: ["insomnia", "sleep disorders", "jet lag"],
-        contraindications: ["autoimmune disorders"],
-        interactions: ["blood thinners", "immunosuppressants"],
-        sideEffects: ["drowsiness", "headache", "dizziness"],
-        maxDailyDose: "10mg",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Topical Treatments
-      {
-        name: "Hydrocortisone Cream",
-        genericName: "hydrocortisone",
-        category: "topical corticosteroid",
-        dosageForm: "cream",
-        strength: "1%",
-        indications: ["rash", "eczema", "itching", "skin irritation", "dermatitis"],
-        contraindications: ["viral skin infections", "fungal infections"],
-        interactions: [],
-        sideEffects: ["skin thinning", "burning sensation"],
-        maxDailyDose: "Apply 2-3 times daily",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      {
-        name: "Calamine Lotion",
-        genericName: "calamine",
-        category: "topical anti-itch",
-        dosageForm: "lotion",
-        strength: "8%",
-        indications: ["itching", "rash", "poison ivy", "insect bites", "skin irritation"],
-        contraindications: [],
-        interactions: [],
-        sideEffects: ["skin dryness"],
-        maxDailyDose: "Apply as needed",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Women's Health
-      {
-        name: "Miconazole (Monistat)",
-        genericName: "miconazole",
-        category: "antifungal",
-        dosageForm: "cream",
-        strength: "2%",
-        indications: ["yeast infection", "vaginal itching", "fungal infections"],
-        contraindications: [],
-        interactions: ["warfarin"],
-        sideEffects: ["burning", "irritation"],
-        maxDailyDose: "Apply as directed",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      
-      // Vitamins & Supplements
-      {
-        name: "Vitamin D3",
-        genericName: "cholecalciferol",
-        category: "vitamin",
-        dosageForm: "tablet",
-        strength: "1000 IU",
-        indications: ["vitamin D deficiency", "bone health", "immune support"],
-        contraindications: ["hypercalcemia"],
-        interactions: ["thiazide diuretics"],
-        sideEffects: ["nausea", "constipation"],
-        maxDailyDose: "4000 IU",
-        pregnancyCategory: "C",
-        isOTC: true,
-      },
-      {
-        name: "Multivitamin",
-        genericName: "multivitamin",
-        category: "vitamin",
-        dosageForm: "tablet",
-        strength: "varies",
-        indications: ["nutritional support", "vitamin deficiency", "general health"],
-        contraindications: ["iron overload"],
-        interactions: ["warfarin", "tetracyclines"],
-        sideEffects: ["nausea", "constipation"],
-        maxDailyDose: "One daily",
-        pregnancyCategory: "A",
         isOTC: true,
       }
     ];
 
-    commonMedications.forEach(med => {
-      this.createMedication(med);
-    });
+    for (const med of authenticMedications) {
+      await db.insert(medications).values(med);
+    }
   }
 
   // Patient operations
   async getPatient(id: number): Promise<Patient | undefined> {
-    return this.patients.get(id);
+    const [patient] = await db.select().from(patients).where(eq(patients.id, id));
+    return patient || undefined;
   }
 
   async createPatient(insertPatient: InsertPatient): Promise<Patient> {
-    const id = this.currentPatientId++;
-    const patient: Patient = {
-      ...insertPatient,
-      id,
-      createdAt: new Date(),
-    };
-    this.patients.set(id, patient);
+    const [patient] = await db
+      .insert(patients)
+      .values(insertPatient)
+      .returning();
     return patient;
   }
 
   async getAllPatients(): Promise<Patient[]> {
-    return Array.from(this.patients.values());
+    return await db.select().from(patients);
   }
 
   // Medication operations
   async getMedication(id: number): Promise<Medication | undefined> {
-    return this.medications.get(id);
+    const [medication] = await db.select().from(medications).where(eq(medications.id, id));
+    return medication || undefined;
   }
 
   async createMedication(insertMedication: InsertMedication): Promise<Medication> {
-    const id = this.currentMedicationId++;
-    const medication: Medication = {
-      ...insertMedication,
-      id,
-    };
-    this.medications.set(id, medication);
+    const [medication] = await db
+      .insert(medications)
+      .values(insertMedication)
+      .returning();
     return medication;
   }
 
   async getAllMedications(): Promise<Medication[]> {
-    return Array.from(this.medications.values());
+    return await db.select().from(medications);
   }
 
   async searchMedications(query: string): Promise<Medication[]> {
+    const allMedications = await this.getAllMedications();
     const lowerQuery = query.toLowerCase();
-    return Array.from(this.medications.values()).filter(med =>
+    return allMedications.filter(med =>
       med.name.toLowerCase().includes(lowerQuery) ||
       med.genericName?.toLowerCase().includes(lowerQuery) ||
       med.category.toLowerCase().includes(lowerQuery) ||
@@ -390,38 +157,33 @@ export class MemStorage implements IStorage {
   }
 
   async getMedicationsByIndication(indication: string): Promise<Medication[]> {
-    return Array.from(this.medications.values()).filter(med =>
+    const allMedications = await this.getAllMedications();
+    return allMedications.filter(med =>
       med.indications?.some(ind => ind.toLowerCase().includes(indication.toLowerCase()))
     );
   }
 
   // Consultation operations
   async getConsultation(id: number): Promise<Consultation | undefined> {
-    return this.consultations.get(id);
+    const [consultation] = await db.select().from(consultations).where(eq(consultations.id, id));
+    return consultation || undefined;
   }
 
   async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
-    const id = this.currentConsultationId++;
-    const consultation: Consultation = {
-      ...insertConsultation,
-      id,
-      createdAt: new Date(),
-    };
-    this.consultations.set(id, consultation);
+    const [consultation] = await db
+      .insert(consultations)
+      .values(insertConsultation)
+      .returning();
     return consultation;
   }
 
   async getConsultationsByPatient(patientId: number): Promise<Consultation[]> {
-    return Array.from(this.consultations.values()).filter(
-      consultation => consultation.patientId === patientId
-    );
+    return await db.select().from(consultations).where(eq(consultations.patientId, patientId));
   }
 
   async getRecentConsultations(limit: number = 10): Promise<Consultation[]> {
-    return Array.from(this.consultations.values())
-      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-      .slice(0, limit);
+    return await db.select().from(consultations).orderBy(consultations.createdAt).limit(limit);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
