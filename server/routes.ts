@@ -144,9 +144,17 @@ async function generateRecommendations(patient: any) {
     let duration = "";
     let instructions = "";
 
-    // Check if medication is indicated for symptoms
+    // Check if medication is indicated for symptoms or chronic conditions
+    const patientConditions = [
+      ...(symptoms.split(',').map(s => s.trim().toLowerCase())),
+      ...chronicConditions.map(c => c.toLowerCase())
+    ].filter(Boolean);
+
     if (med.indications?.some(indication => 
-      symptoms.includes(indication.toLowerCase())
+      patientConditions.some(condition => 
+        condition.includes(indication.toLowerCase()) || 
+        indication.toLowerCase().includes(condition)
+      )
     )) {
       isRecommended = true;
     }
@@ -197,7 +205,8 @@ async function generateRecommendations(patient: any) {
     }
 
     // Set dosage and instructions based on medication
-    switch (med.genericName) {
+    if (isRecommended) {
+      switch (med.genericName) {
       case "acetaminophen":
         dosage = "500-1000mg every 6-8 hours";
         duration = "3-5 days";
@@ -207,9 +216,42 @@ async function generateRecommendations(patient: any) {
         }
         break;
       case "ibuprofen":
-        dosage = "200-400mg every 6-8 hours";
-        duration = "3-5 days";
-        instructions = "Take with food to reduce stomach irritation";
+        const hasArthritis = symptoms.includes("arthritis") || chronicConditions.some(c => c.toLowerCase().includes("arthritis"));
+        if (hasArthritis) {
+          dosage = "600mg three times daily";
+          duration = "7-14 days initially";
+          instructions = "Take with food to reduce stomach irritation. For chronic arthritis, long-term use may be needed under medical supervision.";
+          if (safetyLevel === "safe") {
+            clinicalNote = "Effective anti-inflammatory for arthritis pain and joint inflammation";
+          }
+        } else {
+          dosage = "200-400mg every 6-8 hours";
+          duration = "3-5 days";
+          instructions = "Take with food to reduce stomach irritation";
+        }
+        break;
+      case "diclofenac sodium":
+        const hasArthritis2 = symptoms.includes("arthritis") || chronicConditions.some(c => c.toLowerCase().includes("arthritis"));
+        if (hasArthritis2) {
+          dosage = "50mg twice daily";
+          duration = "7-14 days";
+          instructions = "Take with food. Prescription required.";
+          if (safetyLevel === "safe") {
+            clinicalNote = "Potent NSAID for inflammatory joint conditions";
+          }
+        } else {
+          dosage = "50mg as needed";
+          duration = "3-5 days";
+          instructions = "Take with food. Prescription required.";
+        }
+        break;
+      case "paracetamol":
+        dosage = "500mg-1g every 4-6 hours";
+        duration = "As needed";
+        instructions = "Do not exceed 4g in 24 hours";
+        if (safetyLevel === "safe") {
+          clinicalNote = "Safe pain relief option, but limited anti-inflammatory effect for arthritis";
+        }
         break;
       case "diphenhydramine":
         dosage = "25-50mg every 6-8 hours";
@@ -234,6 +276,7 @@ async function generateRecommendations(patient: any) {
         duration = "2-4 weeks";
         instructions = "Take 30 minutes before first meal of the day";
         break;
+      }
     }
 
     if (isRecommended && safetyLevel !== "avoid") {
