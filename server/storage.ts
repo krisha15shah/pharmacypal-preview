@@ -33,17 +33,32 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private _initialized = false;
+
   constructor() {
-    // Initialize medications in database on first run
-    this.initializeMedications();
+    // Don't initialize in constructor to avoid blocking startup
+  }
+
+  private async ensureInitialized() {
+    if (this._initialized) return;
+    
+    try {
+      // Check if medications already exist in database
+      const existingMeds = await db.select().from(medications).limit(1);
+      if (existingMeds.length > 0) {
+        this._initialized = true;
+        return; // Already initialized
+      }
+      
+      await this.initializeMedications();
+      this._initialized = true;
+    } catch (error) {
+      console.error('Failed to initialize medications:', error);
+      // Don't block startup, will retry on next operation
+    }
   }
 
   private async initializeMedications() {
-    // Check if medications already exist in database
-    const existingMeds = await db.select().from(medications).limit(1);
-    if (existingMeds.length > 0) {
-      return; // Already initialized
-    }
     // Real pharmaceutical data from diagnostic tool CSV
     const authenticMedications: InsertMedication[] = [
       {
@@ -111,11 +126,13 @@ export class DatabaseStorage implements IStorage {
 
   // Patient operations
   async getPatient(id: number): Promise<Patient | undefined> {
+    await this.ensureInitialized();
     const [patient] = await db.select().from(patients).where(eq(patients.id, id));
     return patient || undefined;
   }
 
   async createPatient(insertPatient: InsertPatient): Promise<Patient> {
+    await this.ensureInitialized();
     const [patient] = await db
       .insert(patients)
       .values(insertPatient)
@@ -124,16 +141,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllPatients(): Promise<Patient[]> {
+    await this.ensureInitialized();
     return await db.select().from(patients);
   }
 
   // Medication operations
   async getMedication(id: number): Promise<Medication | undefined> {
+    await this.ensureInitialized();
     const [medication] = await db.select().from(medications).where(eq(medications.id, id));
     return medication || undefined;
   }
 
   async createMedication(insertMedication: InsertMedication): Promise<Medication> {
+    await this.ensureInitialized();
     const [medication] = await db
       .insert(medications)
       .values(insertMedication)
@@ -142,6 +162,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllMedications(): Promise<Medication[]> {
+    await this.ensureInitialized();
     return await db.select().from(medications);
   }
 
@@ -165,11 +186,13 @@ export class DatabaseStorage implements IStorage {
 
   // Consultation operations
   async getConsultation(id: number): Promise<Consultation | undefined> {
+    await this.ensureInitialized();
     const [consultation] = await db.select().from(consultations).where(eq(consultations.id, id));
     return consultation || undefined;
   }
 
   async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
+    await this.ensureInitialized();
     const [consultation] = await db
       .insert(consultations)
       .values(insertConsultation)
@@ -178,10 +201,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConsultationsByPatient(patientId: number): Promise<Consultation[]> {
+    await this.ensureInitialized();
     return await db.select().from(consultations).where(eq(consultations.patientId, patientId));
   }
 
   async getRecentConsultations(limit: number = 10): Promise<Consultation[]> {
+    await this.ensureInitialized();
     return await db.select().from(consultations).orderBy(consultations.createdAt).limit(limit);
   }
 }

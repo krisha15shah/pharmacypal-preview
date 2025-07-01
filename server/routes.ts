@@ -146,8 +146,8 @@ async function generateRecommendations(patient: any) {
 
     // Check if medication is indicated for symptoms or chronic conditions
     const patientConditions = [
-      ...(symptoms.split(',').map(s => s.trim().toLowerCase())),
-      ...chronicConditions.map(c => c.toLowerCase())
+      ...(symptoms.split(',').map((s: string) => s.trim().toLowerCase())),
+      ...chronicConditions.map((c: string) => c.toLowerCase())
     ].filter(Boolean);
 
     if (med.indications?.some(indication => 
@@ -161,7 +161,7 @@ async function generateRecommendations(patient: any) {
 
     // Check contraindications
     if (med.contraindications?.some(contraindication =>
-      chronicConditions.some(condition => 
+      chronicConditions.some((condition: string) => 
         condition.toLowerCase().includes(contraindication.toLowerCase())
       )
     )) {
@@ -216,7 +216,7 @@ async function generateRecommendations(patient: any) {
         }
         break;
       case "ibuprofen":
-        const hasArthritis = symptoms.includes("arthritis") || chronicConditions.some(c => c.toLowerCase().includes("arthritis"));
+        const hasArthritis = symptoms.includes("arthritis") || chronicConditions.some((c: string) => c.toLowerCase().includes("arthritis"));
         if (hasArthritis) {
           dosage = "600mg three times daily";
           duration = "7-14 days initially";
@@ -231,7 +231,7 @@ async function generateRecommendations(patient: any) {
         }
         break;
       case "diclofenac sodium":
-        const hasArthritis2 = symptoms.includes("arthritis") || chronicConditions.some(c => c.toLowerCase().includes("arthritis"));
+        const hasArthritis2 = symptoms.includes("arthritis") || chronicConditions.some((c: string) => c.toLowerCase().includes("arthritis"));
         if (hasArthritis2) {
           dosage = "50mg twice daily";
           duration = "7-14 days";
@@ -279,7 +279,7 @@ async function generateRecommendations(patient: any) {
       }
     }
 
-    if (isRecommended && safetyLevel !== "avoid") {
+    if (isRecommended && (safetyLevel === "safe" || safetyLevel === "caution")) {
       recommendations.push({
         medication: med,
         dosage,
