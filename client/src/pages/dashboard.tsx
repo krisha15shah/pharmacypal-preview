@@ -302,26 +302,17 @@ const symptomsByCategory = SYMPTOMS.reduce(
 export default function Dashboard() {
   const [profile, setProfile] = useState<PatientProfile>(DEFAULT_PROFILE);
   const [selectedDrugs, setSelectedDrugs] = useState<SelectedDrug[]>(DEFAULT_DRUGS);
-  // ICD-10-CM selections (separate from chip selections)
+  // ICD-10-CM selections — kept separate from chip selections to avoid stale-closure sync bugs
   const [icdSymptoms, setIcdSymptoms] = useState<SelectedIcdItem[]>([]);
   const [icdConditions, setIcdConditions] = useState<SelectedIcdItem[]>([]);
   const [icdAllergies, setIcdAllergies] = useState<SelectedIcdItem[]>([]);
   const [activeTab, setActiveTab] = useState("recommended");
 
-  // Merge chip IDs + ICD-mapped IDs (deduped)
-  const mergeIds = (chipIds: string[], icdItems: SelectedIcdItem[]) => {
-    const icdIds = icdItems.map((i) => i.internalId).filter(Boolean) as string[];
-    return Array.from(new Set([...chipIds, ...icdIds]));
-  };
-
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
       setProfile((prev) => {
         const arr = prev[field] as string[];
-        return {
-          ...prev,
-          [field]: arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id],
-        };
+        return { ...prev, [field]: arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id] };
       });
     };
 
@@ -331,48 +322,32 @@ export default function Dashboard() {
     setProfile((prev) => ({ ...prev, selectedMedications: internalIds }));
   };
 
-  const handleIcdSymptoms = (items: SelectedIcdItem[]) => {
-    setIcdSymptoms(items);
-    setProfile((prev) => ({
-      ...prev,
-      selectedSymptoms: mergeIds(
-        prev.selectedSymptoms.filter((id) => !icdSymptoms.map((i) => i.internalId).includes(id)),
-        items
-      ),
-    }));
-  };
+  // Simple ICD handlers — merging is done in effectiveProfile, not in profile state
+  const handleIcdSymptoms = (items: SelectedIcdItem[]) => setIcdSymptoms(items);
+  const handleIcdConditions = (items: SelectedIcdItem[]) => setIcdConditions(items);
+  const handleIcdAllergies = (items: SelectedIcdItem[]) => setIcdAllergies(items);
 
-  const handleIcdConditions = (items: SelectedIcdItem[]) => {
-    setIcdConditions(items);
-    setProfile((prev) => ({
-      ...prev,
-      selectedConditions: mergeIds(
-        prev.selectedConditions.filter((id) => !icdConditions.map((i) => i.internalId).includes(id)),
-        items
-      ),
-    }));
-  };
+  // Derive a merged profile for the clinical engine — no state sync needed
+  const effectiveProfile = useMemo<PatientProfile>(() => {
+    const merge = (chipIds: string[], icdItems: SelectedIcdItem[]) =>
+      Array.from(new Set([...chipIds, ...icdItems.map((i) => i.internalId).filter(Boolean) as string[]]));
+    return {
+      ...profile,
+      selectedSymptoms: merge(profile.selectedSymptoms, icdSymptoms),
+      selectedConditions: merge(profile.selectedConditions, icdConditions),
+      selectedAllergies: merge(profile.selectedAllergies, icdAllergies),
+    };
+  }, [profile, icdSymptoms, icdConditions, icdAllergies]);
 
-  const handleIcdAllergies = (items: SelectedIcdItem[]) => {
-    setIcdAllergies(items);
-    setProfile((prev) => ({
-      ...prev,
-      selectedAllergies: mergeIds(
-        prev.selectedAllergies.filter((id) => !icdAllergies.map((i) => i.internalId).includes(id)),
-        items
-      ),
-    }));
-  };
-
-  // Total visible selections per section (chips + ICD)
-  const totalSymptoms = profile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
-  const totalConditions = profile.selectedConditions.length + icdConditions.filter((i) => !i.internalId).length;
-  const totalAllergies = profile.selectedAllergies.length + icdAllergies.filter((i) => !i.internalId).length;
+  // Badge counts: chips + ICD items (including record-only ones for display)
+  const totalSymptoms = effectiveProfile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
+  const totalConditions = effectiveProfile.selectedConditions.length + icdConditions.filter((i) => !i.internalId).length;
+  const totalAllergies = effectiveProfile.selectedAllergies.length + icdAllergies.filter((i) => !i.internalId).length;
 
   const result = useMemo(() => {
-    if (profile.selectedSymptoms.length === 0 && icdSymptoms.filter(i => i.internalId).length === 0) return null;
-    return runClinicalEngine(profile);
-  }, [profile, icdSymptoms]);
+    if (effectiveProfile.selectedSymptoms.length === 0) return null;
+    return runClinicalEngine(effectiveProfile);
+  }, [effectiveProfile]);
 
   const recommended = result?.medicationResults.filter((r) => r.safetyLevel === "recommended") ?? [];
   const caution = result?.medicationResults.filter((r) => r.safetyLevel === "caution") ?? [];

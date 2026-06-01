@@ -21,12 +21,8 @@ function mapToInternal(code: string, mode: IcdMode): string | null {
   return icdToAllergyId(code);
 }
 
-// Default search terms per mode so the dropdown is useful when empty
-const DEFAULT_TERMS: Record<IcdMode, string> = {
-  symptom: "R",
-  condition: "",
-  allergy: "Z88",
-};
+// For allergy mode only: pre-populate with Z88 drug allergy codes on focus
+const ALLERGY_DEFAULT_TERM = "Z88";
 
 const PLACEHOLDERS: Record<IcdMode, string> = {
   symptom: "Search ICD-10 symptom code (e.g. headache, fever…)",
@@ -65,8 +61,8 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const searchIcd = useCallback(async (term: string) => {
-    const searchTerm = term.trim() || DEFAULT_TERMS[mode];
+  const searchIcd = useCallback(async (term: string, forceDefault = false) => {
+    const searchTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
     if (!searchTerm) { setResults([]); setOpen(false); return; }
     setLoading(true);
     try {
@@ -130,7 +126,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => { if (results.length > 0) setOpen(true); else searchIcd(query); }}
+            onFocus={() => { if (results.length > 0) setOpen(true); else searchIcd(query, true); }}
             placeholder={PLACEHOLDERS[mode]}
             className="flex-1 px-2 py-2 text-sm bg-transparent outline-none placeholder-slate-400"
           />
