@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { SYMPTOMS, CONDITIONS, ALLERGIES } from "@/lib/clinical-data";
 import { runClinicalEngine, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
+import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -301,7 +302,17 @@ const symptomsByCategory = SYMPTOMS.reduce(
 export default function Dashboard() {
   const [profile, setProfile] = useState<PatientProfile>(DEFAULT_PROFILE);
   const [selectedDrugs, setSelectedDrugs] = useState<SelectedDrug[]>(DEFAULT_DRUGS);
+  // ICD-10-CM selections (separate from chip selections)
+  const [icdSymptoms, setIcdSymptoms] = useState<SelectedIcdItem[]>([]);
+  const [icdConditions, setIcdConditions] = useState<SelectedIcdItem[]>([]);
+  const [icdAllergies, setIcdAllergies] = useState<SelectedIcdItem[]>([]);
   const [activeTab, setActiveTab] = useState("recommended");
+
+  // Merge chip IDs + ICD-mapped IDs (deduped)
+  const mergeIds = (chipIds: string[], icdItems: SelectedIcdItem[]) => {
+    const icdIds = icdItems.map((i) => i.internalId).filter(Boolean) as string[];
+    return Array.from(new Set([...chipIds, ...icdIds]));
+  };
 
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
@@ -320,10 +331,48 @@ export default function Dashboard() {
     setProfile((prev) => ({ ...prev, selectedMedications: internalIds }));
   };
 
+  const handleIcdSymptoms = (items: SelectedIcdItem[]) => {
+    setIcdSymptoms(items);
+    setProfile((prev) => ({
+      ...prev,
+      selectedSymptoms: mergeIds(
+        prev.selectedSymptoms.filter((id) => !icdSymptoms.map((i) => i.internalId).includes(id)),
+        items
+      ),
+    }));
+  };
+
+  const handleIcdConditions = (items: SelectedIcdItem[]) => {
+    setIcdConditions(items);
+    setProfile((prev) => ({
+      ...prev,
+      selectedConditions: mergeIds(
+        prev.selectedConditions.filter((id) => !icdConditions.map((i) => i.internalId).includes(id)),
+        items
+      ),
+    }));
+  };
+
+  const handleIcdAllergies = (items: SelectedIcdItem[]) => {
+    setIcdAllergies(items);
+    setProfile((prev) => ({
+      ...prev,
+      selectedAllergies: mergeIds(
+        prev.selectedAllergies.filter((id) => !icdAllergies.map((i) => i.internalId).includes(id)),
+        items
+      ),
+    }));
+  };
+
+  // Total visible selections per section (chips + ICD)
+  const totalSymptoms = profile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
+  const totalConditions = profile.selectedConditions.length + icdConditions.filter((i) => !i.internalId).length;
+  const totalAllergies = profile.selectedAllergies.length + icdAllergies.filter((i) => !i.internalId).length;
+
   const result = useMemo(() => {
-    if (profile.selectedSymptoms.length === 0) return null;
+    if (profile.selectedSymptoms.length === 0 && icdSymptoms.filter(i => i.internalId).length === 0) return null;
     return runClinicalEngine(profile);
-  }, [profile]);
+  }, [profile, icdSymptoms]);
 
   const recommended = result?.medicationResults.filter((r) => r.safetyLevel === "recommended") ?? [];
   const caution = result?.medicationResults.filter((r) => r.safetyLevel === "caution") ?? [];
@@ -338,6 +387,9 @@ export default function Dashboard() {
   const reset = () => {
     setProfile(DEFAULT_PROFILE);
     setSelectedDrugs(DEFAULT_DRUGS);
+    setIcdSymptoms([]);
+    setIcdConditions([]);
+    setIcdAllergies([]);
     setActiveTab("recommended");
   };
 
@@ -455,22 +507,29 @@ export default function Dashboard() {
                 <span className="flex items-center gap-2">
                   <Activity className="w-4 h-4 text-[#0B3D91]" /> Symptoms
                 </span>
-                {profile.selectedSymptoms.length > 0 && (
-                  <Badge className="bg-blue-100 text-blue-700 text-xs">{profile.selectedSymptoms.length} selected</Badge>
+                {totalSymptoms > 0 && (
+                  <Badge className="bg-blue-100 text-blue-700 text-xs">{totalSymptoms} selected</Badge>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-xs text-slate-400 mb-3">Select all that apply. 🚨 = Red flag symptoms.</p>
-              {Object.entries(symptomsByCategory).map(([category, items]) => (
-                <CategorySection
-                  key={category}
-                  title={category}
-                  items={items}
-                  selected={profile.selectedSymptoms}
-                  onToggle={toggle("selectedSymptoms")}
-                />
-              ))}
+            <CardContent className="px-4 pb-4 space-y-3">
+              <IcdSearch
+                mode="symptom"
+                selectedItems={icdSymptoms}
+                onItemsChange={handleIcdSymptoms}
+              />
+              <div className="border-t border-slate-100 pt-2">
+                <p className="text-xs text-slate-400 mb-2">Or quick-select below · 🚨 = Red flag</p>
+                {Object.entries(symptomsByCategory).map(([category, items]) => (
+                  <CategorySection
+                    key={category}
+                    title={category}
+                    items={items}
+                    selected={profile.selectedSymptoms}
+                    onToggle={toggle("selectedSymptoms")}
+                  />
+                ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -481,20 +540,27 @@ export default function Dashboard() {
                 <span className="flex items-center gap-2">
                   <Stethoscope className="w-4 h-4 text-[#0B3D91]" /> Known Conditions
                 </span>
-                {profile.selectedConditions.length > 0 && (
-                  <Badge className="bg-purple-100 text-purple-700 text-xs">{profile.selectedConditions.length} selected</Badge>
+                {totalConditions > 0 && (
+                  <Badge className="bg-purple-100 text-purple-700 text-xs">{totalConditions} selected</Badge>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-xs text-slate-400 mb-3">Select all chronic conditions / comorbidities.</p>
-              <ChipSelector
-                items={CONDITIONS}
-                selected={profile.selectedConditions}
-                onToggle={toggle("selectedConditions")}
-                colorClass="bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
-                selectedClass="bg-purple-600 border-purple-600 text-white hover:bg-purple-700"
+            <CardContent className="px-4 pb-4 space-y-3">
+              <IcdSearch
+                mode="condition"
+                selectedItems={icdConditions}
+                onItemsChange={handleIcdConditions}
               />
+              <div className="border-t border-slate-100 pt-2">
+                <p className="text-xs text-slate-400 mb-2">Or quick-select common conditions</p>
+                <ChipSelector
+                  items={CONDITIONS}
+                  selected={profile.selectedConditions}
+                  onToggle={toggle("selectedConditions")}
+                  colorClass="bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
+                  selectedClass="bg-purple-600 border-purple-600 text-white hover:bg-purple-700"
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -528,20 +594,27 @@ export default function Dashboard() {
                 <span className="flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-[#0B3D91]" /> Known Allergies
                 </span>
-                {profile.selectedAllergies.length > 0 && (
-                  <Badge className="bg-red-100 text-red-700 text-xs">{profile.selectedAllergies.length} selected</Badge>
+                {totalAllergies > 0 && (
+                  <Badge className="bg-red-100 text-red-700 text-xs">{totalAllergies} selected</Badge>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-xs text-slate-400 mb-3">Select all known drug allergies.</p>
-              <ChipSelector
-                items={ALLERGIES}
-                selected={profile.selectedAllergies}
-                onToggle={toggle("selectedAllergies")}
-                colorClass="bg-red-50 border-red-200 text-red-800 hover:bg-red-100"
-                selectedClass="bg-red-600 border-red-600 text-white hover:bg-red-700"
+            <CardContent className="px-4 pb-4 space-y-3">
+              <IcdSearch
+                mode="allergy"
+                selectedItems={icdAllergies}
+                onItemsChange={handleIcdAllergies}
               />
+              <div className="border-t border-slate-100 pt-2">
+                <p className="text-xs text-slate-400 mb-2">Or quick-select drug allergy class</p>
+                <ChipSelector
+                  items={ALLERGIES}
+                  selected={profile.selectedAllergies}
+                  onToggle={toggle("selectedAllergies")}
+                  colorClass="bg-red-50 border-red-200 text-red-800 hover:bg-red-100"
+                  selectedClass="bg-red-600 border-red-600 text-white hover:bg-red-700"
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
