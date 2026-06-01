@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { SYMPTOMS, CONDITIONS, CURRENT_MEDICATIONS, ALLERGIES } from "@/lib/clinical-data";
+import { SYMPTOMS, CONDITIONS, ALLERGIES } from "@/lib/clinical-data";
 import { runClinicalEngine, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
+import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -286,6 +287,7 @@ const DEFAULT_PROFILE: PatientProfile = {
   selectedMedications: [],
   selectedAllergies: [],
 };
+const DEFAULT_DRUGS: SelectedDrug[] = [];
 
 const symptomsByCategory = SYMPTOMS.reduce(
   (acc, s) => {
@@ -298,9 +300,10 @@ const symptomsByCategory = SYMPTOMS.reduce(
 
 export default function Dashboard() {
   const [profile, setProfile] = useState<PatientProfile>(DEFAULT_PROFILE);
+  const [selectedDrugs, setSelectedDrugs] = useState<SelectedDrug[]>(DEFAULT_DRUGS);
   const [activeTab, setActiveTab] = useState("recommended");
 
-  const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedMedications" | "selectedAllergies">) =>
+  const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
       setProfile((prev) => {
         const arr = prev[field] as string[];
@@ -310,6 +313,12 @@ export default function Dashboard() {
         };
       });
     };
+
+  const handleDrugsChange = (drugs: SelectedDrug[]) => {
+    setSelectedDrugs(drugs);
+    const internalIds = drugs.map((d) => d.internalId).filter(Boolean) as string[];
+    setProfile((prev) => ({ ...prev, selectedMedications: internalIds }));
+  };
 
   const result = useMemo(() => {
     if (profile.selectedSymptoms.length === 0) return null;
@@ -328,6 +337,7 @@ export default function Dashboard() {
 
   const reset = () => {
     setProfile(DEFAULT_PROFILE);
+    setSelectedDrugs(DEFAULT_DRUGS);
     setActiveTab("recommended");
   };
 
@@ -495,19 +505,18 @@ export default function Dashboard() {
                 <span className="flex items-center gap-2">
                   <Pill className="w-4 h-4 text-[#0B3D91]" /> Current Medications
                 </span>
-                {profile.selectedMedications.length > 0 && (
-                  <Badge className="bg-orange-100 text-orange-700 text-xs">{profile.selectedMedications.length} selected</Badge>
+                {selectedDrugs.length > 0 && (
+                  <Badge className="bg-orange-100 text-orange-700 text-xs">{selectedDrugs.length} added</Badge>
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <p className="text-xs text-slate-400 mb-3">Select all medications currently being taken.</p>
-              <ChipSelector
-                items={CURRENT_MEDICATIONS}
-                selected={profile.selectedMedications}
-                onToggle={toggle("selectedMedications")}
-                colorClass="bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100"
-                selectedClass="bg-orange-600 border-orange-600 text-white hover:bg-orange-700"
+              <p className="text-xs text-slate-400 mb-3">
+                Search any real drug name — powered by NLM RxNav.
+              </p>
+              <MedicationSearch
+                selectedDrugs={selectedDrugs}
+                onDrugsChange={handleDrugsChange}
               />
             </CardContent>
           </Card>
