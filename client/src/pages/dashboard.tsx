@@ -1,15 +1,15 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
-  Stethoscope, RotateCcw, PillBottle
+  Stethoscope, RotateCcw, PillBottle, Brain, Loader2, RefreshCw
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { SYMPTOMS, CONDITIONS, ALLERGIES } from "@/lib/clinical-data";
+import { SYMPTOMS, CONDITIONS, ALLERGIES, CURRENT_MEDICATIONS } from "@/lib/clinical-data";
 import { runClinicalEngine, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
@@ -307,6 +307,71 @@ export default function Dashboard() {
   const [icdConditions, setIcdConditions] = useState<SelectedIcdItem[]>([]);
   const [icdAllergies, setIcdAllergies] = useState<SelectedIcdItem[]>([]);
   const [activeTab, setActiveTab] = useState("recommended");
+
+  // ── AI clinical analysis ──
+  type AiAnalysis = {
+    conditionOverview: { label: string; code: string; meaning: string; pharmacyNote: string }[];
+    otcOptions: string[];
+    prescriptionNeeds: string[];
+    redFlags: string[];
+    drugSafety: string[];
+    counselingPoints: string[];
+  };
+  const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const aiDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiAbortRef = useRef<AbortController | null>(null);
+
+  const fetchAiAnalysis = useCallback(async (payload: object) => {
+    if (aiAbortRef.current) aiAbortRef.current.abort();
+    aiAbortRef.current = new AbortController();
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/ai-clinical", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: aiAbortRef.current.signal,
+      });
+      if (!res.ok) throw new Error("Analysis failed");
+      const data = await res.json();
+      setAiAnalysis(data);
+    } catch (e: any) {
+      if (e.name !== "AbortError") setAiError("AI analysis unavailable. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
+
+  // Trigger AI analysis (debounced 1.5 s) whenever profile or ICD selections change
+  useEffect(() => {
+    if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
+
+    const hasData =
+      icdSymptoms.length > 0 || icdConditions.length > 0 || icdAllergies.length > 0 ||
+      profile.selectedSymptoms.length > 0 || profile.selectedConditions.length > 0;
+    if (!hasData) { setAiAnalysis(null); return; }
+
+    aiDebounceRef.current = setTimeout(() => {
+      const payload = {
+        age: profile.age,
+        gender: profile.gender,
+        isPregnant: profile.isPregnant,
+        icdSymptoms,
+        icdConditions,
+        icdAllergies,
+        chipSymptoms: profile.selectedSymptoms.map(id => SYMPTOMS.find(s => s.id === id)?.label ?? id),
+        chipConditions: profile.selectedConditions.map(id => CONDITIONS.find(c => c.id === id)?.label ?? id),
+        chipAllergies: profile.selectedAllergies.map(id => ALLERGIES.find(a => a.id === id)?.label ?? id),
+        currentMedications: selectedDrugs.map(d => d.label),
+      };
+      fetchAiAnalysis(payload);
+    }, 1500);
+
+    return () => { if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current); };
+  }, [profile, icdSymptoms, icdConditions, icdAllergies, selectedDrugs, fetchAiAnalysis]);
 
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
@@ -676,6 +741,10 @@ export default function Dashboard() {
                   <TabsTrigger value="counseling" className="flex-1 text-xs data-[state=active]:bg-slate-700 data-[state=active]:text-white rounded">
                     💬 Counseling
                   </TabsTrigger>
+                  <TabsTrigger value="ai" className="flex-1 text-xs data-[state=active]:bg-violet-600 data-[state=active]:text-white rounded flex items-center gap-1">
+                    <Brain className="w-3 h-3" />
+                    AI Analysis {aiLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Recommended */}
@@ -838,6 +907,149 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                {/* AI Analysis */}
+                <TabsContent value="ai" className="mt-3">
+                  {aiLoading && !aiAnalysis ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                      <Loader2 className="w-10 h-10 animate-spin mb-3 text-violet-400" />
+                      <div className="text-sm font-medium text-slate-600">Analysing patient profile…</div>
+                      <div className="text-xs mt-1">GPT-4o · UpToDate-level clinical reasoning</div>
+                    </div>
+                  ) : aiError ? (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      {aiError}
+                      <button onClick={() => fetchAiAnalysis({})} className="ml-auto text-xs underline">Retry</button>
+                    </div>
+                  ) : !aiAnalysis ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
+                      <Brain className="w-12 h-12 mb-3 text-slate-300" />
+                      <div className="text-sm font-medium text-slate-500">Select any symptom or condition to activate AI Analysis</div>
+                      <div className="text-xs mt-1 max-w-sm">AI provides UpToDate-level clinical reasoning for every ICD-10-CM code, including conditions outside our rule set.</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Loading indicator overlay when refreshing */}
+                      {aiLoading && (
+                        <div className="flex items-center gap-2 text-xs text-violet-600 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Updating analysis…
+                        </div>
+                      )}
+
+                      {/* Source badge */}
+                      <div className="flex items-center gap-2 text-xs text-slate-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                        <Brain className="w-3 h-3 text-violet-600" />
+                        <span className="font-medium text-violet-700">GPT-4o Clinical Pharmacist Analysis</span>
+                        <span className="text-slate-400">· UpToDate · BNF · WHO · NICE · Beers Criteria</span>
+                      </div>
+
+                      {/* Condition Overview */}
+                      {aiAnalysis.conditionOverview?.length > 0 && (
+                        <div className="bg-white border border-slate-200 rounded-xl p-4">
+                          <div className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                            <Stethoscope className="w-4 h-4 text-violet-600" /> Condition / Symptom Overview
+                          </div>
+                          <div className="space-y-3">
+                            {aiAnalysis.conditionOverview.map((item, i) => (
+                              <div key={i} className="border-l-2 border-violet-300 pl-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-semibold text-sm text-slate-800">{item.label}</span>
+                                  {item.code && (
+                                    <span className="text-xs font-mono bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded">{item.code}</span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-slate-600 mb-1">{item.meaning}</div>
+                                <div className="text-xs text-violet-700 bg-violet-50 px-2 py-1 rounded">
+                                  <span className="font-medium">Pharmacy note: </span>{item.pharmacyNote}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* OTC Options */}
+                      {aiAnalysis.otcOptions?.length > 0 && (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                          <div className="font-bold text-sm text-emerald-800 mb-2 flex items-center gap-2">
+                            <Pill className="w-4 h-4" /> OTC Management Options
+                          </div>
+                          {aiAnalysis.otcOptions.map((opt, i) => (
+                            <div key={i} className="flex gap-2 text-xs text-emerald-900 mb-2">
+                              <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
+                              <span>{opt}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Prescription Needs */}
+                      {aiAnalysis.prescriptionNeeds?.length > 0 && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                          <div className="font-bold text-sm text-amber-800 mb-2 flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" /> Prescription / Physician Required
+                          </div>
+                          {aiAnalysis.prescriptionNeeds.map((need, i) => (
+                            <div key={i} className="flex gap-2 text-xs text-amber-900 mb-2">
+                              <span className="text-amber-500 mt-0.5 shrink-0">→</span>
+                              <span>{need}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Red Flags */}
+                      {aiAnalysis.redFlags?.length > 0 && (
+                        <div className="bg-red-50 border border-red-300 rounded-xl p-4">
+                          <div className="font-bold text-sm text-red-800 mb-2 flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" /> Red Flags — Refer Immediately
+                          </div>
+                          {aiAnalysis.redFlags.map((flag, i) => (
+                            <div key={i} className="flex gap-2 text-xs text-red-900 mb-2">
+                              <span className="text-red-500 mt-0.5 shrink-0">🚨</span>
+                              <span>{flag}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Drug Safety */}
+                      {aiAnalysis.drugSafety?.length > 0 && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                          <div className="font-bold text-sm text-orange-800 mb-2 flex items-center gap-2">
+                            <ShieldAlert className="w-4 h-4" /> Drug Safety Notes
+                          </div>
+                          {aiAnalysis.drugSafety.map((note, i) => (
+                            <div key={i} className="flex gap-2 text-xs text-orange-900 mb-2">
+                              <span className="text-orange-500 mt-0.5 shrink-0">⚠</span>
+                              <span>{note}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Counseling Points */}
+                      {aiAnalysis.counselingPoints?.length > 0 && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                          <div className="font-bold text-sm text-blue-800 mb-2 flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4" /> Patient Counseling Points
+                          </div>
+                          {aiAnalysis.counselingPoints.map((pt, i) => (
+                            <div key={i} className="flex gap-2 text-xs text-blue-900 mb-2">
+                              <span className="text-blue-500 mt-0.5 shrink-0">•</span>
+                              <span>{pt}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="text-xs text-slate-400 text-center pb-1">
+                        AI analysis is for pharmacist decision support only. Does not replace clinical judgment or physical examination.
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
 

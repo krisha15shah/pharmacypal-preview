@@ -3,6 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, insertConsultationSchema } from "@shared/schema";
 import { z } from "zod";
+import OpenAI from "openai";
+
+function getOpenAI() {
+  return new OpenAI({
+    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  });
+}
 
 const generateRecommendationsSchema = z.object({
   patientId: z.number(),
@@ -85,6 +93,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
     
     res.json(consultationsWithPatients);
+  });
+
+  // ── AI Clinical Analysis endpoint ──
+  app.post("/api/ai-clinical", async (req, res) => {
+    try {
+      const {
+        age, gender, isPregnant,
+        icdSymptoms = [], icdConditions = [], icdAllergies = [],
+        chipSymptoms = [], chipConditions = [], chipAllergies = [],
+        currentMedications = [],
+      } = req.body;
+
+      // Build structured lists for the prompt
+      const allSymptoms = [
+        ...icdSymptoms.map((i: any) => `${i.name} [${i.code}]`),
+        ...chipSymptoms,
+      ];
+      const allConditions = [
+        ...icdConditions.map((i: any) => `${i.name} [${i.code}]`),
+        ...chipConditions,
+      ];
+      const allAllergies = [
+        ...icdAllergies.map((i: any) => `${i.name} [${i.code}]`),
+        ...chipAllergies,
+      ];
+
+      const hasContent = allSymptoms.length || allConditions.length || allConditions.length || currentMedications.length;
+      if (!hasContent) {
+        return res.status(400).json({ error: "No clinical data provided" });
+      }
+
+      const patientDesc = [
+        `Age: ${age} years`,
+        `Gender: ${gender}`,
+        isPregnant ? "PREGNANT" : null,
+        allSymptoms.length ? `Presenting symptoms: ${allSymptoms.join("; ")}` : null,
+        allConditions.length ? `Known conditions: ${allConditions.join("; ")}` : null,
+        allAllergies.length ? `Drug allergies: ${allAllergies.join("; ")}` : null,
+        currentMedications.length ? `Current medications: ${currentMedications.join(", ")}` : null,
+      ].filter(Boolean).join("\n");
+
+      const systemPrompt = `You are RxCopilot, an evidence-based clinical pharmacist AI assisting qualified community pharmacists in India, the Middle East, Africa, and SE Asia. You provide UpToDate-level clinical pharmacist reasoning. You do NOT diagnose — you support pharmacist decision-making with precise, actionable clinical guidance.
+
+Your output must be valid JSON only, with no markdown code fences, no preamble. Use this exact structure:
+{
+  "conditionOverview": [
+    {
+      "label": "Human-readable name",
+      "code": "ICD code if available, else ''",
+      "meaning": "2-3 sentence clinical meaning relevant to a pharmacist",
+      "pharmacyNote": "Key pharmacy implication: what the pharmacist must watch for"
+    }
+  ],
+  "otcOptions": ["Specific OTC recommendation with drug name, dose, duration, and brief rationale"],
+  "prescriptionNeeds": ["Conditions/symptoms that need Rx or physician involvement — be specific"],
+  "redFlags": ["Specific warning signs for THIS patient that require immediate referral"],
+  "drugSafety": ["Specific interaction or contraindication relevant to this patient's meds/allergies"],
+  "counselingPoints": ["Specific patient counseling point"]
+}
+
+Rules:
+- Be specific and clinical, not generic
+- Every OTC option must include: drug name, dose, frequency, duration
+- If a condition cannot be managed OTC, say so explicitly in prescriptionNeeds
+- Reference BNF, WHO, NICE, UpToDate where relevant
+- If current medications create interactions with likely treatments, flag them in drugSafety
+- Maximum 6 items per array section`;
+
+      const response = await getOpenAI().chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyse this patient and provide clinical pharmacist guidance:\n\n${patientDesc}` },
+        ],
+        max_tokens: 2000,
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+      });
+
+      const raw = response.choices[0].message.content ?? "{}";
+      const parsed = JSON.parse(raw);
+      res.json(parsed);
+    } catch (err: any) {
+      console.error("AI clinical error:", err?.message ?? err);
+      res.status(500).json({ error: "AI analysis unavailable" });
+    }
   });
 
   // Generate recommendations endpoint
