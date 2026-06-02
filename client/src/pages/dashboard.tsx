@@ -942,7 +942,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-2 text-xs text-slate-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
                         <Brain className="w-3 h-3 text-violet-600" />
                         <span className="font-medium text-violet-700">GPT-4o Clinical Pharmacist Analysis</span>
-                        <span className="text-slate-400">· UpToDate · BNF · WHO · NICE · Beers Criteria</span>
+                        <span className="text-slate-400">· UpToDate · BNF · WHO · NICE · Cochrane · MIMS · Lexicomp · Micromedex · Beers Criteria · STOPP/START</span>
                       </div>
 
                       {/* Condition Overview */}
