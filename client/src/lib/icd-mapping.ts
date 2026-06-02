@@ -1,7 +1,8 @@
 // Maps ICD-10-CM codes → internal symptom IDs used by the clinical engine.
 // Source: ICD-10-CM 2024 classification chapters.
-export function icdToSymptomId(code: string): string | null {
+export function icdToSymptomId(code: string, name?: string): string | null {
   const c = code.toUpperCase().replace(/\s/g, "");
+  // --- Code-prefix matching (authoritative) ---
   if (c.startsWith("R51")) return "headache";
   if (c.startsWith("M54")) return "back_pain";
   if (c.startsWith("M25.5") || c.startsWith("M13") || c.startsWith("M79.6")) return "joint_pain";
@@ -28,6 +29,41 @@ export function icdToSymptomId(code: string): string | null {
   if (c.startsWith("R42") || c.startsWith("H81")) return "dizziness";
   if (c.startsWith("H52") || c.startsWith("H53")) return "eye_symptoms";
   if (c.startsWith("R41.3") || c.startsWith("R41.0")) return "confusion_memory";
+  // --- Keyword fallback on description text ---
+  if (name) return icdSymptomByKeyword(name);
+  return null;
+}
+
+// Keyword-based fallback: maps free-text ICD description → internal symptom ID.
+// Catches any valid ICD code whose description contains recognisable symptom words.
+function icdSymptomByKeyword(name: string): string | null {
+  const n = name.toLowerCase();
+  if (/headache|migraine|cephalgia/.test(n)) return "headache";
+  if (/back pain|lumbago|backache|lumbar|dorsalgia/.test(n)) return "back_pain";
+  if (/joint pain|arthralgia|arthritis|synovitis|articular/.test(n)) return "joint_pain";
+  if (/myalgia|muscle pain|fibromyalgia|body ache|musculoskeletal pain/.test(n)) return "body_ache";
+  if (/high fever|hyperpyrexia|fever.*high/.test(n)) return "high_fever";
+  if (/fever|pyrexia|febrile/.test(n)) return "mild_fever";
+  if (/sore throat|pharyngitis|tonsillitis|tonsillar/.test(n)) return "sore_throat";
+  if (/dry cough|cough/.test(n) && !/productive|sputum|phlegm/.test(n)) return "dry_cough";
+  if (/productive cough|cough.*sputum|cough.*phlegm|wet cough/.test(n)) return "productive_cough";
+  if (/nausea|vomiting|emesis/.test(n)) return "nausea_vomiting";
+  if (/diarrhea|diarrhoea|loose stool|gastroenteritis/.test(n)) return "diarrhea";
+  if (/constipation|obstipation/.test(n)) return "constipation";
+  if (/abdominal pain|stomach ache|stomachache|belly pain|epigastric/.test(n)) return "abdominal_pain";
+  if (/skin rash|rash|urticaria|eczema|dermatitis|pruritus|itch/.test(n)) return "skin_rash";
+  if (/runny nose|rhinorrh|nasal discharge/.test(n)) return "runny_nose";
+  if (/nasal congestion|stuffy nose|blocked nose|rhinitis/.test(n)) return "nasal_congestion";
+  if (/ear pain|otalgia|earache|otitis/.test(n)) return "ear_pain";
+  if (/toothache|dental pain|tooth pain|odontogenic/.test(n)) return "toothache";
+  if (/menstrual pain|dysmenorrh|period pain|pelvic pain/.test(n)) return "menstrual_pain";
+  if (/chest pain|chest tightness|angina|pectoris/.test(n)) return "chest_pain";
+  if (/insomnia|sleep.*disturb|difficulty sleep|sleeplessness/.test(n)) return "difficulty_sleeping";
+  if (/anxiety|anxious|panic|nervous/.test(n)) return "anxiety_symptoms";
+  if (/urinary|dysuria|frequency.*urin|urination|bladder/.test(n)) return "urinary_symptoms";
+  if (/dizziness|dizzy|vertigo|lightheaded/.test(n)) return "dizziness";
+  if (/eye|ocular|vision|visual|ophth/.test(n)) return "eye_symptoms";
+  if (/confusion|memory|dementia|disorientation|cognitive/.test(n)) return "confusion_memory";
   return null;
 }
 

@@ -15,8 +15,8 @@ interface IcdResult {
   name: string;
 }
 
-function mapToInternal(code: string, mode: IcdMode): string | null {
-  if (mode === "symptom") return icdToSymptomId(code);
+function mapToInternal(code: string, name: string, mode: IcdMode): string | null {
+  if (mode === "symptom") return icdToSymptomId(code, name);
   if (mode === "condition") return icdToConditionId(code);
   return icdToAllergyId(code);
 }
@@ -103,7 +103,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
 
   const addItem = (item: IcdResult) => {
     if (selectedItems.find((i) => i.code === item.code)) { setQuery(""); setOpen(false); return; }
-    onItemsChange([...selectedItems, { code: item.code, name: item.name, internalId: mapToInternal(item.code, mode) }]);
+    onItemsChange([...selectedItems, { code: item.code, name: item.name, internalId: mapToInternal(item.code, item.name, mode) }]);
     setQuery("");
     setResults([]);
     setOpen(false);
@@ -145,7 +145,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
               {results.map((item) => {
                 const already = selectedItems.find((i) => i.code === item.code);
                 const chap = icdChapterColor(item.code);
-                const mapped = mapToInternal(item.code, mode);
+                const mapped = mapToInternal(item.code, item.name, mode);
                 return (
                   <button
                     key={item.code}
@@ -161,7 +161,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     <span className="flex-1 truncate text-xs">{item.name}</span>
                     <span className="flex items-center gap-1 shrink-0">
                       {!mapped && !already && (
-                        <span className="text-xs text-amber-500 italic">record only</span>
+                        <span className="text-xs text-slate-400 italic">log only</span>
                       )}
                       {already && <span className="text-xs text-slate-400">Added</span>}
                     </span>
