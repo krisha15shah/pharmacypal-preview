@@ -103,6 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         icdSymptoms = [], icdConditions = [], icdAllergies = [],
         chipSymptoms = [], chipConditions = [], chipAllergies = [],
         currentMedications = [],
+        abnormalLabs = [],
       } = req.body;
 
       // Build structured lists for the prompt
@@ -132,6 +133,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allConditions.length ? `Known conditions: ${allConditions.join("; ")}` : null,
         allAllergies.length ? `Drug allergies: ${allAllergies.join("; ")}` : null,
         currentMedications.length ? `Current medications: ${currentMedications.join(", ")}` : null,
+        abnormalLabs.length
+          ? `Abnormal lab values (interpret clinically):\n${(abnormalLabs as string[]).map((l) => `  • ${l}`).join("\n")}`
+          : null,
       ].filter(Boolean).join("\n");
 
       const systemPrompt = `You are RxCopilot, an evidence-based clinical pharmacist AI assisting qualified community pharmacists in India, the Middle East, Africa, and SE Asia. You synthesise guidance from ALL major authoritative clinical and pharmacological sources. You do NOT diagnose — you support pharmacist decision-making with precise, actionable clinical guidance.

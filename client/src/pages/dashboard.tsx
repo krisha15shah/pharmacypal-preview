@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
-  Stethoscope, RotateCcw, PillBottle, Brain, Loader2, RefreshCw
+  Stethoscope, RotateCcw, PillBottle, Brain, Loader2, RefreshCw, FlaskConical
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { SYMPTOMS, CONDITIONS, ALLERGIES, CURRENT_MEDICATIONS } from "@/lib/clin
 import { runClinicalEngine, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
+import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -278,6 +279,106 @@ function MedicationCard({ result }: { result: MedicationResult }) {
   );
 }
 
+// ─── Lab category block ───
+function LabCategoryBlock({
+  category,
+  values,
+  gender,
+  onChange,
+}: {
+  category: { id: string; label: string; labs: LabDef[] };
+  values: Record<string, string>;
+  gender: string;
+  onChange: (id: string, val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const abnormalCount = category.labs.filter((lab) => {
+    const v = parseFloat(values[lab.id] ?? "");
+    return !isNaN(v) && getLabStatus(lab, v, gender) !== "normal";
+  }).length;
+
+  return (
+    <div className="border border-slate-100 rounded-lg overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{category.label}</span>
+        <div className="flex items-center gap-1.5">
+          {abnormalCount > 0 && (
+            <span className="text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
+              {abnormalCount} ↑↓
+            </span>
+          )}
+          {open ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="divide-y divide-slate-100">
+          {category.labs.map((lab) => {
+            const valStr = values[lab.id] ?? "";
+            const val = parseFloat(valStr);
+            const status = !isNaN(val) && valStr ? getLabStatus(lab, val, gender) : "normal";
+            const isAbnormal = status !== "normal";
+            const isCritical = status === "critical-high" || status === "critical-low";
+            const refRange = getRefRangeText(lab, gender);
+
+            return (
+              <div
+                key={lab.id}
+                className={`flex items-center gap-2 px-3 py-2 ${
+                  isCritical ? "bg-red-100" : isAbnormal ? "bg-red-50" : "bg-white"
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className={`text-xs font-medium truncate ${isAbnormal ? "text-red-800" : "text-slate-700"}`}>
+                    {lab.label}
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    {refRange ? `Ref: ${refRange}` : lab.note ?? ""} {lab.unit}
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  step="any"
+                  value={valStr}
+                  onChange={(e) => onChange(lab.id, e.target.value)}
+                  placeholder="—"
+                  className={`w-[72px] h-7 text-xs text-right border rounded px-2 focus:outline-none focus:ring-1 ${
+                    isCritical
+                      ? "border-red-500 bg-red-50 text-red-800 focus:ring-red-400"
+                      : isAbnormal
+                      ? "border-red-300 bg-red-50 text-red-700 focus:ring-red-300"
+                      : "border-slate-300 bg-white text-slate-800 focus:ring-blue-300"
+                  }`}
+                />
+                <div className="w-8 text-center">
+                  {isAbnormal ? (
+                    <span
+                      className={`text-[10px] font-bold px-1 py-0.5 rounded ${
+                        isCritical
+                          ? "bg-red-600 text-white"
+                          : status === "high" || status === "critical-high"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {isCritical ? "‼" : status === "high" || status === "critical-high" ? "H" : "L"}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-300">—</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── MAIN DASHBOARD ───
 const DEFAULT_PROFILE: PatientProfile = {
   age: 35,
@@ -307,6 +408,8 @@ export default function Dashboard() {
   const [icdConditions, setIcdConditions] = useState<SelectedIcdItem[]>([]);
   const [icdAllergies, setIcdAllergies] = useState<SelectedIcdItem[]>([]);
   const [activeTab, setActiveTab] = useState("recommended");
+  const [labValues, setLabValues] = useState<Record<string, string>>({});
+  const [labPanelOpen, setLabPanelOpen] = useState(false);
 
   // ── AI clinical analysis ──
   type AiAnalysis = {
@@ -345,34 +448,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Trigger AI analysis (debounced 1.5 s) whenever profile or ICD selections change
-  useEffect(() => {
-    if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
-
-    const hasData =
-      icdSymptoms.length > 0 || icdConditions.length > 0 || icdAllergies.length > 0 ||
-      profile.selectedSymptoms.length > 0 || profile.selectedConditions.length > 0;
-    if (!hasData) { setAiAnalysis(null); return; }
-
-    aiDebounceRef.current = setTimeout(() => {
-      const payload = {
-        age: profile.age,
-        gender: profile.gender,
-        isPregnant: profile.isPregnant,
-        icdSymptoms,
-        icdConditions,
-        icdAllergies,
-        chipSymptoms: profile.selectedSymptoms.map(id => SYMPTOMS.find(s => s.id === id)?.label ?? id),
-        chipConditions: profile.selectedConditions.map(id => CONDITIONS.find(c => c.id === id)?.label ?? id),
-        chipAllergies: profile.selectedAllergies.map(id => ALLERGIES.find(a => a.id === id)?.label ?? id),
-        currentMedications: selectedDrugs.map(d => d.label),
-      };
-      fetchAiAnalysis(payload);
-    }, 1500);
-
-    return () => { if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current); };
-  }, [profile, icdSymptoms, icdConditions, icdAllergies, selectedDrugs, fetchAiAnalysis]);
-
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
       setProfile((prev) => {
@@ -404,6 +479,55 @@ export default function Dashboard() {
     };
   }, [profile, icdSymptoms, icdConditions, icdAllergies]);
 
+  // Compute abnormal lab values — must be declared before the AI effect that uses it
+  const abnormalLabs = useMemo<string[]>(() => {
+    const out: string[] = [];
+    for (const cat of LAB_CATEGORIES) {
+      for (const lab of cat.labs) {
+        const valStr = labValues[lab.id];
+        if (!valStr || valStr.trim() === "") continue;
+        const val = parseFloat(valStr);
+        if (isNaN(val)) continue;
+        const status = getLabStatus(lab, val, profile.gender);
+        if (status !== "normal") {
+          const refRange = getRefRangeText(lab, profile.gender);
+          const flag = status.includes("critical") ? `‼ ${status.replace("-", " ").toUpperCase()}` : status.toUpperCase();
+          out.push(`${lab.label}: ${val} ${lab.unit} [${flag}] (ref: ${refRange} ${lab.unit})`);
+        }
+      }
+    }
+    return out;
+  }, [labValues, profile.gender]);
+
+  // Trigger AI analysis (debounced 1.5 s) whenever profile or ICD selections change
+  useEffect(() => {
+    if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
+
+    const hasData =
+      icdSymptoms.length > 0 || icdConditions.length > 0 || icdAllergies.length > 0 ||
+      profile.selectedSymptoms.length > 0 || profile.selectedConditions.length > 0;
+    if (!hasData) { setAiAnalysis(null); return; }
+
+    aiDebounceRef.current = setTimeout(() => {
+      const payload = {
+        age: profile.age,
+        gender: profile.gender,
+        isPregnant: profile.isPregnant,
+        icdSymptoms,
+        icdConditions,
+        icdAllergies,
+        chipSymptoms: profile.selectedSymptoms.map(id => SYMPTOMS.find(s => s.id === id)?.label ?? id),
+        chipConditions: profile.selectedConditions.map(id => CONDITIONS.find(c => c.id === id)?.label ?? id),
+        chipAllergies: profile.selectedAllergies.map(id => ALLERGIES.find(a => a.id === id)?.label ?? id),
+        currentMedications: selectedDrugs.map(d => d.label),
+        abnormalLabs,
+      };
+      fetchAiAnalysis(payload);
+    }, 1500);
+
+    return () => { if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current); };
+  }, [profile, icdSymptoms, icdConditions, icdAllergies, selectedDrugs, abnormalLabs, fetchAiAnalysis]);
+
   // Badge counts: chips + ICD items (including record-only ones for display)
   const totalSymptoms = effectiveProfile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
   const totalConditions = effectiveProfile.selectedConditions.length + icdConditions.filter((i) => !i.internalId).length;
@@ -430,6 +554,8 @@ export default function Dashboard() {
     setIcdSymptoms([]);
     setIcdConditions([]);
     setIcdAllergies([]);
+    setLabValues({});
+    setLabPanelOpen(false);
     setActiveTab("recommended");
   };
 
@@ -656,6 +782,48 @@ export default function Dashboard() {
                 />
               </div>
             </CardContent>
+          </Card>
+
+          {/* Lab Values */}
+          <Card className="border-slate-200">
+            <CardHeader className="pb-2 pt-3 px-4">
+              <CardTitle className="text-sm font-bold text-slate-700">
+                <button
+                  className="flex items-center gap-2 w-full text-left"
+                  onClick={() => setLabPanelOpen((o) => !o)}
+                >
+                  <FlaskConical className="w-4 h-4 text-[#0B3D91]" />
+                  <span>Lab Values</span>
+                  <div className="flex items-center gap-2 ml-auto">
+                    {abnormalLabs.length > 0 && (
+                      <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                        {abnormalLabs.length} abnormal
+                      </Badge>
+                    )}
+                    {labPanelOpen
+                      ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                      : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  </div>
+                </button>
+              </CardTitle>
+            </CardHeader>
+
+            {labPanelOpen && (
+              <CardContent className="px-3 pb-4 space-y-2">
+                <p className="text-xs text-slate-400 px-1">
+                  Enter any lab result — values outside reference range are flagged red.
+                </p>
+                {LAB_CATEGORIES.map((cat) => (
+                  <LabCategoryBlock
+                    key={cat.id}
+                    category={cat}
+                    values={labValues}
+                    gender={profile.gender}
+                    onChange={(id, val) => setLabValues((prev) => ({ ...prev, [id]: val }))}
+                  />
+                ))}
+              </CardContent>
+            )}
           </Card>
         </div>
 
