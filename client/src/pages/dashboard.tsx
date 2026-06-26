@@ -684,18 +684,6 @@ export default function Dashboard() {
                 selectedItems={icdSymptoms}
                 onItemsChange={handleIcdSymptoms}
               />
-              <div className="border-t border-slate-100 pt-2">
-                <p className="text-xs text-slate-400 mb-2">Or quick-select below · 🚨 = Red flag</p>
-                {Object.entries(symptomsByCategory).map(([category, items]) => (
-                  <CategorySection
-                    key={category}
-                    title={category}
-                    items={items}
-                    selected={profile.selectedSymptoms}
-                    onToggle={toggle("selectedSymptoms")}
-                  />
-                ))}
-              </div>
             </CardContent>
           </Card>
 
@@ -717,16 +705,6 @@ export default function Dashboard() {
                 selectedItems={icdConditions}
                 onItemsChange={handleIcdConditions}
               />
-              <div className="border-t border-slate-100 pt-2">
-                <p className="text-xs text-slate-400 mb-2">Or quick-select common conditions</p>
-                <ChipSelector
-                  items={CONDITIONS}
-                  selected={profile.selectedConditions}
-                  onToggle={toggle("selectedConditions")}
-                  colorClass="bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
-                  selectedClass="bg-purple-600 border-purple-600 text-white hover:bg-purple-700"
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -771,16 +749,6 @@ export default function Dashboard() {
                 selectedItems={icdAllergies}
                 onItemsChange={handleIcdAllergies}
               />
-              <div className="border-t border-slate-100 pt-2">
-                <p className="text-xs text-slate-400 mb-2">Or quick-select drug allergy class</p>
-                <ChipSelector
-                  items={ALLERGIES}
-                  selected={profile.selectedAllergies}
-                  onToggle={toggle("selectedAllergies")}
-                  colorClass="bg-red-50 border-red-200 text-red-800 hover:bg-red-100"
-                  selectedClass="bg-red-600 border-red-600 text-white hover:bg-red-700"
-                />
-              </div>
             </CardContent>
           </Card>
 
