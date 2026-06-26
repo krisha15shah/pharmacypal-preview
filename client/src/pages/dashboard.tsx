@@ -548,6 +548,21 @@ export default function Dashboard() {
     0
   ) ?? 0;
 
+  // Panel is visible when any clinical data is present — not just when engine matches
+  const hasAnyData =
+    result !== null ||
+    icdSymptoms.length > 0 ||
+    icdConditions.length > 0 ||
+    profile.selectedConditions.length > 0 ||
+    profile.selectedSymptoms.length > 0;
+
+  // Auto-switch to AI tab when ICD codes are present but engine has no matching rules
+  useEffect(() => {
+    if (!result && (icdSymptoms.length > 0 || icdConditions.length > 0)) {
+      setActiveTab("ai");
+    }
+  }, [result, icdSymptoms, icdConditions]);
+
   const reset = () => {
     setProfile(DEFAULT_PROFILE);
     setSelectedDrugs(DEFAULT_DRUGS);
@@ -797,16 +812,29 @@ export default function Dashboard() {
 
         {/* ══ RIGHT PANEL — Results ══ */}
         <div className="flex-1 min-w-0 overflow-y-auto max-h-[calc(100vh-80px)] pb-4">
-          {!result ? (
+          {!hasAnyData ? (
             <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-24">
               <Activity className="w-16 h-16 mb-4 text-slate-300" />
               <div className="text-xl font-semibold text-slate-500 mb-2">Select symptoms to begin</div>
-              <div className="text-sm max-w-sm">Choose the patient's symptoms on the left to instantly see filtered OTC recommendations, drug interactions, and referral advice.</div>
+              <div className="text-sm max-w-sm">Search and select ICD-10 codes on the left to see AI-powered clinical analysis, OTC recommendations, and referral advice.</div>
             </div>
           ) : (
             <div className="space-y-3">
+              {/* ── ICD-only banner (no engine rules matched) ── */}
+              {!result && hasAnyData && (
+                <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 flex items-start gap-3">
+                  <Brain className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold text-violet-800 text-sm mb-1">AI Analysis is your primary guide for these codes</div>
+                    <div className="text-xs text-violet-700 leading-relaxed">
+                      The OTC safety engine covers ~30 common symptom categories. These ICD codes fall outside that set — the <span className="font-semibold">🧠 AI Analysis tab</span> provides full UpToDate-level clinical coverage for any ICD-10-CM code.
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* ── Red Flags ── */}
-              {result.redFlags.length > 0 && (
+              {result && result.redFlags.length > 0 && (
                 <div className="bg-red-600 text-white rounded-xl p-4 shadow-lg">
                   <div className="flex items-center gap-2 font-bold text-lg mb-3">
                     <AlertTriangle className="w-5 h-5" />
@@ -823,7 +851,7 @@ export default function Dashboard() {
               )}
 
               {/* ── Referral Advice (urgent) ── */}
-              {result.referralAdvice.filter(r => r.urgency === "emergency" || r.urgency === "urgent").length > 0 && (
+              {result && result.referralAdvice.filter(r => r.urgency === "emergency" || r.urgency === "urgent").length > 0 && (
                 <div className="bg-amber-50 border border-amber-300 rounded-xl p-4">
                   <div className="flex items-center gap-2 font-bold text-amber-800 mb-2">
                     <AlertTriangle className="w-4 h-4" /> PHYSICIAN REFERRAL ADVISED
@@ -839,42 +867,44 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* ── Summary Bar ── */}
-              <div className="grid grid-cols-4 gap-2">
-                <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
-                  <div className="text-2xl font-bold text-emerald-600">{recommended.length}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">Recommended</div>
+              {/* ── Summary Bar (engine results only) ── */}
+              {result && (
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
+                    <div className="text-2xl font-bold text-emerald-600">{recommended.length}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Recommended</div>
+                  </div>
+                  <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
+                    <div className="text-2xl font-bold text-amber-600">{caution.length}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Use w/ Caution</div>
+                  </div>
+                  <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
+                    <div className="text-2xl font-bold text-red-600">{avoid.length}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Avoid</div>
+                  </div>
+                  <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
+                    <div className={`text-2xl font-bold ${totalInteractions > 0 ? "text-orange-600" : "text-slate-300"}`}>{totalInteractions}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Interactions</div>
+                  </div>
                 </div>
-                <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
-                  <div className="text-2xl font-bold text-amber-600">{caution.length}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">Use w/ Caution</div>
-                </div>
-                <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
-                  <div className="text-2xl font-bold text-red-600">{avoid.length}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">Avoid</div>
-                </div>
-                <div className="bg-white rounded-lg border border-slate-200 p-3 text-center">
-                  <div className={`text-2xl font-bold ${totalInteractions > 0 ? "text-orange-600" : "text-slate-300"}`}>{totalInteractions}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">Interactions</div>
-                </div>
-              </div>
+              )}
 
               {/* ── Tabs ── */}
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="w-full bg-white border border-slate-200 rounded-lg h-auto p-1 flex flex-wrap gap-1">
-                  <TabsTrigger value="recommended" className="flex-1 text-xs data-[state=active]:bg-emerald-600 data-[state=active]:text-white rounded">
+                  <TabsTrigger value="recommended" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-emerald-600 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     ✅ Recommended ({recommended.length})
                   </TabsTrigger>
-                  <TabsTrigger value="caution" className="flex-1 text-xs data-[state=active]:bg-amber-500 data-[state=active]:text-white rounded">
+                  <TabsTrigger value="caution" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-amber-500 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     ⚠️ Caution ({caution.length})
                   </TabsTrigger>
-                  <TabsTrigger value="avoid" className="flex-1 text-xs data-[state=active]:bg-red-600 data-[state=active]:text-white rounded">
+                  <TabsTrigger value="avoid" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-red-600 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     ❌ Avoid ({avoid.length})
                   </TabsTrigger>
-                  <TabsTrigger value="conditions" className="flex-1 text-xs data-[state=active]:bg-[#0B3D91] data-[state=active]:text-white rounded">
-                    🩺 Conditions ({result.possibleConditions.length})
+                  <TabsTrigger value="conditions" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-[#0B3D91] data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
+                    🩺 Conditions ({result?.possibleConditions.length ?? 0})
                   </TabsTrigger>
-                  <TabsTrigger value="counseling" className="flex-1 text-xs data-[state=active]:bg-slate-700 data-[state=active]:text-white rounded">
+                  <TabsTrigger value="counseling" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-slate-700 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     💬 Counseling
                   </TabsTrigger>
                   <TabsTrigger value="ai" className="flex-1 text-xs data-[state=active]:bg-violet-600 data-[state=active]:text-white rounded flex items-center gap-1">
@@ -928,7 +958,7 @@ export default function Dashboard() {
 
                 {/* Possible Conditions */}
                 <TabsContent value="conditions" className="mt-3">
-                  {result.possibleConditions.length === 0 ? (
+                  {!result || result.possibleConditions.length === 0 ? (
                     <div className="text-center text-slate-400 py-12 text-sm">Select more symptoms to identify possible conditions.</div>
                   ) : (
                     <div className="space-y-3">
@@ -983,7 +1013,7 @@ export default function Dashboard() {
                 <TabsContent value="counseling" className="mt-3">
                   <div className="space-y-3">
                     {/* General counseling */}
-                    {result.generalCounseling.length > 0 && (
+                    {result && result.generalCounseling.length > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div className="font-bold text-sm text-blue-800 mb-3 flex items-center gap-2">
                           <MessageSquare className="w-4 h-4" /> General Clinical Counseling Points
@@ -1023,7 +1053,7 @@ export default function Dashboard() {
                     )}
 
                     {/* Routine referral advice */}
-                    {result.referralAdvice.filter(r => r.urgency === "routine").length > 0 && (
+                    {result && result.referralAdvice.filter(r => r.urgency === "routine").length > 0 && (
                       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                         <div className="font-bold text-sm text-slate-700 mb-2 flex items-center gap-2">
                           <Info className="w-4 h-4" /> Routine Follow-up Notes
@@ -1036,7 +1066,7 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    {result.generalCounseling.length === 0 && recommended.length === 0 && (
+                    {(!result || result.generalCounseling.length === 0) && recommended.length === 0 && (
                       <div className="text-center text-slate-400 py-12 text-sm">
                         <MessageSquare className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                         Select symptoms to see counseling guidance.
