@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
-  Stethoscope, RotateCcw, PillBottle, Brain, Loader2, RefreshCw, FlaskConical
+  Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -411,43 +411,6 @@ export default function Dashboard() {
   const [labValues, setLabValues] = useState<Record<string, string>>({});
   const [labPanelOpen, setLabPanelOpen] = useState(false);
 
-  // ── AI clinical analysis ──
-  type AiAnalysis = {
-    conditionOverview: { label: string; code: string; meaning: string; pharmacyNote: string }[];
-    otcOptions: string[];
-    prescriptionNeeds: string[];
-    redFlags: string[];
-    drugSafety: string[];
-    counselingPoints: string[];
-  };
-  const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const aiDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const aiAbortRef = useRef<AbortController | null>(null);
-
-  const fetchAiAnalysis = useCallback(async (payload: object) => {
-    if (aiAbortRef.current) aiAbortRef.current.abort();
-    aiAbortRef.current = new AbortController();
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const res = await fetch("/api/ai-clinical", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: aiAbortRef.current.signal,
-      });
-      if (!res.ok) throw new Error("Analysis failed");
-      const data = await res.json();
-      setAiAnalysis(data);
-    } catch (e: any) {
-      if (e.name !== "AbortError") setAiError("AI analysis unavailable. Please try again.");
-    } finally {
-      setAiLoading(false);
-    }
-  }, []);
-
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
       setProfile((prev) => {
@@ -479,7 +442,7 @@ export default function Dashboard() {
     };
   }, [profile, icdSymptoms, icdConditions, icdAllergies]);
 
-  // Compute abnormal lab values — must be declared before the AI effect that uses it
+  // Compute abnormal lab values
   const abnormalLabs = useMemo<string[]>(() => {
     const out: string[] = [];
     for (const cat of LAB_CATEGORIES) {
@@ -499,34 +462,6 @@ export default function Dashboard() {
     return out;
   }, [labValues, profile.gender]);
 
-  // Trigger AI analysis (debounced 1.5 s) whenever profile or ICD selections change
-  useEffect(() => {
-    if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
-
-    const hasData =
-      icdSymptoms.length > 0 || icdConditions.length > 0 || icdAllergies.length > 0 ||
-      profile.selectedSymptoms.length > 0 || profile.selectedConditions.length > 0;
-    if (!hasData) { setAiAnalysis(null); return; }
-
-    aiDebounceRef.current = setTimeout(() => {
-      const payload = {
-        age: profile.age,
-        gender: profile.gender,
-        isPregnant: profile.isPregnant,
-        icdSymptoms,
-        icdConditions,
-        icdAllergies,
-        chipSymptoms: profile.selectedSymptoms.map(id => SYMPTOMS.find(s => s.id === id)?.label ?? id),
-        chipConditions: profile.selectedConditions.map(id => CONDITIONS.find(c => c.id === id)?.label ?? id),
-        chipAllergies: profile.selectedAllergies.map(id => ALLERGIES.find(a => a.id === id)?.label ?? id),
-        currentMedications: selectedDrugs.map(d => d.label),
-        abnormalLabs,
-      };
-      fetchAiAnalysis(payload);
-    }, 1500);
-
-    return () => { if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current); };
-  }, [profile, icdSymptoms, icdConditions, icdAllergies, selectedDrugs, abnormalLabs, fetchAiAnalysis]);
 
   // Badge counts: chips + ICD items (including record-only ones for display)
   const totalSymptoms = effectiveProfile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
@@ -556,12 +491,6 @@ export default function Dashboard() {
     profile.selectedConditions.length > 0 ||
     profile.selectedSymptoms.length > 0;
 
-  // Auto-switch to AI tab when ICD codes are present but engine has no matching rules
-  useEffect(() => {
-    if (!result && (icdSymptoms.length > 0 || icdConditions.length > 0)) {
-      setActiveTab("ai");
-    }
-  }, [result, icdSymptoms, icdConditions]);
 
   const reset = () => {
     setProfile(DEFAULT_PROFILE);
@@ -822,12 +751,12 @@ export default function Dashboard() {
             <div className="space-y-3">
               {/* ── ICD-only banner (no engine rules matched) ── */}
               {!result && hasAnyData && (
-                <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 flex items-start gap-3">
-                  <Brain className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
+                <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 flex items-start gap-3">
+                  <BookOpen className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-semibold text-violet-800 text-sm mb-1">AI Analysis is your primary guide for these codes</div>
-                    <div className="text-xs text-violet-700 leading-relaxed">
-                      The OTC safety engine covers ~30 common symptom categories. These ICD codes fall outside that set — the <span className="font-semibold">🧠 AI Analysis tab</span> provides full UpToDate-level clinical coverage for any ICD-10-CM code.
+                    <div className="font-semibold text-slate-700 text-sm mb-1">No automated OTC rules for these codes</div>
+                    <div className="text-xs text-slate-600 leading-relaxed">
+                      The safety engine covers ~30 common OTC symptom categories. These ICD codes fall outside that set — apply clinical judgment, consult your standard references (BNF, MIMS, local formulary), and consider physician referral if needed.
                     </div>
                   </div>
                 </div>
@@ -906,10 +835,6 @@ export default function Dashboard() {
                   </TabsTrigger>
                   <TabsTrigger value="counseling" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-slate-700 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     💬 Counseling
-                  </TabsTrigger>
-                  <TabsTrigger value="ai" className="flex-1 text-xs data-[state=active]:bg-violet-600 data-[state=active]:text-white rounded flex items-center gap-1">
-                    <Brain className="w-3 h-3" />
-                    AI Analysis {aiLoading && <Loader2 className="w-3 h-3 animate-spin" />}
                   </TabsTrigger>
                 </TabsList>
 
@@ -1075,124 +1000,7 @@ export default function Dashboard() {
                   </div>
                 </TabsContent>
 
-                {/* AI Analysis */}
-                <TabsContent value="ai" className="mt-3">
-                  {aiLoading && !aiAnalysis ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                      <Loader2 className="w-10 h-10 animate-spin mb-3 text-violet-400" />
-                      <div className="text-sm font-medium text-slate-600">Analysing patient profile…</div>
-                      <div className="text-xs mt-1">GPT-4o · UpToDate-level clinical reasoning</div>
-                    </div>
-                  ) : aiError ? (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
-                      {aiError}
-                      <button onClick={() => fetchAiAnalysis({})} className="ml-auto text-xs underline">Retry</button>
-                    </div>
-                  ) : !aiAnalysis ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
-                      <Brain className="w-12 h-12 mb-3 text-slate-300" />
-                      <div className="text-sm font-medium text-slate-500">Select any symptom or condition to activate AI Analysis</div>
-                      <div className="text-xs mt-1 max-w-sm">AI provides UpToDate-level clinical reasoning for every ICD-10-CM code, including conditions outside our rule set.</div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Loading indicator overlay when refreshing */}
-                      {aiLoading && (
-                        <div className="flex items-center gap-2 text-xs text-violet-600 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
-                          <Loader2 className="w-3 h-3 animate-spin" /> Updating analysis…
-                        </div>
-                      )}
-
-                      {/* Source badge */}
-                      <div className="flex items-center gap-2 text-xs text-slate-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
-                        <Brain className="w-3 h-3 text-violet-600" />
-                        <span className="font-medium text-violet-700">GPT-4o Clinical Pharmacist Analysis</span>
-                        <span className="text-slate-400">· UpToDate · BNF · WHO · NICE · Cochrane · MIMS · Lexicomp · Micromedex · Beers Criteria · STOPP/START</span>
-                      </div>
-
-                      {/* Condition Overview */}
-                      {aiAnalysis.conditionOverview?.length > 0 && (
-                        <div className="bg-white border border-slate-200 rounded-xl p-4">
-                          <div className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
-                            <Stethoscope className="w-4 h-4 text-violet-600" /> Condition / Symptom Overview
-                          </div>
-                          <div className="space-y-3">
-                            {aiAnalysis.conditionOverview.map((item, i) => (
-                              <div key={i} className="border-l-2 border-violet-300 pl-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-semibold text-sm text-slate-800">{item.label}</span>
-                                  {item.code && (
-                                    <span className="text-xs font-mono bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded">{item.code}</span>
-                                  )}
-                                </div>
-                                <div className="text-xs text-slate-600 mb-1">{item.meaning}</div>
-                                <div className="text-xs text-violet-700 bg-violet-50 px-2 py-1 rounded">
-                                  <span className="font-medium">Pharmacy note: </span>{item.pharmacyNote}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* OTC Options */}
-                      {aiAnalysis.otcOptions?.length > 0 && (
-                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                          <div className="font-bold text-sm text-emerald-800 mb-2 flex items-center gap-2">
-                            <Pill className="w-4 h-4" /> OTC Management Options
-                          </div>
-                          {aiAnalysis.otcOptions.map((opt, i) => (
-                            <div key={i} className="flex gap-2 text-xs text-emerald-900 mb-2">
-                              <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                              <span>{opt}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Prescription Needs */}
-                      {aiAnalysis.prescriptionNeeds?.length > 0 && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                          <div className="font-bold text-sm text-amber-800 mb-2 flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" /> Prescription / Physician Required
-                          </div>
-                          {aiAnalysis.prescriptionNeeds.map((need, i) => (
-                            <div key={i} className="flex gap-2 text-xs text-amber-900 mb-2">
-                              <span className="text-amber-500 mt-0.5 shrink-0">→</span>
-                              <span>{need}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Red Flags */}
-                      {aiAnalysis.redFlags?.length > 0 && (
-                        <div className="bg-red-50 border border-red-300 rounded-xl p-4">
-                          <div className="font-bold text-sm text-red-800 mb-2 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" /> Red Flags — Refer Immediately
-                          </div>
-                          {aiAnalysis.redFlags.map((flag, i) => (
-                            <div key={i} className="flex gap-2 text-xs text-red-900 mb-2">
-                              <span className="text-red-500 mt-0.5 shrink-0">🚨</span>
-                              <span>{flag}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Drug Safety */}
-                      {aiAnalysis.drugSafety?.length > 0 && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                          <div className="font-bold text-sm text-orange-800 mb-2 flex items-center gap-2">
-                            <ShieldAlert className="w-4 h-4" /> Drug Safety Notes
-                          </div>
-                          {aiAnalysis.drugSafety.map((note, i) => (
-                            <div key={i} className="flex gap-2 text-xs text-orange-900 mb-2">
-                              <span className="text-orange-500 mt-0.5 shrink-0">⚠</span>
-                              <span>{note}</span>
-                            </div>
-                          ))}
+                
                         </div>
                       )}
 

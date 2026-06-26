@@ -3,14 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, insertConsultationSchema } from "@shared/schema";
 import { z } from "zod";
-import OpenAI from "openai";
-
-function getOpenAI() {
-  return new OpenAI({
-    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  });
-}
 
 const generateRecommendationsSchema = z.object({
   patientId: z.number(),

@@ -161,7 +161,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     <span className="flex-1 truncate text-xs">{item.name}</span>
                     <span className="flex items-center gap-1 shrink-0">
                       {!mapped && !already && (
-                        <span className="text-xs text-violet-500 italic">→ AI</span>
+                        <span className="text-xs text-slate-400 italic">no OTC rules</span>
                       )}
                       {already && <span className="text-xs text-slate-400">Added</span>}
                     </span>
@@ -204,10 +204,10 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
         </div>
       )}
 
-      {/* Note for codes handled by AI */}
+      {/* Note for codes outside the engine rule set */}
       {selectedItems.some((i) => !i.internalId) && (
-        <div className="text-xs text-violet-700 bg-violet-50 border border-violet-200 rounded px-2 py-1.5">
-          🧠 Some codes fall outside the OTC rule set — AI Analysis will provide full clinical guidance for these.
+        <div className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded px-2 py-1.5">
+          📋 Some codes fall outside the automated OTC rule set — apply clinical judgment and consult your standard references.
         </div>
       )}
     </div>
