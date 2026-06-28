@@ -514,7 +514,7 @@ export default function Dashboard() {
             </div>
             <div>
               <div className="font-bold text-lg leading-tight">RxCopilot</div>
-              <div className="text-xs text-blue-200">AI Pharmacist Copilot · UpToDate-backed clinical rules</div>
+              <div className="text-xs text-blue-200">Evidence-based clinical rules · UpToDate · BNF · WHO · NICE</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -745,7 +745,7 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-24">
               <Activity className="w-16 h-16 mb-4 text-slate-300" />
               <div className="text-xl font-semibold text-slate-500 mb-2">Select symptoms to begin</div>
-              <div className="text-sm max-w-sm">Search and select ICD-10 codes on the left to see AI-powered clinical analysis, OTC recommendations, and referral advice.</div>
+              <div className="text-sm max-w-sm">Search and select symptoms, conditions, or ICD-10 codes on the left to see OTC safety screening, drug recommendations, and referral guidance.</div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1000,31 +1000,6 @@ export default function Dashboard() {
                   </div>
                 </TabsContent>
 
-                
-                        </div>
-                      )}
-
-                      {/* Counseling Points */}
-                      {aiAnalysis.counselingPoints?.length > 0 && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                          <div className="font-bold text-sm text-blue-800 mb-2 flex items-center gap-2">
-                            <MessageSquare className="w-4 h-4" /> Patient Counseling Points
-                          </div>
-                          {aiAnalysis.counselingPoints.map((pt, i) => (
-                            <div key={i} className="flex gap-2 text-xs text-blue-900 mb-2">
-                              <span className="text-blue-500 mt-0.5 shrink-0">•</span>
-                              <span>{pt}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="text-xs text-slate-400 text-center pb-1">
-                        AI analysis is for pharmacist decision support only. Does not replace clinical judgment or physical examination.
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
               </Tabs>
 
               {/* Footer note */}
