@@ -2,68 +2,181 @@
 // Source: ICD-10-CM 2024 classification chapters.
 export function icdToSymptomId(code: string, name?: string): string | null {
   const c = code.toUpperCase().replace(/\s/g, "");
-  // --- Code-prefix matching (authoritative) ---
+
+  // ─── PAIN & FEVER ───────────────────────────────────────────────
   if (c.startsWith("R51")) return "headache";
+  if (c.startsWith("G43")) return "migraine";
   if (c.startsWith("M54")) return "back_pain";
   if (c.startsWith("M25.5") || c.startsWith("M13") || c.startsWith("M79.6")) return "joint_pain";
   if (c.startsWith("M79.3") || c.startsWith("M79.1") || c.startsWith("R68.89")) return "body_ache";
   if (c.startsWith("R50.0") || c.startsWith("R50.8")) return "high_fever";
   if (c.startsWith("R50.9") || c.startsWith("R50")) return "mild_fever";
+  if (c.startsWith("R07")) return "chest_pain";
+
+  // ─── MUSCULOSKELETAL ────────────────────────────────────────────
+  if (c.startsWith("M62.8") || c.startsWith("R25.2") || c.startsWith("M62.3")) return "muscle_spasm";
+  if (c.startsWith("M10") || c.startsWith("M1A")) return "gout_attack";
+
+  // ─── NEUROPATHIC PAIN ───────────────────────────────────────────
+  if (
+    c.startsWith("G54") || c.startsWith("G57") || c.startsWith("G58") ||
+    c.startsWith("M79.2") || c.startsWith("G89.2") || c.startsWith("G89.3") ||
+    c.startsWith("G62") || c.startsWith("E11.4") || c.startsWith("E10.4")
+  ) return "neuropathic_pain";
+
+  // ─── RESPIRATORY ────────────────────────────────────────────────
   if (c.startsWith("J02") || c.startsWith("J06.0")) return "sore_throat";
-  if (c.startsWith("R05")) return "dry_cough";
-  if (c.startsWith("R09.3")) return "productive_cough";
-  if (c.startsWith("R11")) return "nausea_vomiting";
+  if (c.startsWith("J03")) return "throat_infection";
+  if (c.startsWith("R05.9") || c.startsWith("R05.1") || (c.startsWith("R05") && !c.startsWith("R05.2") && !c.startsWith("R05.3"))) return "dry_cough";
+  if (c.startsWith("R09.3") || c.startsWith("R05.2") || c.startsWith("R05.3")) return "productive_cough";
+  if (c.startsWith("R06.2") || c.startsWith("R06.0") || c.startsWith("R06.1")) return "wheeze";
+  if (c.startsWith("J45") || c.startsWith("J44")) return "wheeze";
+  if (
+    c.startsWith("J18") || c.startsWith("J15") || c.startsWith("J22") ||
+    c.startsWith("J21") || c.startsWith("J20") || c.startsWith("J17")
+  ) return "chest_infection";
+  if (c.startsWith("J06.9") || c.startsWith("J00") || c.startsWith("J34")) return "nasal_congestion";
+  if (c.startsWith("J30") || c.startsWith("J31") || c.startsWith("R09.89")) return "runny_nose";
+
+  // ─── EAR ────────────────────────────────────────────────────────
+  if (
+    c.startsWith("H60") || c.startsWith("H62") ||
+    c.startsWith("H65") || c.startsWith("H66") || c.startsWith("H67")
+  ) return "ear_infection";
+  if (c.startsWith("H92")) return "ear_pain";
+
+  // ─── EYE ────────────────────────────────────────────────────────
+  if (c.startsWith("H10")) return "eye_infection";
+  if (c.startsWith("H52") || c.startsWith("H53") || c.startsWith("H11")) return "eye_redness";
+
+  // ─── URINARY / UTI ──────────────────────────────────────────────
+  if (c.startsWith("R30")) return "dysuria";
+  if (c.startsWith("R35") || c.startsWith("R39.1")) return "urinary_frequency";
+  if (c.startsWith("N30") || c.startsWith("N39.0")) return "dysuria";
+  if (c.startsWith("N39") || c.startsWith("N31")) return "urinary_frequency";
+  if (c.startsWith("R31")) return "blood_in_urine";
+
+  // ─── GENITOURINARY / VAGINAL ────────────────────────────────────
+  if (c.startsWith("B37.3") || c.startsWith("B37.4")) return "vaginal_discharge";
+  if (c.startsWith("N76") || c.startsWith("N89") || c.startsWith("N77")) return "vaginal_discharge";
+
+  // ─── GASTROINTESTINAL ───────────────────────────────────────────
+  if (c.startsWith("R11")) return "nausea";
   if (c.startsWith("R19.7") || c.startsWith("A09") || c.startsWith("K59.1")) return "diarrhea";
   if (c.startsWith("K59.0")) return "constipation";
-  if (c.startsWith("R10")) return "abdominal_pain";
-  if (c.startsWith("L30") || c.startsWith("L20") || c.startsWith("L23") || c.startsWith("L50") || c.startsWith("L29")) return "skin_rash";
-  if (c.startsWith("J30") || c.startsWith("J31") || c.startsWith("R09.89")) return "runny_nose";
-  if (c.startsWith("J06.9") || c.startsWith("J34")) return "nasal_congestion";
-  if (c.startsWith("H92")) return "ear_pain";
+  if (c.startsWith("R10")) return "stomach_cramps";
+  if (c.startsWith("R14") || c.startsWith("K30")) return "bloating";
+  if (c.startsWith("K21")) return "heartburn";
   if (c.startsWith("K08.8") || c.startsWith("K08.9") || c.startsWith("K10")) return "toothache";
+
+  // ─── ORAL / DENTAL ──────────────────────────────────────────────
+  if (c.startsWith("K12.0") || c.startsWith("K12.1") || c.startsWith("K12.2")) return "mouth_ulcer";
+  if (c.startsWith("K12")) return "mouth_ulcer";
+  if (c.startsWith("B37.0") || c.startsWith("B37.83")) return "oral_thrush";
+  if (c.startsWith("K04")) return "dental_abscess";
+  if (c.startsWith("K05.2") || c.startsWith("K05.3")) return "dental_abscess";
+
+  // ─── SKIN ───────────────────────────────────────────────────────
+  if (c.startsWith("L70")) return "acne";
+  if (c.startsWith("B35") || c.startsWith("B36") || c.startsWith("B37.2")) return "fungal_skin";
+  if (c.startsWith("L01")) return "wound_infection";
+  if (c.startsWith("L08") || c.startsWith("L03")) return "wound_infection";
+  if (c.startsWith("L30") || c.startsWith("L20") || c.startsWith("L23") || c.startsWith("L50") || c.startsWith("L29")) return "skin_rash";
+  if (c.startsWith("L29")) return "itching";
+
+  // ─── MENSTRUAL / WOMEN'S HEALTH ─────────────────────────────────
   if (c.startsWith("N94")) return "menstrual_pain";
-  if (c.startsWith("R07")) return "chest_pain";
-  if (c.startsWith("G47")) return "difficulty_sleeping";
-  if (c.startsWith("F41")) return "anxiety_symptoms";
-  if (c.startsWith("R30") || c.startsWith("R31") || c.startsWith("R35")) return "urinary_symptoms";
-  if (c.startsWith("R42") || c.startsWith("H81")) return "dizziness";
-  if (c.startsWith("H52") || c.startsWith("H53")) return "eye_symptoms";
+
+  // ─── GENERAL ────────────────────────────────────────────────────
   if (c.startsWith("R41.3") || c.startsWith("R41.0")) return "confusion_memory";
-  // --- Keyword fallback on description text ---
+  if (c.startsWith("R42") || c.startsWith("H81")) return "dizziness";
+  if (c.startsWith("G47")) return "insomnia";
+  if (c.startsWith("F41")) return "anxiety_symptoms";
+  if (c.startsWith("R53")) return "fatigue";
+
+  // ─── INFECTIOUS DISEASE (A/B chapter) ───────────────────────────
+  if (c.startsWith("B37")) return "oral_thrush"; // candidiasis catch-all
+  if (c.startsWith("A06") || c.startsWith("A07")) return "diarrhea"; // amoeba/giardia
+  if (c.startsWith("A09")) return "diarrhea";
+
+  // ─── Keyword fallback on ICD description text ───────────────────
   if (name) return icdSymptomByKeyword(name);
   return null;
 }
 
 // Keyword-based fallback: maps free-text ICD description → internal symptom ID.
-// Catches any valid ICD code whose description contains recognisable symptom words.
 function icdSymptomByKeyword(name: string): string | null {
   const n = name.toLowerCase();
-  if (/headache|migraine|cephalgia/.test(n)) return "headache";
+
+  // Pain & Fever
+  if (/migraine/.test(n)) return "migraine";
+  if (/headache|cephalgia/.test(n)) return "headache";
   if (/back pain|lumbago|backache|lumbar|dorsalgia/.test(n)) return "back_pain";
-  if (/joint pain|arthralgia|arthritis|synovitis|articular/.test(n)) return "joint_pain";
+  if (/joint pain|arthralgia|arthritis|synovitis|articular|gout/.test(n)) return "joint_pain";
+  if (/acute gout|gouty arthritis|gout attack/.test(n)) return "gout_attack";
   if (/myalgia|muscle pain|fibromyalgia|body ache|musculoskeletal pain/.test(n)) return "body_ache";
+  if (/muscle.*spasm|spasm.*muscle|muscle cramp|cramp|myospasm/.test(n)) return "muscle_spasm";
+  if (/neuropath|neuralgia|nerve pain|burning.*nerve|diabetic.*neuropathy|polyneuropathy/.test(n)) return "neuropathic_pain";
   if (/high fever|hyperpyrexia|fever.*high/.test(n)) return "high_fever";
   if (/fever|pyrexia|febrile/.test(n)) return "mild_fever";
-  if (/sore throat|pharyngitis|tonsillitis|tonsillar/.test(n)) return "sore_throat";
-  if (/dry cough|cough/.test(n) && !/productive|sputum|phlegm/.test(n)) return "dry_cough";
+
+  // Respiratory & Infections
+  if (/tonsillitis|tonsillar.*infect|streptococcal.*throat|bacterial.*tonsil/.test(n)) return "throat_infection";
+  if (/sore throat|pharyngitis/.test(n)) return "sore_throat";
+  if (/wheez|bronchospasm|breathlessness.*asthma|asthmatic/.test(n)) return "wheeze";
+  if (/pneumonia|lower.*respiratory|bronchopneumonia|lrti|chest.*infect|lobar pneumon/.test(n)) return "chest_infection";
   if (/productive cough|cough.*sputum|cough.*phlegm|wet cough/.test(n)) return "productive_cough";
-  if (/nausea|vomiting|emesis/.test(n)) return "nausea_vomiting";
-  if (/diarrhea|diarrhoea|loose stool|gastroenteritis/.test(n)) return "diarrhea";
-  if (/constipation|obstipation/.test(n)) return "constipation";
-  if (/abdominal pain|stomach ache|stomachache|belly pain|epigastric/.test(n)) return "abdominal_pain";
-  if (/skin rash|rash|urticaria|eczema|dermatitis|pruritus|itch/.test(n)) return "skin_rash";
+  if (/dry cough|cough/.test(n) && !/productive|sputum|phlegm/.test(n)) return "dry_cough";
   if (/runny nose|rhinorrh|nasal discharge/.test(n)) return "runny_nose";
   if (/nasal congestion|stuffy nose|blocked nose|rhinitis/.test(n)) return "nasal_congestion";
-  if (/ear pain|otalgia|earache|otitis/.test(n)) return "ear_pain";
+
+  // Ear & Eye
+  if (/otitis media|otitis externa|ear.*infect|middle.*ear|swimmer.*ear/.test(n)) return "ear_infection";
+  if (/ear pain|otalgia|earache/.test(n)) return "ear_pain";
+  if (/conjunctivit|eye.*infect|bacterial.*eye|pink.*eye|infective.*eye/.test(n)) return "eye_infection";
+  if (/eye.*red|red.*eye|ocular|visual|ophth/.test(n)) return "eye_redness";
+
+  // Urinary
+  if (/dysuria|painful.*urin|burning.*urin|pain.*pass urin/.test(n)) return "dysuria";
+  if (/urinary.*freq|frequency.*urin|urgency.*urin|overactive.*bladder|urge incontinence/.test(n)) return "urinary_frequency";
+  if (/cystitis|urinary.*tract.*infect|uti|bladder.*infect/.test(n)) return "dysuria";
+  if (/blood.*urin|haematuria|hematuria/.test(n)) return "blood_in_urine";
+
+  // Vaginal / Genitourinary
+  if (/vaginal.*discharge|vaginal.*itch|vaginit|candida.*vag|thrush.*vag|vaginal.*thrush/.test(n)) return "vaginal_discharge";
+
+  // Oral / Dental
+  if (/mouth ulcer|aphthous|aphthae|oral ulcer/.test(n)) return "mouth_ulcer";
+  if (/oral thrush|candida.*oral|candida.*mouth|thrush.*mouth|oral.*candida|oral.*candidiasis/.test(n)) return "oral_thrush";
+  if (/dental.*abscess|abscess.*tooth|periapical|periodontal.*abscess|tooth.*abscess/.test(n)) return "dental_abscess";
   if (/toothache|dental pain|tooth pain|odontogenic/.test(n)) return "toothache";
+
+  // Skin
+  if (/acne|pimple|comedone/.test(n)) return "acne";
+  if (/fungal.*skin|tinea|ringworm|athlete.*foot|dermatophyt|onychomycosis/.test(n)) return "fungal_skin";
+  if (/wound.*infect|impetigo|cellulitis|infected.*wound|skin.*infect|infected.*skin/.test(n)) return "wound_infection";
+  if (/skin rash|rash|urticaria|eczema|dermatitis/.test(n)) return "skin_rash";
+  if (/pruritus|itch/.test(n)) return "itching";
+
+  // GI
+  if (/nausea|vomiting|emesis/.test(n)) return "nausea";
+  if (/diarrhea|diarrhoea|loose stool|gastroenteritis/.test(n)) return "diarrhea";
+  if (/constipation|obstipation/.test(n)) return "constipation";
+  if (/abdominal.*pain|stomach.*ache|stomachache|belly pain|epigastric|colicky/.test(n)) return "stomach_cramps";
+  if (/bloat|flatulence|distension|gas/.test(n)) return "bloating";
+  if (/heartburn|acid reflux|reflux|gerd|indigestion/.test(n)) return "heartburn";
+
+  // Women's health
   if (/menstrual pain|dysmenorrh|period pain|pelvic pain/.test(n)) return "menstrual_pain";
+
+  // General
   if (/chest pain|chest tightness|angina|pectoris/.test(n)) return "chest_pain";
-  if (/insomnia|sleep.*disturb|difficulty sleep|sleeplessness/.test(n)) return "difficulty_sleeping";
+  if (/insomnia|sleep.*disturb|difficulty sleep|sleeplessness/.test(n)) return "insomnia";
   if (/anxiety|anxious|panic|nervous/.test(n)) return "anxiety_symptoms";
-  if (/urinary|dysuria|frequency.*urin|urination|bladder/.test(n)) return "urinary_symptoms";
   if (/dizziness|dizzy|vertigo|lightheaded/.test(n)) return "dizziness";
-  if (/eye|ocular|vision|visual|ophth/.test(n)) return "eye_symptoms";
   if (/confusion|memory|dementia|disorientation|cognitive/.test(n)) return "confusion_memory";
+  if (/fatigue|tiredness|weakness|asthenia/.test(n)) return "fatigue";
+
   return null;
 }
 
@@ -72,8 +185,8 @@ export function icdToConditionId(code: string): string | null {
   const c = code.toUpperCase().replace(/\s/g, "");
   if (c === "I10" || c.startsWith("I11") || c.startsWith("I12") || c.startsWith("I13") || c.startsWith("I1A")) return "hypertension";
   if (c.startsWith("E11")) return "diabetes_t2";
-  if (c.startsWith("E10")) return "diabetes_t2"; // same drug-safety rules apply
-  if (c.startsWith("E13")) return "diabetes_t2"; // other specified diabetes
+  if (c.startsWith("E10")) return "diabetes_t2";
+  if (c.startsWith("E13")) return "diabetes_t2";
   if (c.startsWith("J45")) return "asthma";
   if (c.startsWith("J44")) return "copd";
   if (c.startsWith("I50")) return "heart_failure";
@@ -100,26 +213,25 @@ export function icdToConditionId(code: string): string | null {
   if (c.startsWith("I48")) return "atrial_fibrillation";
   if (c.startsWith("I20") || c.startsWith("I25")) return "ischemic_heart_disease";
   if (c.startsWith("E78")) return "hyperlipidemia";
-  if (c.startsWith("J06") || c.startsWith("J00")) return null; // common cold — symptom not condition
+  if (c.startsWith("J06") || c.startsWith("J00")) return null;
   return null;
 }
 
 // Maps ICD-10-CM Z88 drug allergy codes → internal allergy IDs.
-// Z88 chapter: "Allergy status to drugs, medicaments and biological substances"
 export function icdToAllergyId(code: string): string | null {
   const c = code.toUpperCase().replace(/\s/g, "");
   if (c === "Z88.0") return "penicillin_allergy";
-  if (c === "Z88.1") return "penicillin_allergy"; // cephalosporins — cross-reactivity risk
+  if (c === "Z88.1") return "penicillin_allergy";
   if (c === "Z88.2") return "sulfonamide_allergy";
-  if (c === "Z88.3") return null; // other antibiotics — no specific rule but record
-  if (c === "Z88.4") return null; // anesthetic — no specific rule
+  if (c === "Z88.3") return null;
+  if (c === "Z88.4") return null;
   if (c === "Z88.5") return "opioid_allergy";
-  if (c === "Z88.6") return "nsaid_allergy"; // analgesic agent = NSAIDs
-  if (c === "Z88.7") return null; // serum / vaccine
+  if (c === "Z88.6") return "nsaid_allergy";
+  if (c === "Z88.7") return null;
   if (c === "Z88.8") return "other_drug_allergy";
   if (c === "Z88.9") return "other_drug_allergy";
   if (c.startsWith("Z88")) return "other_drug_allergy";
-  if (c.startsWith("T78.1")) return null; // food allergy — not applicable to drug rules
+  if (c.startsWith("T78.1")) return null;
   if (c.startsWith("L23.3") || c.startsWith("L23.4")) return "latex_allergy";
   return null;
 }
