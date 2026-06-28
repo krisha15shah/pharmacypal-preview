@@ -133,7 +133,18 @@ function MedicationCard({ result }: { result: MedicationResult }) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Pill className="w-4 h-4 text-slate-400 shrink-0" />
           <div className="min-w-0">
-            <div className="font-semibold text-slate-900 text-sm truncate">{med.name}</div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold text-slate-900 text-sm truncate">{med.name}</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded font-semibold shrink-0 ${
+                !med.rxType || med.rxType === "OTC"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : med.rxType === "Prescription"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-purple-100 text-purple-700"
+              }`}>
+                {!med.rxType || med.rxType === "OTC" ? "OTC" : med.rxType === "Prescription" ? "Rx" : "OTC / Rx"}
+              </span>
+            </div>
             <div className="text-xs text-slate-500 truncate">{med.brandExamples}</div>
           </div>
         </div>

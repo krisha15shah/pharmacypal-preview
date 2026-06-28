@@ -59,6 +59,7 @@ export interface MedicationRule {
   patientExplanation: string;
   referralIfNoImprovement: string;
   source: string;
+  rxType?: "OTC" | "Prescription" | "Both";
 }
 
 export const SYMPTOMS: Symptom[] = [
@@ -114,6 +115,34 @@ export const SYMPTOMS: Symptom[] = [
   { id: "insomnia", label: "Insomnia / Difficulty Sleeping", category: "General", isRedFlag: false },
   { id: "jaundice", label: "Yellowing of Eyes / Skin (Jaundice)", category: "General", isRedFlag: true, redFlagMessage: "Jaundice requires urgent physician evaluation. Possible hepatic, biliary, or haematological pathology." },
   { id: "blood_in_urine", label: "Blood in Urine (Haematuria)", category: "General", isRedFlag: true, redFlagMessage: "Blood in urine requires physician evaluation to rule out UTI, kidney stones, or malignancy." },
+
+  // Urinary / Genitourinary
+  { id: "dysuria", label: "Painful Urination / Burning (Dysuria)", category: "Urinary", isRedFlag: false },
+  { id: "urinary_frequency", label: "Urinary Frequency / Urgency", category: "Urinary", isRedFlag: false },
+  { id: "vaginal_discharge", label: "Vaginal Discharge / Vaginal Itch (Thrush / BV)", category: "Genitourinary", isRedFlag: false },
+
+  // Oral / Dental
+  { id: "mouth_ulcer", label: "Mouth Ulcer / Aphthous Ulcer", category: "Oral", isRedFlag: false },
+  { id: "oral_thrush", label: "Oral Thrush / White Patches in Mouth", category: "Oral", isRedFlag: false },
+  { id: "dental_abscess", label: "Dental Abscess / Dental Infection", category: "Oral", isRedFlag: false },
+  { id: "throat_infection", label: "Throat Infection / Tonsillitis (Bacterial)", category: "Respiratory", isRedFlag: false },
+
+  // Skin / Infections
+  { id: "fungal_skin", label: "Fungal Skin Infection / Ringworm / Tinea / Athlete's Foot", category: "Skin", isRedFlag: false },
+  { id: "wound_infection", label: "Skin Wound Infection / Impetigo / Cellulitis", category: "Skin", isRedFlag: false },
+  { id: "acne", label: "Acne / Pimples (Mild–Moderate)", category: "Skin", isRedFlag: false },
+
+  // Respiratory / Musculoskeletal
+  { id: "wheeze", label: "Wheeze / Chest Tightness (Asthma / Bronchospasm)", category: "Respiratory", isRedFlag: false },
+  { id: "chest_infection", label: "Chest Infection / LRTI / Pneumonia", category: "Respiratory", isRedFlag: false },
+  { id: "ear_infection", label: "Ear Infection / Otitis Media / Otitis Externa", category: "Ear", isRedFlag: false },
+  { id: "eye_infection", label: "Eye Infection / Bacterial Conjunctivitis", category: "Eye", isRedFlag: false },
+
+  // Pain / Neurological
+  { id: "migraine", label: "Migraine (Unilateral Pulsating Headache ± Nausea)", category: "Pain", isRedFlag: false },
+  { id: "neuropathic_pain", label: "Nerve Pain / Neuropathic Pain / Burning / Tingling", category: "Pain", isRedFlag: false },
+  { id: "muscle_spasm", label: "Muscle Spasm / Cramp / Stiffness", category: "Musculoskeletal", isRedFlag: false },
+  { id: "gout_attack", label: "Acute Gout Attack (Hot, Swollen, Severely Painful Joint)", category: "Musculoskeletal", isRedFlag: false },
 ];
 
 export const CONDITIONS: Condition[] = [
@@ -1191,6 +1220,1435 @@ export const MEDICATIONS: MedicationRule[] = [
     patientExplanation: "Diphenhydramine helps you fall asleep when you're having trouble sleeping. Only use it for a few nights at a time. It can make you drowsy the next morning.",
     referralIfNoImprovement: "If insomnia persists >2 weeks, refer for CBT-I or medical assessment",
     source: "UpToDate: Diphenhydramine — Drug information; AGS Beers Criteria 2023"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANTIBIOTICS (Prescription)
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── AMOXICILLIN ───
+  {
+    id: "amoxicillin",
+    name: "Amoxicillin",
+    brandExamples: "Amoxil, Trimox, Hiconcil, Mox, Novamox",
+    category: "Antibiotic — Aminopenicillin",
+    mechanism: "Beta-lactam antibiotic; inhibits bacterial cell wall synthesis",
+    rxType: "Prescription",
+    forSymptoms: ["sore_throat", "throat_infection", "ear_infection", "chest_infection", "dysuria", "urinary_frequency", "dental_abscess", "productive_cough"],
+    dosage: {
+      adult: "500 mg every 8 hours (standard); 875 mg every 12 hours (high-dose)",
+      pediatric: "25–50 mg/kg/day in 3 divided doses",
+      elderly: "500 mg every 8 hours; reduce if eGFR <30",
+      maxDaily: "3000 mg/day",
+      frequency: "Every 8 hours (standard) or every 12 hours (high-dose)",
+      withFood: false,
+      duration: "5–7 days (URTI/ear); 3–7 days (UTI); 5 days (dental)",
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: [],
+      allergies: ["penicillin"],
+      pregnancy: "safe",
+      pregnancyNote: "Safe in all trimesters. One of the preferred antibiotics in pregnancy.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Reduce dose if severe renal impairment (eGFR <30 mL/min)"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Some antibiotics can alter INR. Monitor closely.", severity: "mild" },
+      { withMed: "methotrexate", effect: "Amoxicillin may reduce methotrexate excretion — monitor for toxicity.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Complete the full course even if symptoms improve — stopping early causes resistance",
+      "Can be taken with or without food",
+      "If you develop a rash, stop and seek medical advice — could indicate allergy",
+      "Diarrhoea is common — take probiotics to reduce GI upset",
+      "Not effective for viral infections (colds, flu) — antibiotics do not treat viruses"
+    ],
+    patientExplanation: "Amoxicillin is a penicillin antibiotic used for throat, ear, chest, and urinary tract infections. Always complete the full course.",
+    referralIfNoImprovement: "48–72 hours; consider culture and sensitivity if no improvement",
+    source: "UpToDate: Amoxicillin — Drug information; NICE Antimicrobial Guidelines"
+  },
+
+  // ─── CO-AMOXICLAV (AUGMENTIN) ───
+  {
+    id: "co_amoxiclav",
+    name: "Co-amoxiclav (Amoxicillin-Clavulanate)",
+    brandExamples: "Augmentin, Clavamox, Synulox, Biomox",
+    category: "Antibiotic — Beta-lactam + Beta-lactamase Inhibitor",
+    mechanism: "Amoxicillin kills bacteria; clavulanate blocks beta-lactamase enzymes that cause resistance",
+    rxType: "Prescription",
+    forSymptoms: ["dental_abscess", "wound_infection", "chest_infection", "ear_infection", "throat_infection", "sore_throat", "dysuria"],
+    dosage: {
+      adult: "625 mg (500/125 mg) every 8 hours",
+      pediatric: "25–45 mg/kg/day (amoxicillin component) in 2–3 divided doses",
+      elderly: "625 mg every 8 hours; monitor LFTs",
+      maxDaily: "1875 mg/day",
+      frequency: "Every 8 hours",
+      withFood: true,
+      duration: "5–7 days (most infections); 3–5 days (dental)",
+      notes: "Take at the START of a meal to reduce GI upset"
+    },
+    contraindications: {
+      conditions: ["liver_disease"],
+      medications: [],
+      allergies: ["penicillin"],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid in preterm labour risk; associated with NEC in premature infants. Use only when clearly indicated.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of cholestatic jaundice, particularly in elderly. Monitor liver function."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May enhance anticoagulant effect. Monitor INR.", severity: "moderate" },
+      { withMed: "methotrexate", effect: "Reduced methotrexate excretion — toxicity risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "MUST take with food — reduces risk of nausea and diarrhoea significantly",
+      "Complete the full course",
+      "More likely than plain amoxicillin to cause diarrhoea — probiotics help",
+      "Do NOT use if allergic to penicillin",
+      "Indicated for resistant or complicated infections — not first-line for simple URTI"
+    ],
+    patientExplanation: "Co-amoxiclav is a stronger antibiotic combination used when standard amoxicillin may not work, particularly for dental abscesses, skin infections, and complicated chest infections.",
+    referralIfNoImprovement: "48–72 hours",
+    source: "UpToDate: Amoxicillin-clavulanate — Drug information; NICE guidelines"
+  },
+
+  // ─── AZITHROMYCIN ───
+  {
+    id: "azithromycin",
+    name: "Azithromycin",
+    brandExamples: "Zithromax, Azee, Azithral, Zady, Z-Pack",
+    category: "Antibiotic — Macrolide",
+    mechanism: "Inhibits bacterial protein synthesis by binding to 50S ribosomal subunit",
+    rxType: "Prescription",
+    forSymptoms: ["sore_throat", "throat_infection", "chest_infection", "productive_cough", "dry_cough", "ear_infection"],
+    dosage: {
+      adult: "500 mg on Day 1, then 250 mg once daily for 4 days (5-day course) OR 500 mg once daily for 3 days",
+      pediatric: "10 mg/kg on Day 1 (max 500 mg), then 5 mg/kg for 4 days",
+      elderly: "Standard dose; monitor QT interval",
+      maxDaily: "500 mg/day",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "3 days (respiratory) or 5 days (standard)",
+    },
+    contraindications: {
+      conditions: ["liver_disease", "heart_disease", "atrial_fibrillation"],
+      medications: ["digoxin"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Use only if clearly indicated; limited data. Erythromycin or amoxicillin preferred in pregnancy.",
+      minAge: 0.5,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of QT prolongation in elderly, especially with other QT-prolonging drugs. Check baseline ECG if high risk."
+    },
+    interactions: [
+      { withMed: "digoxin", effect: "Azithromycin may increase digoxin levels significantly. Monitor.", severity: "severe" },
+      { withMed: "warfarin", effect: "May potentiate anticoagulant effect. Monitor INR.", severity: "moderate" },
+      { withMed: "antiepileptics", effect: "May increase carbamazepine and phenytoin levels.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Convenient 3- or 5-day course — but effects last longer due to tissue accumulation",
+      "Complete the full course even if you feel better after day 1",
+      "Can be taken with or without food",
+      "Avoid antacids (containing aluminium/magnesium) within 2 hours",
+      "Inform doctor of any heart conditions before use — rare risk of cardiac arrhythmia"
+    ],
+    patientExplanation: "Azithromycin is a short-course antibiotic for chest and throat infections. It works for several days after you finish the course.",
+    referralIfNoImprovement: "72 hours; reassess diagnosis",
+    source: "UpToDate: Azithromycin — Drug information; BNF; WHO AWaRe list"
+  },
+
+  // ─── DOXYCYCLINE ───
+  {
+    id: "doxycycline",
+    name: "Doxycycline",
+    brandExamples: "Vibramycin, Doxylin, Doxybio, Microdox",
+    category: "Antibiotic — Tetracycline",
+    mechanism: "Inhibits bacterial protein synthesis; bacteriostatic against broad spectrum",
+    rxType: "Prescription",
+    forSymptoms: ["chest_infection", "productive_cough", "acne", "dysuria", "throat_infection"],
+    dosage: {
+      adult: "200 mg on Day 1, then 100 mg once daily",
+      pediatric: "NOT for children <8 years (dental staining risk)",
+      elderly: "100 mg once daily — safe",
+      maxDaily: "200 mg/day",
+      frequency: "Once daily (after loading dose)",
+      withFood: true,
+      duration: "5–7 days (infection); 12 weeks (acne)",
+      notes: "Take with plenty of water and remain upright for 30 minutes to avoid oesophageal irritation"
+    },
+    contraindications: {
+      conditions: ["liver_disease", "kidney_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "CONTRAINDICATED in pregnancy — causes fetal tooth discolouration and bone growth inhibition.",
+      minAge: 8,
+      elderlyRisk: "safe",
+      elderlyNote: "Generally well tolerated in elderly at standard doses"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May enhance anticoagulant effect. Monitor INR.", severity: "moderate" },
+      { withMed: "antiepileptics", effect: "Enzyme-inducing antiepileptics (carbamazepine, phenytoin) reduce doxycycline levels — consider higher dose.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "NEVER give to children under 8 years old — causes permanent tooth staining",
+      "Do NOT take in pregnancy",
+      "Take with a full glass of water; sit or stand upright for at least 30 minutes after taking",
+      "Avoid dairy products, calcium supplements, iron, and antacids within 2 hours",
+      "Use sunscreen — increased sensitivity to sunlight (photosensitivity)"
+    ],
+    patientExplanation: "Doxycycline treats chest infections, skin infections, and acne. Take it with water and stay upright to prevent throat irritation. Never take it if you are pregnant.",
+    referralIfNoImprovement: "72 hours for acute infection; 6–8 weeks for acne assessment",
+    source: "UpToDate: Doxycycline — Drug information; BNF; NICE Acne Guidelines"
+  },
+
+  // ─── CIPROFLOXACIN ───
+  {
+    id: "ciprofloxacin",
+    name: "Ciprofloxacin",
+    brandExamples: "Ciprobay, Cipro, Ciplox, Ciprolet",
+    category: "Antibiotic — Fluoroquinolone",
+    mechanism: "Inhibits bacterial DNA gyrase and topoisomerase IV — bactericidal",
+    rxType: "Prescription",
+    forSymptoms: ["dysuria", "urinary_frequency", "diarrhea", "chest_infection"],
+    dosage: {
+      adult: "500 mg every 12 hours (UTI); 500–750 mg every 12 hours (other infections)",
+      elderly: "250–500 mg every 12 hours; reduce if eGFR <30",
+      maxDaily: "1500 mg/day",
+      frequency: "Every 12 hours",
+      withFood: false,
+      duration: "3–7 days (uncomplicated UTI); 7–14 days (complicated infection)",
+      notes: "Reserve for infections where first-line agents have failed or are not appropriate (WHO AWaRe: Watch list)"
+    },
+    contraindications: {
+      conditions: ["epilepsy", "kidney_disease"],
+      medications: ["antiepileptics", "theophylline"],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid in pregnancy — risk of cartilage damage to fetus.",
+      minAge: 18,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of tendon rupture (particularly Achilles) in elderly, especially with corticosteroids. QT prolongation risk."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Significantly enhances anticoagulant effect. Monitor INR closely.", severity: "severe" },
+      { withMed: "theophylline", effect: "Ciprofloxacin markedly increases theophylline levels — toxicity risk (seizures, arrhythmia).", severity: "severe" },
+      { withMed: "antiepileptics", effect: "May lower seizure threshold; monitor closely.", severity: "moderate" },
+      { withMed: "digoxin", effect: "May increase digoxin levels.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Avoid antacids, calcium, iron, zinc within 2 hours — reduces absorption significantly",
+      "Stop immediately and seek help if you develop tendon pain (Achilles, shoulder, knee) — rare but serious tendon rupture risk",
+      "Avoid in pregnancy and in patients under 18 years (cartilage toxicity concern)",
+      "Drink plenty of water to prevent crystalluria",
+      "Reserved for when simpler antibiotics are not suitable — avoid overuse to prevent resistance"
+    ],
+    patientExplanation: "Ciprofloxacin is a strong antibiotic for urinary tract and gut infections. It should only be used when simpler antibiotics are not appropriate.",
+    referralIfNoImprovement: "48–72 hours; send urine culture if UTI",
+    source: "UpToDate: Ciprofloxacin — Drug information; WHO AWaRe 2023; NICE UTI Guidelines"
+  },
+
+  // ─── NITROFURANTOIN ───
+  {
+    id: "nitrofurantoin",
+    name: "Nitrofurantoin",
+    brandExamples: "Macrobid, Macrodantin, Uvamin, Nitrofur",
+    category: "Antibiotic — Nitrofuran (UTI-specific)",
+    mechanism: "Damages bacterial DNA through reactive intermediates; concentrated in urine",
+    rxType: "Prescription",
+    forSymptoms: ["dysuria", "urinary_frequency"],
+    dosage: {
+      adult: "100 mg (modified-release) every 12 hours for 5 days OR 50–100 mg every 6 hours for 7 days",
+      elderly: "NOT recommended if eGFR <30 mL/min",
+      maxDaily: "400 mg/day",
+      frequency: "Every 12 hours (MR) or every 6 hours (standard)",
+      withFood: true,
+      duration: "3–7 days (uncomplicated UTI)",
+      notes: "First-line for uncomplicated lower UTI in women. NOT suitable for upper UTI (pyelonephritis)."
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Safe in 1st and 2nd trimester. AVOID at term (38–42 weeks) — risk of neonatal haemolytic anaemia.",
+      minAge: 0.25,
+      elderlyRisk: "caution",
+      elderlyNote: "Avoid if eGFR <30 mL/min — does not achieve therapeutic urinary concentrations and causes systemic toxicity"
+    },
+    interactions: [
+      { withMed: "quinolone_antibiotics", effect: "Antagonistic — do not combine nitrofurantoin with quinolones for UTI.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Always take with food or milk to reduce nausea",
+      "Urine may turn yellow-brown — this is harmless",
+      "Only works for bladder infections — NOT for kidney infections",
+      "Do NOT use if kidney function is severely reduced",
+      "Complete the full course"
+    ],
+    patientExplanation: "Nitrofurantoin is a first-line antibiotic specifically for bladder infections (UTI). It works only in the urine and is taken with food.",
+    referralIfNoImprovement: "48 hours; send urine MC&S. If fever/loin pain present, suspect pyelonephritis — needs different antibiotic.",
+    source: "UpToDate: Nitrofurantoin — Drug information; NICE UTI Guidelines NG112"
+  },
+
+  // ─── TRIMETHOPRIM ───
+  {
+    id: "trimethoprim",
+    name: "Trimethoprim",
+    brandExamples: "Proloprim, Triprim, Monotrim, Tiempe",
+    category: "Antibiotic — Dihydrofolate Reductase Inhibitor (UTI)",
+    mechanism: "Inhibits bacterial dihydrofolate reductase — disrupts folate synthesis",
+    rxType: "Prescription",
+    forSymptoms: ["dysuria", "urinary_frequency"],
+    dosage: {
+      adult: "200 mg every 12 hours",
+      elderly: "100 mg every 12 hours if eGFR <15",
+      maxDaily: "400 mg/day",
+      frequency: "Every 12 hours",
+      withFood: false,
+      duration: "7 days (women); 14 days (men); 3 days (young women, uncomplicated)",
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: ["methotrexate"],
+      allergies: ["sulfa"],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid in first trimester (folate antagonist — neural tube defect risk). Use only in 2nd/3rd trimester if necessary.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "Can cause hyperkalaemia (high potassium), especially combined with ACE inhibitors/ARBs or potassium-sparing diuretics"
+    },
+    interactions: [
+      { withMed: "methotrexate", effect: "Both inhibit folate metabolism — severe toxicity risk. CONTRAINDICATED.", severity: "severe" },
+      { withMed: "warfarin", effect: "May enhance anticoagulant effect. Monitor INR.", severity: "moderate" },
+      { withMed: "ace_inhibitors", effect: "Increased risk of hyperkalaemia (high potassium). Monitor electrolytes.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Complete the full 7-day course even if symptoms resolve after 1–2 days",
+      "Avoid in first trimester of pregnancy",
+      "Inform prescriber if you are on methotrexate — this combination is dangerous",
+      "Drink plenty of fluids to flush the bladder",
+      "If symptoms do not improve in 48 hours or you develop fever/back pain — see a doctor immediately"
+    ],
+    patientExplanation: "Trimethoprim is an antibiotic used for bladder infections. Drink plenty of water and complete the full course.",
+    referralIfNoImprovement: "48 hours; send urine culture (resistance is common — ~30% in some regions)",
+    source: "UpToDate: Trimethoprim — Drug information; NICE UTI NG112; PHE Antimicrobial Resistance data"
+  },
+
+  // ─── METRONIDAZOLE ───
+  {
+    id: "metronidazole",
+    name: "Metronidazole",
+    brandExamples: "Flagyl, Metrogyl, Rozex, Metronide",
+    category: "Antibiotic / Antiprotozoal — Nitroimidazole",
+    mechanism: "Disrupts DNA of anaerobic bacteria and protozoa",
+    rxType: "Prescription",
+    forSymptoms: ["dental_abscess", "vaginal_discharge", "diarrhea", "stomach_cramps", "nausea", "bloating"],
+    dosage: {
+      adult: "400–500 mg every 8 hours (most infections); 2g single dose (BV/trichomoniasis)",
+      pediatric: "7.5 mg/kg every 8 hours",
+      elderly: "400 mg every 8 hours",
+      maxDaily: "2400 mg/day (divided doses)",
+      frequency: "Every 8 hours",
+      withFood: true,
+      duration: "5–7 days (dental/anaerobic); 7 days (BV/GI); single dose (trichomoniasis)",
+    },
+    contraindications: {
+      conditions: ["liver_disease", "epilepsy"],
+      medications: ["warfarin"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid in first trimester. Can be used in 2nd/3rd trimester for serious anaerobic infections. Single high dose (2g) preferably avoided in pregnancy.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Use standard doses; peripheral neuropathy risk with prolonged use"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Markedly enhances anticoagulant effect — significant INR increase. Reduce warfarin dose and monitor closely.", severity: "severe" },
+      { withMed: "lithium", effect: "May increase lithium toxicity.", severity: "moderate" },
+      { withMed: "antiepileptics", effect: "May increase phenytoin and carbamazepine levels.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "AVOID ALCOHOL completely during treatment and for 48 hours after — causes severe nausea, vomiting, flushing (disulfiram-like reaction)",
+      "Take with food to reduce nausea",
+      "May cause metallic taste in the mouth — this is normal",
+      "Urine may turn dark — harmless",
+      "Complete the full course; do not stop early even if symptoms improve"
+    ],
+    patientExplanation: "Metronidazole treats anaerobic bacterial infections (dental, vaginal, gut). The most important rule: NO alcohol during treatment and 48 hours afterwards.",
+    referralIfNoImprovement: "72 hours for dental/anaerobic; 1 week for GI/vaginal",
+    source: "UpToDate: Metronidazole — Drug information; BNF; WHO Essential Medicines"
+  },
+
+  // ─── CEFALEXIN (CEPHALEXIN) ───
+  {
+    id: "cefalexin",
+    name: "Cefalexin (Cephalexin)",
+    brandExamples: "Keflex, Ceporex, Cephalexin, Sporidex",
+    category: "Antibiotic — First-Generation Cephalosporin",
+    mechanism: "Beta-lactam; inhibits bacterial cell wall synthesis",
+    rxType: "Prescription",
+    forSymptoms: ["wound_infection", "skin_rash", "dysuria", "urinary_frequency", "ear_infection"],
+    dosage: {
+      adult: "500 mg every 6 hours (skin infection); 500 mg every 12 hours (UTI)",
+      pediatric: "25–50 mg/kg/day in 2–4 divided doses",
+      elderly: "500 mg every 8–12 hours; reduce if renal impairment",
+      maxDaily: "4000 mg/day",
+      frequency: "Every 6–12 hours depending on severity",
+      withFood: false,
+      duration: "5–7 days (skin); 7 days (UTI)",
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: [],
+      allergies: ["penicillin"],
+      pregnancy: "safe",
+      pregnancyNote: "Generally considered safe in pregnancy; used for skin and urinary infections.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "Reduce dose if eGFR <40 mL/min"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May modestly enhance anticoagulant effect. Monitor INR.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "Can be taken with or without food",
+      "About 5–10% of patients allergic to penicillin may also react to cephalosporins — inform prescriber of penicillin allergy",
+      "Complete the full course",
+      "Good choice for skin infections and UTI when penicillin alternatives are needed",
+      "Diarrhoea can occur — take probiotics alongside"
+    ],
+    patientExplanation: "Cefalexin is an antibiotic used for skin infections, wound infections, and bladder infections. Complete the full prescribed course.",
+    referralIfNoImprovement: "48–72 hours",
+    source: "UpToDate: Cephalexin — Drug information; NICE Antimicrobial Guidance"
+  },
+
+  // ─── CLARITHROMYCIN ───
+  {
+    id: "clarithromycin",
+    name: "Clarithromycin",
+    brandExamples: "Klacid, Klaricid, Biaxin, Claritek",
+    category: "Antibiotic — Macrolide",
+    mechanism: "Inhibits bacterial protein synthesis by binding 50S ribosomal subunit",
+    rxType: "Prescription",
+    forSymptoms: ["chest_infection", "throat_infection", "sore_throat", "productive_cough", "dry_cough"],
+    dosage: {
+      adult: "500 mg every 12 hours",
+      pediatric: "7.5 mg/kg every 12 hours",
+      elderly: "250–500 mg every 12 hours; reduce if renal impairment",
+      maxDaily: "1000 mg/day",
+      frequency: "Every 12 hours",
+      withFood: false,
+      duration: "7–14 days",
+    },
+    contraindications: {
+      conditions: ["liver_disease", "heart_disease", "atrial_fibrillation", "kidney_disease"],
+      medications: ["statins"],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid — associated with adverse fetal outcomes in animal studies. Use azithromycin if macrolide needed.",
+      minAge: 0.5,
+      elderlyRisk: "caution",
+      elderlyNote: "QT prolongation risk in elderly; avoid with other QT-prolonging drugs. Risk of cardiac arrhythmia."
+    },
+    interactions: [
+      { withMed: "statins", effect: "Markedly increases statin levels (simvastatin, atorvastatin) — high risk of myopathy/rhabdomyolysis. Suspend statin during course.", severity: "severe" },
+      { withMed: "warfarin", effect: "Significantly enhances anticoagulant effect. Monitor INR daily.", severity: "severe" },
+      { withMed: "digoxin", effect: "Increases digoxin levels — toxicity risk.", severity: "severe" },
+      { withMed: "calcium_channel_blockers", effect: "Increases amlodipine/nifedipine levels — hypotension risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Very important: inform prescriber of ALL other medications — clarithromycin interacts with many drugs",
+      "If on a statin (atorvastatin, simvastatin), discuss stopping it temporarily during the course",
+      "Can cause metallic or bitter taste",
+      "Take with or without food",
+      "Complete the full course"
+    ],
+    patientExplanation: "Clarithromycin is an antibiotic for chest and throat infections. It interacts with many other medications — always tell your pharmacist all the medications you are taking.",
+    referralIfNoImprovement: "72 hours",
+    source: "UpToDate: Clarithromycin — Drug information; BNF; NICE Pneumonia Guidelines"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // RESPIRATORY — PRESCRIPTION
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── SALBUTAMOL (ALBUTEROL) INHALER ───
+  {
+    id: "salbutamol",
+    name: "Salbutamol (Albuterol) Inhaler",
+    brandExamples: "Ventolin, Salamol, Proventil, Asthalin, Salbetol",
+    category: "Bronchodilator — Short-Acting Beta-2 Agonist (SABA)",
+    mechanism: "Stimulates beta-2 adrenergic receptors in bronchial smooth muscle — causes bronchodilation",
+    rxType: "Prescription",
+    forSymptoms: ["wheeze", "shortness_of_breath", "dry_cough", "chest_infection"],
+    dosage: {
+      adult: "100–200 mcg (1–2 puffs) as needed; 4–8 puffs via spacer for acute attack",
+      pediatric: "100 mcg (1 puff) as needed via spacer; 2–4 puffs for acute attack",
+      elderly: "100–200 mcg as needed",
+      maxDaily: "Not more than 8 puffs per day without reassessment",
+      frequency: "As needed (SABA — reliever inhaler)",
+      withFood: false,
+      duration: "Use as needed; if using >3 times/week, escalate preventative therapy",
+      notes: "Use with spacer device for optimal drug delivery"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Safe in pregnancy. Treating asthma in pregnancy is essential — uncontrolled asthma is more dangerous than the medication.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "May cause tremor, tachycardia, and hypokalaemia — especially at high doses. Use lowest effective dose."
+    },
+    interactions: [
+      { withMed: "beta_blockers", effect: "Beta-blockers block the effect of salbutamol — avoid non-selective beta-blockers in asthma/COPD.", severity: "severe" },
+      { withMed: "diuretics", effect: "Combined with high-dose salbutamol, loop diuretics increase risk of hypokalaemia.", severity: "moderate" },
+      { withMed: "digoxin", effect: "Hypokalaemia from salbutamol can increase digoxin toxicity risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "This is your RELIEVER inhaler — use it when you have symptoms (wheeze, breathlessness)",
+      "If you need it more than 3 times per week, see your doctor — you may need a preventer inhaler",
+      "Correct technique is critical: shake, breathe out, inhale slowly and deeply, hold for 10 seconds",
+      "A spacer device makes the inhaler much more effective — especially in children and elderly",
+      "If an acute attack does not respond to 4–8 puffs within 15 minutes — call emergency services immediately"
+    ],
+    patientExplanation: "Salbutamol opens your airways during asthma attacks or wheezing. Use it when you feel breathless or tight-chested. If it stops working, seek emergency help.",
+    referralIfNoImprovement: "Immediate referral if acute attack not responding. Routine reassessment if using >3×/week.",
+    source: "UpToDate: Albuterol (salbutamol) — Drug information; GINA 2024 Asthma Guidelines; BTS/SIGN Asthma Guideline"
+  },
+
+  // ─── PREDNISOLONE ───
+  {
+    id: "prednisolone",
+    name: "Prednisolone (Oral)",
+    brandExamples: "Prednisolone, Prelone, Decortin, Wysolone",
+    category: "Corticosteroid — Anti-inflammatory",
+    mechanism: "Binds glucocorticoid receptors; suppresses inflammatory cytokines and immune response",
+    rxType: "Prescription",
+    forSymptoms: ["wheeze", "skin_rash", "itching", "joint_pain", "body_ache", "chest_infection"],
+    dosage: {
+      adult: "30–40 mg once daily for 5–7 days (asthma flare); 20–40 mg for severe allergy",
+      pediatric: "1–2 mg/kg/day (max 40 mg) for 3–5 days",
+      elderly: "20–30 mg/day with gastroprotection (PPI); risk of adrenal suppression and bone effects",
+      maxDaily: "60 mg/day (short-term)",
+      frequency: "Once daily in the morning",
+      withFood: true,
+      duration: "3–7 days (acute flare); longer courses only under physician supervision",
+      notes: "Short courses (<7 days) can be stopped without tapering. Longer courses require gradual reduction."
+    },
+    contraindications: {
+      conditions: ["diabetes", "peptic_ulcer", "glaucoma", "osteoporosis"],
+      medications: ["warfarin", "ssri"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Can be used for severe asthma flare in pregnancy — uncontrolled severe asthma is more dangerous than short-course corticosteroids.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "High risk: adrenal suppression, hyperglycaemia, osteoporosis, hypertension, cataracts, GI bleeding. Always give with PPI and shortest effective course."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May alter anticoagulant effect — monitor INR.", severity: "moderate" },
+      { withMed: "ssri", effect: "Increased GI bleeding risk combined with SSRIs — give PPI cover.", severity: "moderate" },
+      { withMed: "insulin", effect: "Corticosteroids raise blood glucose — increased insulin requirements in diabetics.", severity: "moderate" },
+      { withMed: "metformin", effect: "May worsen glycaemic control in diabetics on metformin.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take in the morning with food to reduce stomach upset and insomnia",
+      "Short courses (5–7 days) do not need tapering — but do not stop suddenly if on a longer course",
+      "Monitor blood glucose closely if diabetic — steroids significantly raise blood sugar",
+      "Carry a steroid card if on long-term steroids",
+      "Do not take NSAIDs alongside without a PPI — double the GI bleeding risk"
+    ],
+    patientExplanation: "Prednisolone is a steroid used to quickly reduce inflammation in asthma attacks, allergic reactions, and joint flares. Short courses are generally safe when taken as prescribed.",
+    referralIfNoImprovement: "24–48 hours for acute asthma — escalate to hospital if no response.",
+    source: "UpToDate: Prednisolone — Drug information; GINA 2024; BNF"
+  },
+
+  // ─── AMBROXOL ───
+  {
+    id: "ambroxol",
+    name: "Ambroxol",
+    brandExamples: "Mucosolvan, Ambrolite, Ambril, Ambrodil, Ambrocet",
+    category: "Mucolytic / Expectorant",
+    mechanism: "Stimulates surfactant production and mucociliary clearance; reduces mucus viscosity",
+    rxType: "Both",
+    forSymptoms: ["productive_cough", "chest_infection", "dry_cough"],
+    dosage: {
+      adult: "30 mg 3 times daily (or 75 mg extended-release once daily)",
+      pediatric: "7.5 mg 2–3 times daily (2–5 years); 15 mg 2–3 times daily (6–12 years)",
+      elderly: "30 mg 2–3 times daily",
+      maxDaily: "90 mg/day",
+      frequency: "3 times daily (standard) or once daily (extended-release)",
+      withFood: true,
+      duration: "5–7 days for acute cough; up to 4–6 weeks for chronic",
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "liver_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid in first trimester. Limited data in 2nd/3rd trimester — use only if clearly needed.",
+      minAge: 0.5,
+      elderlyRisk: "safe",
+      elderlyNote: "Generally well tolerated in elderly at standard doses"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Take with food and drink plenty of water — helps thin and clear mucus",
+      "Helps loosen phlegm in the chest — more effective with good hydration",
+      "Not a cough suppressant — it helps you cough up phlegm more easily",
+      "If productive cough persists more than 3 weeks, refer for chest X-ray"
+    ],
+    patientExplanation: "Ambroxol helps thin and loosen mucus in the airways, making it easier to cough up. Drink plenty of fluids alongside.",
+    referralIfNoImprovement: "3 weeks; investigate for TB, pneumonia, or malignancy if cough persists",
+    source: "UpToDate: Ambroxol — Drug information; WHO Essential Medicines; MIMS India"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // PAIN & MUSCULOSKELETAL — PRESCRIPTION
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── NAPROXEN ───
+  {
+    id: "naproxen",
+    name: "Naproxen",
+    brandExamples: "Naprosyn, Naprogesic, Xenobid, Aleve, Flogen",
+    category: "NSAID — Non-Steroidal Anti-Inflammatory Drug",
+    mechanism: "Non-selective COX-1/COX-2 inhibitor; longer-acting than ibuprofen (12-hour dosing)",
+    rxType: "Both",
+    forSymptoms: ["joint_pain", "back_pain", "body_ache", "menstrual_pain", "gout_attack", "muscle_spasm", "migraine"],
+    dosage: {
+      adult: "250–500 mg every 12 hours",
+      elderly: "Use lowest effective dose; 250 mg every 12 hours with PPI cover",
+      maxDaily: "1250 mg on Day 1, then 1000 mg/day",
+      frequency: "Every 12 hours (convenient twice-daily dosing)",
+      withFood: true,
+      duration: "5–7 days (acute pain); as prescribed for chronic conditions",
+    },
+    contraindications: {
+      conditions: ["peptic_ulcer", "heart_failure", "kidney_disease", "gerd_chronic", "heart_disease", "clotting_disorder", "atrial_fibrillation"],
+      medications: ["warfarin", "dabigatran_rivaroxaban", "aspirin_cardio", "clopidogrel", "ace_inhibitors", "arbs", "diuretics", "lithium", "methotrexate"],
+      allergies: ["nsaids_allergy", "aspirin_allergy"],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid from 20 weeks gestation. Contraindicated in 3rd trimester.",
+      minAge: 16,
+      elderlyRisk: "caution",
+      elderlyNote: "Similar risks to other NSAIDs — GI bleeding, renal impairment, cardiovascular events. Use lowest dose with PPI."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Significantly increases bleeding risk.", severity: "severe" },
+      { withMed: "lithium", effect: "NSAIDs increase lithium levels — toxicity risk.", severity: "severe" },
+      { withMed: "methotrexate", effect: "Increases methotrexate toxicity.", severity: "severe" },
+      { withMed: "ace_inhibitors", effect: "Reduced BP control and renal risk.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Take with food every time",
+      "Longer-acting than ibuprofen — twice-daily dosing is more convenient",
+      "Avoid alcohol — increases GI bleeding risk",
+      "Stop and see a doctor if black stools or stomach pain develops",
+      "Not suitable in pregnancy from 20 weeks"
+    ],
+    patientExplanation: "Naproxen is a long-acting anti-inflammatory painkiller, taken twice daily. It works well for joint pain, arthritis, and period pain.",
+    referralIfNoImprovement: "7 days; assess for underlying cause",
+    source: "UpToDate: Naproxen — Drug information; BNF; EULAR Osteoarthritis Guidelines"
+  },
+
+  // ─── CELECOXIB ───
+  {
+    id: "celecoxib",
+    name: "Celecoxib",
+    brandExamples: "Celebrex, Celact, Celcoxx, Revibra",
+    category: "NSAID — Selective COX-2 Inhibitor",
+    mechanism: "Selectively inhibits COX-2 enzyme — anti-inflammatory with reduced GI risk vs. non-selective NSAIDs",
+    rxType: "Prescription",
+    forSymptoms: ["joint_pain", "back_pain", "body_ache", "gout_attack", "muscle_spasm"],
+    dosage: {
+      adult: "100–200 mg once or twice daily",
+      elderly: "100 mg twice daily; lowest effective dose",
+      maxDaily: "400 mg/day",
+      frequency: "Once or twice daily",
+      withFood: false,
+      duration: "As prescribed; avoid prolonged use without reassessment",
+    },
+    contraindications: {
+      conditions: ["heart_failure", "kidney_disease", "heart_disease", "peptic_ulcer", "atrial_fibrillation"],
+      medications: ["warfarin", "aspirin_cardio", "lithium"],
+      allergies: ["nsaids_allergy", "aspirin_allergy", "sulfa"],
+      pregnancy: "avoid",
+      pregnancyNote: "Contraindicated — COX-2 inhibitors cause premature closure of ductus arteriosus.",
+      minAge: 18,
+      elderlyRisk: "caution",
+      elderlyNote: "Lower GI risk than non-selective NSAIDs, but cardiovascular risk remains. Prefer in patients with GI risk who need NSAIDs."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May enhance anticoagulant effect. Monitor INR.", severity: "moderate" },
+      { withMed: "lithium", effect: "Increases lithium levels.", severity: "severe" },
+      { withMed: "aspirin_cardio", effect: "Co-administration negates GI safety advantage. Combine only with PPI cover if both needed.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Preferred over ibuprofen/naproxen in patients with high GI risk (history of ulcer, elderly, on steroids)",
+      "STILL carries cardiovascular risk — avoid in heart failure, IHD, uncontrolled hypertension",
+      "Do not use if allergic to sulfonamides",
+      "Does not provide cardioprotective benefit (unlike aspirin)",
+      "Take regularly as prescribed, not just when in pain"
+    ],
+    patientExplanation: "Celecoxib is an anti-inflammatory medication that is gentler on the stomach than standard NSAIDs. However, it still carries heart risks.",
+    referralIfNoImprovement: "2–4 weeks for chronic pain; 7 days for acute",
+    source: "UpToDate: Celecoxib — Drug information; NICE Osteoarthritis Guidelines; BNF"
+  },
+
+  // ─── TRAMADOL ───
+  {
+    id: "tramadol",
+    name: "Tramadol",
+    brandExamples: "Tramal, Ultram, Zydol, Tramacip, Contramal",
+    category: "Opioid Analgesic (Moderate) — Centrally Acting",
+    mechanism: "Weak mu-opioid receptor agonist + serotonin/noradrenaline reuptake inhibitor",
+    rxType: "Prescription",
+    forSymptoms: ["back_pain", "joint_pain", "body_ache", "neuropathic_pain", "migraine"],
+    dosage: {
+      adult: "50–100 mg every 4–6 hours as needed",
+      elderly: "50 mg every 6 hours (start low; titrate carefully)",
+      maxDaily: "400 mg/day (200–300 mg/day in elderly)",
+      frequency: "Every 4–6 hours",
+      withFood: false,
+      duration: "Shortest effective duration; reassess after 2–4 weeks",
+      notes: "Controlled/scheduled drug in many countries — check local regulations"
+    },
+    contraindications: {
+      conditions: ["epilepsy", "liver_disease", "kidney_disease"],
+      medications: ["maoi", "ssri", "snri", "tricyclics"],
+      allergies: ["codeine_allergy"],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid — neonatal opioid withdrawal syndrome and respiratory depression in newborn.",
+      minAge: 12,
+      elderlyRisk: "caution",
+      elderlyNote: "High risk in elderly: falls, confusion, constipation, respiratory depression. Listed in AGS Beers Criteria. Start with 25–50 mg; use lowest dose for shortest duration."
+    },
+    interactions: [
+      { withMed: "ssri", effect: "Risk of serotonin syndrome (agitation, hyperthermia, clonus). Avoid or use with extreme caution.", severity: "severe" },
+      { withMed: "snri", effect: "Risk of serotonin syndrome. Avoid.", severity: "severe" },
+      { withMed: "maoi", effect: "CONTRAINDICATED — severe serotonin syndrome risk.", severity: "severe" },
+      { withMed: "tricyclics", effect: "Increased serotonin syndrome and seizure risk.", severity: "severe" },
+      { withMed: "antiepileptics", effect: "Tramadol lowers seizure threshold — use with extreme caution in epilepsy.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Can cause drowsiness — do not drive or operate machinery",
+      "Avoid alcohol — increases sedation significantly",
+      "Do not take with antidepressants (SSRIs, SNRIs, MAOIs) without explicit physician approval — risk of serotonin syndrome",
+      "Risk of dependence with prolonged use — use for the shortest possible time",
+      "If you have epilepsy, tramadol can trigger seizures — use with caution"
+    ],
+    patientExplanation: "Tramadol is a prescription painkiller for moderate to severe pain. It can cause drowsiness and should not be taken with alcohol or most antidepressants.",
+    referralIfNoImprovement: "Reassess pain management plan if no response in 1–2 weeks; consider specialist referral",
+    source: "UpToDate: Tramadol — Drug information; AGS Beers Criteria 2023; WHO Analgesic Ladder"
+  },
+
+  // ─── THIOCOLCHICOSIDE (Muscle Relaxant) ───
+  {
+    id: "thiocolchicoside",
+    name: "Thiocolchicoside",
+    brandExamples: "Muscoril, Thiocolchicoside, Myoril, Colchicum",
+    category: "Muscle Relaxant — GABA-A / Glycine Receptor Modulator",
+    mechanism: "GABA-A and glycine receptor agonist — reduces skeletal muscle spasm",
+    rxType: "Prescription",
+    forSymptoms: ["muscle_spasm", "back_pain", "joint_pain", "body_ache"],
+    dosage: {
+      adult: "8 mg every 12 hours (oral); or 4 mg every 12 hours (IM/IV)",
+      elderly: "4 mg every 12 hours — lower dose",
+      maxDaily: "16 mg/day (oral)",
+      frequency: "Every 12 hours",
+      withFood: false,
+      duration: "5–7 days (acute spasm); not recommended beyond 7 days",
+    },
+    contraindications: {
+      conditions: ["epilepsy", "liver_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Contraindicated — teratogenic in animal studies.",
+      minAge: 16,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of excessive muscle relaxation and falls in elderly"
+    },
+    interactions: [
+      { withMed: "maoi", effect: "Potential CNS depression interaction.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Can cause drowsiness — avoid driving",
+      "Do not take for more than 7 days",
+      "Do not use in pregnancy",
+      "Used alongside NSAIDs or physiotherapy for back pain — not as a standalone",
+      "Avoid alcohol during treatment"
+    ],
+    patientExplanation: "Thiocolchicoside relaxes muscle spasms and is used with painkillers for acute back pain or muscle injuries. Use it for a maximum of one week.",
+    referralIfNoImprovement: "7 days; refer for physiotherapy assessment",
+    source: "UpToDate: Skeletal muscle relaxants — Overview; MIMS India; EMA Assessment Report"
+  },
+
+  // ─── COLCHICINE ───
+  {
+    id: "colchicine",
+    name: "Colchicine",
+    brandExamples: "Colcrys, Colchicine, Tolchicine, Goutichine",
+    category: "Anti-Gout — Anti-Inflammatory (Microtubule Inhibitor)",
+    mechanism: "Inhibits microtubule formation — disrupts neutrophil migration into joints; reduces inflammation",
+    rxType: "Prescription",
+    forSymptoms: ["gout_attack", "joint_pain"],
+    dosage: {
+      adult: "1 mg immediately, then 0.5 mg 1 hour later (total 1.5 mg per attack); OR 0.5 mg 2–3 times daily",
+      elderly: "0.5 mg once or twice daily — reduce if renal impairment",
+      maxDaily: "1.5–2.5 mg/day",
+      frequency: "Twice or three times daily for prophylaxis; specific loading for acute attack",
+      withFood: false,
+      duration: "Acute attack: 2–3 days. Prophylaxis: 3–6 months after starting urate-lowering therapy.",
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "liver_disease"],
+      medications: ["statins", "azole_antifungals"],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid in pregnancy — teratogenic in animal studies.",
+      minAge: 16,
+      elderlyRisk: "caution",
+      elderlyNote: "Dose reduction required in renal or hepatic impairment. Risk of myopathy with statins."
+    },
+    interactions: [
+      { withMed: "statins", effect: "Risk of colchicine-induced myopathy/rhabdomyolysis — especially with simvastatin and atorvastatin.", severity: "severe" },
+      { withMed: "azole_antifungals", effect: "Azoles markedly increase colchicine levels (CYP3A4 inhibition) — risk of toxicity.", severity: "severe" },
+      { withMed: "clarithromycin", effect: "Clarithromycin inhibits colchicine metabolism — toxicity risk.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Start as soon as gout attack begins — the sooner the better",
+      "Diarrhoea and nausea are common at higher doses — stop if severe GI toxicity",
+      "Avoid grapefruit juice during treatment",
+      "Stay well hydrated",
+      "Do NOT exceed the prescribed dose — colchicine has a narrow therapeutic margin"
+    ],
+    patientExplanation: "Colchicine reduces the severe inflammation of a gout attack. Start it as early as possible during an attack. Take the exact dose prescribed — too much is toxic.",
+    referralIfNoImprovement: "72 hours; consider systemic corticosteroids or joint aspiration",
+    source: "UpToDate: Colchicine — Drug information; ACR 2020 Gout Guidelines; BSR Gout Guidelines"
+  },
+
+  // ─── ALLOPURINOL ───
+  {
+    id: "allopurinol",
+    name: "Allopurinol",
+    brandExamples: "Zyloprim, Zyloric, Allopurin, Lopurin",
+    category: "Urate-Lowering Therapy — Xanthine Oxidase Inhibitor",
+    mechanism: "Inhibits xanthine oxidase — reduces uric acid production",
+    rxType: "Prescription",
+    forSymptoms: ["gout_attack"],
+    dosage: {
+      adult: "Start 100 mg/day; increase by 100 mg every 2–4 weeks; target dose 300 mg/day",
+      elderly: "Start 50 mg/day; titrate slowly",
+      maxDaily: "900 mg/day (rarely needed)",
+      frequency: "Once daily",
+      withFood: true,
+      duration: "Long-term (lifelong in most patients with recurrent gout)",
+      notes: "Do NOT start during an acute gout attack — wait 2–4 weeks until attack fully resolved"
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: ["warfarin", "azole_antifungals"],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid in pregnancy — use only if absolutely necessary.",
+      minAge: 18,
+      elderlyRisk: "caution",
+      elderlyNote: "Start at very low doses (50–100 mg); titrate based on uric acid levels and renal function"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Allopurinol significantly enhances anticoagulant effect. Monitor INR closely.", severity: "severe" },
+      { withMed: "azole_antifungals", effect: "May increase allopurinol levels.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "Do NOT start during a gout attack — will make it worse",
+      "You may have more gout attacks in the first few months — this is normal as uric acid crystals dissolve",
+      "Take with plenty of water",
+      "A rash may indicate a serious hypersensitivity reaction (Stevens-Johnson syndrome) — stop immediately and seek medical help",
+      "Long-term medication — take every day even when feeling well; gout will return if you stop"
+    ],
+    patientExplanation: "Allopurinol prevents future gout attacks by lowering uric acid levels. Do not start it during an attack. It is a lifelong medication for most people.",
+    referralIfNoImprovement: "Check serum uric acid after 4–6 weeks; titrate dose to target <360 µmol/L",
+    source: "UpToDate: Allopurinol — Drug information; ACR 2020 Gout Guidelines; EULAR Gout Guidelines"
+  },
+
+  // ─── PREGABALIN ───
+  {
+    id: "pregabalin",
+    name: "Pregabalin",
+    brandExamples: "Lyrica, Pregeb, Pregalin, Pregabid",
+    category: "Neuropathic Pain Agent — Voltage-Gated Calcium Channel Modulator",
+    mechanism: "Binds alpha-2-delta subunit of voltage-gated calcium channels — reduces neuronal excitability and pain signalling",
+    rxType: "Prescription",
+    forSymptoms: ["neuropathic_pain", "insomnia"],
+    dosage: {
+      adult: "75 mg twice daily; increase to 150 mg twice daily after 1 week; max 300 mg twice daily",
+      elderly: "Start 25–75 mg/day; titrate slowly based on renal function",
+      maxDaily: "600 mg/day (divided doses)",
+      frequency: "Twice or three times daily",
+      withFood: false,
+      duration: "Minimum 2–4 weeks to assess efficacy; long-term if effective",
+      notes: "Controlled substance in many countries due to misuse potential"
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid — associated with increased risk of major congenital malformations and spontaneous abortion.",
+      minAge: 18,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of falls, dizziness, and cognitive impairment in elderly. Start very low and titrate slowly."
+    },
+    interactions: [
+      { withMed: "maoi", effect: "Enhanced CNS depression.", severity: "moderate" },
+      { withMed: "tricyclics", effect: "Additive CNS depression — sedation risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Can cause dizziness and drowsiness — avoid driving until you know how it affects you",
+      "Do not stop suddenly — taper dose gradually to avoid withdrawal",
+      "Takes 2–4 weeks to show full effect for nerve pain",
+      "Avoid alcohol — increases sedation",
+      "Report to prescriber: unexplained muscle pain, blurred vision, or swelling of hands/feet"
+    ],
+    patientExplanation: "Pregabalin reduces nerve pain (burning, tingling, shooting pain) by calming overactive nerve signals. It may cause drowsiness initially.",
+    referralIfNoImprovement: "4–6 weeks at target dose; consider pain specialist referral",
+    source: "UpToDate: Pregabalin — Drug information; NICE Neuropathic Pain Guidelines NG173; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // GASTROINTESTINAL — PRESCRIPTION
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── ONDANSETRON ───
+  {
+    id: "ondansetron",
+    name: "Ondansetron",
+    brandExamples: "Zofran, Emeset, Ondanset, Ondem, Vomikind",
+    category: "Antiemetic — 5-HT3 Receptor Antagonist",
+    mechanism: "Selectively blocks serotonin 5-HT3 receptors in GI tract and CNS — prevents nausea and vomiting",
+    rxType: "Prescription",
+    forSymptoms: ["nausea", "vomiting"],
+    dosage: {
+      adult: "4–8 mg every 8 hours as needed",
+      pediatric: "0.15 mg/kg (max 4 mg) every 8 hours",
+      elderly: "4 mg every 8 hours",
+      maxDaily: "32 mg/day (adult); 12 mg/day (elderly/child)",
+      frequency: "Every 8 hours (or as needed)",
+      withFood: false,
+      duration: "1–2 days for acute nausea; as prescribed for chemotherapy-related",
+    },
+    contraindications: {
+      conditions: ["heart_disease", "atrial_fibrillation"],
+      medications: ["ssri", "snri"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid in first trimester (possible cardiovascular malformation). Can be used in 2nd/3rd trimester for severe hyperemesis under physician supervision.",
+      minAge: 0.5,
+      elderlyRisk: "caution",
+      elderlyNote: "Risk of QT prolongation; use lowest effective dose"
+    },
+    interactions: [
+      { withMed: "ssri", effect: "Increased serotonin syndrome risk and additive QT prolongation.", severity: "severe" },
+      { withMed: "snri", effect: "Additive serotonin syndrome risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Does not treat the cause of vomiting — still need to identify and treat the underlying cause",
+      "Can cause headache and constipation — common side effects",
+      "Dissolving tablets (ODT) go under the tongue — do not swallow whole",
+      "If vomiting is severe or persistent (>24 hours), seek medical attention for IV fluids and further assessment",
+      "Inform doctor of any heart conditions before use"
+    ],
+    patientExplanation: "Ondansetron stops nausea and vomiting by blocking the signal in your brain and gut. It works very well for severe nausea but does not treat the underlying cause.",
+    referralIfNoImprovement: "24 hours of severe vomiting — risk of dehydration and electrolyte imbalance",
+    source: "UpToDate: Ondansetron — Drug information; BNF; WHO Essential Medicines"
+  },
+
+  // ─── HYOSCINE BUTYLBROMIDE (BUSCOPAN) ───
+  {
+    id: "buscopan",
+    name: "Hyoscine Butylbromide (Buscopan)",
+    brandExamples: "Buscopan, Buscogast, Hyoscine-N-butylbromide",
+    category: "Antispasmodic — Anticholinergic",
+    mechanism: "Inhibits muscarinic receptors in smooth muscle — relaxes GI and urinary tract spasms",
+    rxType: "Both",
+    forSymptoms: ["stomach_cramps", "bloating", "nausea", "dysuria", "urinary_frequency"],
+    dosage: {
+      adult: "20 mg (2 tablets) 4 times daily as needed",
+      pediatric: "10 mg 3 times daily (6–12 years); adult dose for >12 years",
+      elderly: "20 mg 3 times daily — caution due to anticholinergic effects",
+      maxDaily: "80 mg/day",
+      frequency: "Up to 4 times daily",
+      withFood: false,
+      duration: "As needed for acute spasms; not for long-term use without diagnosis",
+    },
+    contraindications: {
+      conditions: ["glaucoma", "prostate"],
+      medications: ["tricyclics"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Limited data; use only if clearly needed.",
+      minAge: 6,
+      elderlyRisk: "caution",
+      elderlyNote: "Anticholinergic effects (dry mouth, urinary retention, confusion) more pronounced in elderly"
+    },
+    interactions: [
+      { withMed: "tricyclics", effect: "Additive anticholinergic effects — dry mouth, constipation, urinary retention, confusion.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Good for colicky pain, irritable bowel spasms, and period cramps",
+      "May cause dry mouth and blurred vision — this is normal",
+      "Do not use if you have glaucoma or prostate enlargement",
+      "Does not treat the cause of pain — if persistent, refer for investigation",
+      "Different from hyoscine (travel sickness) — this formulation does not cross the blood-brain barrier"
+    ],
+    patientExplanation: "Buscopan relaxes muscle spasms in the stomach, bowel, and bladder. It works well for colicky abdominal pain and IBS-related cramps.",
+    referralIfNoImprovement: "1 week; refer if no diagnosis established or symptoms recur",
+    source: "UpToDate: Hyoscine butylbromide — Drug information; BNF; NICE IBS Guidelines"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANTIFUNGALS
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── FLUCONAZOLE (ORAL) ───
+  {
+    id: "fluconazole",
+    name: "Fluconazole (Oral)",
+    brandExamples: "Diflucan, Forcan, Flucos, Zocon, Syscan",
+    category: "Antifungal — Triazole",
+    mechanism: "Inhibits fungal ergosterol synthesis by blocking CYP51 (lanosterol 14α-demethylase)",
+    rxType: "Prescription",
+    forSymptoms: ["vaginal_discharge", "oral_thrush", "fungal_skin"],
+    dosage: {
+      adult: "150 mg single dose (vaginal candidiasis); 50–100 mg/day for 7–14 days (oral/oesophageal thrush); 150 mg weekly (recurrent)",
+      elderly: "50–100 mg/day; reduce in renal impairment",
+      maxDaily: "400 mg/day (systemic infection)",
+      frequency: "Single dose (vaginal) or once daily (others)",
+      withFood: false,
+      duration: "Single dose (uncomplicated vaginal thrush); 7–14 days (oral thrush)",
+    },
+    contraindications: {
+      conditions: ["liver_disease", "kidney_disease", "heart_disease"],
+      medications: ["warfarin", "statins"],
+      allergies: [],
+      pregnancy: "avoid",
+      pregnancyNote: "Avoid single high-dose (150 mg) — linked to cardiac defects in fetus. Topical clotrimazole is preferred in pregnancy.",
+      minAge: 0,
+      elderlyRisk: "caution",
+      elderlyNote: "Dose reduction required if eGFR <50. QT prolongation risk at higher doses."
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Markedly enhances anticoagulant effect — significant INR increase. Monitor closely.", severity: "severe" },
+      { withMed: "statins", effect: "Inhibits statin metabolism (CYP3A4) — risk of myopathy/rhabdomyolysis. Consider suspending statin.", severity: "severe" },
+      { withMed: "antiepileptics", effect: "Increases phenytoin levels — monitor for toxicity.", severity: "moderate" },
+      { withMed: "azole_antifungals", effect: "Do not combine multiple azole antifungals.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Single 150 mg tablet is effective for uncomplicated vaginal thrush in most women",
+      "Symptoms may take 1–3 days to fully resolve after the tablet",
+      "Inform pharmacist/doctor of ALL medications — fluconazole interacts with many drugs",
+      "Topical clotrimazole cream is preferred during pregnancy",
+      "If vaginal thrush recurs >4 times per year, refer for investigation (check for diabetes, immunosuppression)"
+    ],
+    patientExplanation: "Fluconazole is a single-tablet antifungal treatment for vaginal thrush or oral thrush. Symptoms usually clear within a few days.",
+    referralIfNoImprovement: "7 days; consider resistance or underlying condition (diabetes, immunosuppression)",
+    source: "UpToDate: Fluconazole — Drug information; BASHH Candidiasis Guidelines; BNF"
+  },
+
+  // ─── CLOTRIMAZOLE TOPICAL ───
+  {
+    id: "clotrimazole_topical",
+    name: "Clotrimazole (Topical Cream / Pessary)",
+    brandExamples: "Canesten, Clotrimaderm, Lotrimin, Candid, Fungival",
+    category: "Antifungal — Azole (Topical)",
+    mechanism: "Inhibits fungal ergosterol synthesis — disrupts fungal cell membrane integrity",
+    rxType: "OTC",
+    forSymptoms: ["fungal_skin", "vaginal_discharge", "itching", "skin_rash"],
+    dosage: {
+      adult: "Apply 2–3 times daily to affected area (cream); 500 mg pessary once (vaginal) or 100 mg pessary for 6 days",
+      pediatric: "Apply 2–3 times daily (cream) — safe in children",
+      elderly: "Standard application",
+      maxDaily: "Apply as directed",
+      frequency: "2–3 times daily (cream); once or as directed (pessary/powder)",
+      withFood: false,
+      duration: "2–4 weeks for skin; 1–6 days for vaginal pessary",
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Preferred antifungal in pregnancy for vaginal thrush. Use cream/pessary only — avoid oral fluconazole.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Safe topical antifungal"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Wash and dry area thoroughly before applying",
+      "Continue treatment for the full course even if symptoms improve quickly",
+      "Avoid tight-fitting clothing and synthetic fabrics — encourages fungal growth",
+      "Avoid sharing towels",
+      "Pessaries and some vaginal creams can damage latex condoms and diaphragms",
+      "Preferred treatment for vaginal thrush in pregnancy"
+    ],
+    patientExplanation: "Clotrimazole cream or pessary treats fungal infections of the skin, groin, or vagina. Apply to clean dry skin and complete the full course.",
+    referralIfNoImprovement: "2 weeks for skin; 7 days for vaginal thrush — consider oral fluconazole or alternate diagnosis",
+    source: "UpToDate: Clotrimazole — Drug information; BASHH Candidiasis Guidelines; BNF"
+  },
+
+  // ─── TERBINAFINE ───
+  {
+    id: "terbinafine",
+    name: "Terbinafine",
+    brandExamples: "Lamisil, Terbicip, Sebifin, Zimig, Terbinex",
+    category: "Antifungal — Allylamine (Topical and Oral)",
+    mechanism: "Inhibits squalene epoxidase — disrupts ergosterol synthesis and causes fungal cell membrane damage",
+    rxType: "Both",
+    forSymptoms: ["fungal_skin", "itching", "skin_rash"],
+    dosage: {
+      adult: "Cream: apply once or twice daily. Oral: 250 mg once daily.",
+      elderly: "250 mg/day (oral); standard topical",
+      maxDaily: "250 mg/day (oral)",
+      frequency: "Once or twice daily (topical); once daily (oral)",
+      withFood: false,
+      duration: "Cream: 1–2 weeks (athlete's foot), 2–4 weeks (ringworm). Oral: 6 weeks (fingernail fungus), 12 weeks (toenail fungus).",
+    },
+    contraindications: {
+      conditions: ["liver_disease", "kidney_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Avoid oral form in pregnancy. Topical cream with caution — limited data.",
+      minAge: 12,
+      elderlyRisk: "safe",
+      elderlyNote: "Standard doses; monitor liver function with prolonged oral use"
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "May alter anticoagulant effect — monitor INR.", severity: "mild" },
+      { withMed: "ssri", effect: "Terbinafine inhibits CYP2D6 — may increase levels of some SSRIs.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "Topical terbinafine works faster than other OTC antifungal creams for athlete's foot",
+      "Apply to clean dry skin; include a 2 cm margin around the visible infection",
+      "Oral form for nail fungus requires a long course (6–12 weeks) and liver function monitoring",
+      "Avoid tight shoes and synthetic socks — allows moisture and fungal growth",
+      "Do not share nail files or clippers"
+    ],
+    patientExplanation: "Terbinafine treats fungal skin infections like athlete's foot, ringworm, and nail fungus. The cream works in 1–2 weeks; nail infections need oral tablets for 3 months.",
+    referralIfNoImprovement: "4 weeks (topical); reassess diagnosis — consider tinea versicolor or psoriasis if not responding",
+    source: "UpToDate: Terbinafine — Drug information; BNF; NICE Fungal Skin Infections Guidance"
+  },
+
+  // ─── NYSTATIN ───
+  {
+    id: "nystatin",
+    name: "Nystatin Oral Suspension / Pastilles",
+    brandExamples: "Mycostatin, Nilstat, Nystop, Nyderm",
+    category: "Antifungal — Polyene (Topical / Oral Candida)",
+    mechanism: "Binds to ergosterol in fungal cell membranes — increases permeability and causes cell death",
+    rxType: "Prescription",
+    forSymptoms: ["oral_thrush", "vaginal_discharge"],
+    dosage: {
+      adult: "100,000–500,000 units (1–5 mL) 4 times daily, swished in mouth and swallowed",
+      pediatric: "100,000 units 4 times daily (neonates/infants); 500,000 units 4 times daily (older children)",
+      elderly: "Standard dose — well tolerated",
+      maxDaily: "2,000,000 units/day",
+      frequency: "4 times daily (after food)",
+      withFood: false,
+      duration: "7–14 days; continue for 48 hours after symptoms resolve",
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Safe in all trimesters — minimal systemic absorption.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Minimal side effects; not systemically absorbed"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Hold liquid in mouth for as long as possible before swallowing — swish around all areas of the mouth",
+      "Take after meals",
+      "Remove dentures before use; clean and soak dentures separately",
+      "Continue for 48 hours after symptoms resolve to prevent recurrence",
+      "Rarely absorbed systemically — very safe, even for newborns and pregnant women"
+    ],
+    patientExplanation: "Nystatin liquid treats thrush (white patches) in the mouth. Swish it around your mouth thoroughly before swallowing. Safe for babies and during pregnancy.",
+    referralIfNoImprovement: "7 days; consider fluconazole for resistant oral candidiasis",
+    source: "UpToDate: Nystatin — Drug information; BNF; WHO Essential Medicines"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TOPICAL ANTIBACTERIALS / SKIN INFECTIONS
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── MUPIROCIN CREAM ───
+  {
+    id: "mupirocin",
+    name: "Mupirocin 2% Cream / Ointment",
+    brandExamples: "Bactroban, Bactoderm, Mupiro, T-Bact",
+    category: "Topical Antibiotic — Pseudomonic Acid",
+    mechanism: "Inhibits bacterial isoleucyl-tRNA synthetase — stops protein synthesis in Gram-positive bacteria",
+    rxType: "Prescription",
+    forSymptoms: ["wound_infection", "skin_rash"],
+    dosage: {
+      adult: "Apply small amount 3 times daily to affected area",
+      pediatric: "Apply 3 times daily — safe in children",
+      elderly: "Apply 3 times daily",
+      maxDaily: "3 applications/day",
+      frequency: "3 times daily",
+      withFood: false,
+      duration: "5–10 days",
+      notes: "Cover with sterile dressing if required. Do not use on large body surface areas."
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Minimal systemic absorption; considered safe in pregnancy for localised skin infections.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Safe topical antibiotic"
+    },
+    interactions: [],
+    counselingPoints: [
+      "First-line topical antibiotic for impetigo (school sores) and small infected skin lesions",
+      "Wash hands before and after applying",
+      "Do not use inside the nose unless prescribed for MRSA decolonisation",
+      "Do not use on large areas — potential for systemic absorption of the polyethylene glycol base (renal risk)",
+      "If no improvement in 3–5 days, send skin swab for culture — consider oral antibiotics"
+    ],
+    patientExplanation: "Mupirocin cream kills bacteria on the skin. Apply 3 times daily to infected areas for up to 10 days. Keep the area clean and covered.",
+    referralIfNoImprovement: "5 days; consider oral antibiotics (cefalexin) for spreading infection",
+    source: "UpToDate: Mupirocin — Drug information; NICE Impetigo Guidance; BNF"
+  },
+
+  // ─── FUSIDIC ACID CREAM ───
+  {
+    id: "fusidic_acid",
+    name: "Fusidic Acid 2% Cream",
+    brandExamples: "Fucidin, Fucibet, Fucithalmic, Fucicort",
+    category: "Topical Antibiotic — Fusidane",
+    mechanism: "Inhibits bacterial elongation factor G — disrupts protein synthesis in Staphylococcus",
+    rxType: "Prescription",
+    forSymptoms: ["wound_infection", "skin_rash"],
+    dosage: {
+      adult: "Apply 3–4 times daily",
+      pediatric: "Apply 3 times daily",
+      elderly: "Apply 3–4 times daily",
+      maxDaily: "4 applications/day",
+      frequency: "3–4 times daily",
+      withFood: false,
+      duration: "5–7 days",
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Minimal systemic absorption; considered safe for topical use in pregnancy.",
+      minAge: 0,
+      elderlyRisk: "safe",
+      elderlyNote: "Safe topical antibiotic"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Effective specifically against Staphylococcus aureus — good for infected eczema and impetigo",
+      "Apply to clean skin; wash hands before and after use",
+      "Resistance develops quickly — do not use for longer than 7 days without review",
+      "Available as combination with corticosteroid (Fucibet) for infected eczema — do not use on uninfected eczema",
+      "If infection spreading or not improving in 3 days, oral antibiotics needed"
+    ],
+    patientExplanation: "Fusidic acid cream treats infected skin, especially infected eczema and impetigo. Apply to clean skin and do not use for more than a week without review.",
+    referralIfNoImprovement: "5–7 days; consider oral cefalexin/flucloxacillin",
+    source: "UpToDate: Fusidic acid — Drug information; NICE Impetigo Guidelines; BNF"
+  },
+
+  // ─── BENZOYL PEROXIDE (Acne) ───
+  {
+    id: "benzoyl_peroxide",
+    name: "Benzoyl Peroxide 2.5–5% Gel / Cream",
+    brandExamples: "PanOxyl, Brevoxyl, Acnecide, Oxy, Persol",
+    category: "Topical Acne Agent — Antimicrobial / Keratolytic",
+    mechanism: "Releases oxygen — kills Cutibacterium acnes; mild keratolytic (unblocks pores)",
+    rxType: "OTC",
+    forSymptoms: ["acne"],
+    dosage: {
+      adult: "Apply once or twice daily to clean, dry affected skin",
+      pediatric: "Use from 12 years; start with lowest concentration (2.5%)",
+      elderly: "N/A — primarily a condition of younger adults",
+      maxDaily: "Apply twice daily",
+      frequency: "Once or twice daily",
+      withFood: false,
+      duration: "6–12 weeks for assessment; long-term if effective",
+      notes: "Start with 2.5% concentration and increase if tolerated"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Limited human data; generally considered safe at low concentrations topically. Prefer topical erythromycin if systemic absorption concerns.",
+      minAge: 12,
+      elderlyRisk: "safe",
+      elderlyNote: "Rarely applicable"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Can bleach fabric, hair, and bedding — use white towels and pillowcases",
+      "Start with the lowest strength (2.5%) and apply every other day initially — reduces irritation",
+      "Apply to the whole affected area, not just individual spots",
+      "May cause initial dryness, redness, and peeling — this is normal and settles",
+      "Use a non-comedogenic moisturiser to manage dryness; apply sunscreen on exposed areas"
+    ],
+    patientExplanation: "Benzoyl peroxide kills the bacteria that cause acne and helps unblock pores. It may bleach fabrics — use white bedding. Improvement is visible after 6–8 weeks.",
+    referralIfNoImprovement: "12 weeks; consider topical retinoid or antibiotic (clindamycin/doxycycline)",
+    source: "UpToDate: Benzoyl peroxide — Drug information; NICE Acne Vulgaris Guidelines NG198; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // EYE / EAR INFECTIONS
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── CHLORAMPHENICOL EYE DROPS ───
+  {
+    id: "chloramphenicol_eye",
+    name: "Chloramphenicol 0.5% Eye Drops",
+    brandExamples: "Chlorsig, Optrex Infected Eyes, Kemicetine, Fenicol",
+    category: "Topical Antibiotic — Eye (Broad Spectrum)",
+    mechanism: "Inhibits bacterial protein synthesis by binding 50S ribosomal subunit",
+    rxType: "Both",
+    forSymptoms: ["eye_infection", "eye_redness", "eye_discharge"],
+    dosage: {
+      adult: "1–2 drops in affected eye(s) every 2 hours for 2 days, then every 4 hours for 3 days",
+      pediatric: "Same as adult from 2 years",
+      elderly: "Standard dosing",
+      maxDaily: "Hourly in severe infection",
+      frequency: "Every 2–4 hours while awake",
+      withFood: false,
+      duration: "5–7 days",
+      notes: "Ointment: apply at night for sustained effect"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Generally considered safe topically. Avoid near term due to theoretical grey baby syndrome (minimal risk from eye drops).",
+      minAge: 2,
+      elderlyRisk: "safe",
+      elderlyNote: "Safe topical use"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Tilt head back, pull down lower eyelid, apply drops into the pocket — do not touch dropper to eye",
+      "Can be used in one or both eyes depending on which are infected",
+      "Wash hands before applying; discard drops 4 weeks after opening",
+      "Remove contact lenses before use; do not reinsert for at least 15 minutes",
+      "If eye pain, visual disturbance, or severe redness — refer immediately (may not be simple conjunctivitis)"
+    ],
+    patientExplanation: "Chloramphenicol eye drops treat bacterial eye infections (red, sticky eyes). Apply regularly and wash hands thoroughly before and after.",
+    referralIfNoImprovement: "48–72 hours; if photophobia, eye pain, or vision change — refer urgently to ophthalmology",
+    source: "UpToDate: Chloramphenicol ophthalmic — Drug information; NICE Conjunctivitis Guidance; BNF"
+  },
+
+  // ─── ACETIC ACID EAR DROPS (Otitis Externa) ───
+  {
+    id: "acetic_acid_ear",
+    name: "Acetic Acid 2% Ear Drops",
+    brandExamples: "EarCalm, Vosol, Acetasol, Otic Domeboro",
+    category: "Topical Antiseptic — Ear (Otitis Externa)",
+    mechanism: "Restores acidic environment of ear canal — inhibits bacterial and fungal growth",
+    rxType: "OTC",
+    forSymptoms: ["ear_infection", "ear_pain"],
+    dosage: {
+      adult: "2–3 drops in affected ear 3–4 times daily",
+      pediatric: "2–3 drops 3 times daily (from 12 years)",
+      elderly: "Standard dosing",
+      maxDaily: "4 applications/day",
+      frequency: "3–4 times daily",
+      withFood: false,
+      duration: "7–14 days",
+      notes: "For otitis externa (outer ear canal infection) ONLY — do not use if eardrum is perforated"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "Safe for topical ear use in pregnancy.",
+      minAge: 12,
+      elderlyRisk: "safe",
+      elderlyNote: "Standard use"
+    },
+    interactions: [],
+    counselingPoints: [
+      "For outer ear canal infections only — if you think your eardrum is perforated, do NOT use",
+      "Warm the drops to body temperature before instilling (hold bottle in hands for a minute) — reduces dizziness",
+      "Lie on your side with affected ear up; stay in position for 5 minutes after instilling",
+      "Keep ear dry — no swimming; use cotton wool lightly in ear during showering",
+      "If no improvement in 5 days or ear pain is severe — see a doctor (may need antibacterial/steroid drops)"
+    ],
+    patientExplanation: "Acetic acid ear drops treat swimmer's ear (outer ear infection) by restoring the natural acidic environment that keeps bacteria away. Keep the ear dry during treatment.",
+    referralIfNoImprovement: "5 days; if severe pain, spreading redness, or discharge — prescribe ciprofloxacin ear drops",
+    source: "UpToDate: Otitis externa — Treatment; NICE Otitis Externa Guidelines; BNF"
+  },
+
+  // ─── MIGRAINE TREATMENT: SUMATRIPTAN ───
+  {
+    id: "sumatriptan",
+    name: "Sumatriptan",
+    brandExamples: "Imigran, Imitrex, Suminat, Migranil",
+    category: "Antimigraine — Triptan (5-HT1B/1D Agonist)",
+    mechanism: "Selectively agonises 5-HT1B/1D receptors — causes intracranial vasoconstriction and blocks CGRP release",
+    rxType: "Prescription",
+    forSymptoms: ["migraine", "headache"],
+    dosage: {
+      adult: "50–100 mg at onset of migraine; may repeat after 2 hours if partial response. Max 300 mg/day.",
+      elderly: "50 mg; use with caution — assess cardiovascular risk first",
+      maxDaily: "300 mg/day",
+      frequency: "At onset; repeat once only after 2 hours if needed",
+      withFood: false,
+      duration: "Per attack (not for regular preventive use)",
+      notes: "Only use when migraine is established — not for headache prevention"
+    },
+    contraindications: {
+      conditions: ["heart_disease", "hypertension", "atrial_fibrillation"],
+      medications: ["maoi", "ssri", "snri"],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Limited data; use only for severe unresponsive migraine in pregnancy. Paracetamol is first-line in pregnancy.",
+      minAge: 18,
+      elderlyRisk: "caution",
+      elderlyNote: "Cardiovascular risk assessment essential before use in elderly. Avoid if uncontrolled hypertension."
+    },
+    interactions: [
+      { withMed: "maoi", effect: "CONTRAINDICATED — risk of serotonin syndrome and hypertensive crisis.", severity: "severe" },
+      { withMed: "ssri", effect: "Risk of serotonin syndrome. Use with caution; monitor closely.", severity: "severe" },
+      { withMed: "snri", effect: "Risk of serotonin syndrome.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take at the first sign of a migraine headache — not during aura, and not for regular headache prevention",
+      "Can cause chest tightness, tingling, or flushing — usually harmless but stop if severe chest pain",
+      "Not suitable if you have heart disease, uncontrolled blood pressure, or have had a stroke",
+      "If two doses in 24 hours do not work — this attack is not responding; see a doctor",
+      "Avoid overuse (>10 days/month) — can cause medication-overuse headache"
+    ],
+    patientExplanation: "Sumatriptan specifically treats migraine attacks by constricting the swollen blood vessels in your head. Take it at the start of the headache phase.",
+    referralIfNoImprovement: "Consider preventive therapy if migraines occur >4 days/month; refer to neurology",
+    source: "UpToDate: Sumatriptan — Drug information; NICE Headache Guidelines NG150; BNF"
   },
 ];
 
