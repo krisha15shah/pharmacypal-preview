@@ -130,12 +130,12 @@ function MedicationCard({ result }: { result: MedicationResult }) {
         className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center gap-3 flex-1">
           <Pill className="w-4 h-4 text-slate-400 shrink-0" />
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold text-slate-900 text-sm truncate">{med.name}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded font-semibold shrink-0 ${
+          <div className="flex-1">
+            <div className="flex items-start gap-1.5 flex-wrap">
+              <span className="font-semibold text-slate-900 text-sm leading-snug">{med.name}</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded font-semibold shrink-0 mt-0.5 ${
                 !med.rxType || med.rxType === "OTC"
                   ? "bg-emerald-100 text-emerald-700"
                   : med.rxType === "Prescription"
@@ -145,7 +145,7 @@ function MedicationCard({ result }: { result: MedicationResult }) {
                 {!med.rxType || med.rxType === "OTC" ? "OTC" : med.rxType === "Prescription" ? "Rx" : "OTC / Rx"}
               </span>
             </div>
-            <div className="text-xs text-slate-500 truncate">{med.brandExamples}</div>
+            <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">{med.brandExamples}</div>
           </div>
         </div>
         <div className="flex items-center gap-2 ml-2 shrink-0">
@@ -192,38 +192,38 @@ function MedicationCard({ result }: { result: MedicationResult }) {
                 <div className="text-xs font-bold text-emerald-700 mb-2 flex items-center gap-1">
                   <CheckCircle className="w-3 h-3" /> DOSAGE GUIDE
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-slate-500 font-medium">Adult dose:</span>
-                    <div className="text-slate-800">{med.dosage.adult}</div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex gap-2">
+                    <span className="text-slate-500 font-medium shrink-0 w-24">Adult dose:</span>
+                    <span className="text-slate-800">{med.dosage.adult}</span>
                   </div>
                   {med.dosage.pediatric && (
-                    <div>
-                      <span className="text-slate-500 font-medium">Paediatric:</span>
-                      <div className="text-slate-800">{med.dosage.pediatric}</div>
+                    <div className="flex gap-2">
+                      <span className="text-slate-500 font-medium shrink-0 w-24">Paediatric:</span>
+                      <span className="text-slate-800">{med.dosage.pediatric}</span>
                     </div>
                   )}
                   {med.dosage.elderly && (
-                    <div>
-                      <span className="text-slate-500 font-medium">Elderly:</span>
-                      <div className="text-slate-800">{med.dosage.elderly}</div>
+                    <div className="flex gap-2">
+                      <span className="text-slate-500 font-medium shrink-0 w-24">Elderly:</span>
+                      <span className="text-slate-800">{med.dosage.elderly}</span>
                     </div>
                   )}
-                  <div>
-                    <span className="text-slate-500 font-medium">Max daily:</span>
-                    <div className="text-slate-800">{med.dosage.maxDaily}</div>
+                  <div className="flex gap-2">
+                    <span className="text-slate-500 font-medium shrink-0 w-24">Max daily:</span>
+                    <span className="text-slate-800">{med.dosage.maxDaily}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 font-medium">Duration:</span>
-                    <div className="text-slate-800">{med.dosage.duration}</div>
+                  <div className="flex gap-2">
+                    <span className="text-slate-500 font-medium shrink-0 w-24">Duration:</span>
+                    <span className="text-slate-800">{med.dosage.duration}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 font-medium">With food:</span>
-                    <div className="text-slate-800">{med.dosage.withFood ? "Yes – required" : "Not required"}</div>
+                  <div className="flex gap-2">
+                    <span className="text-slate-500 font-medium shrink-0 w-24">With food:</span>
+                    <span className="text-slate-800">{med.dosage.withFood ? "Yes – take with food" : "Not required"}</span>
                   </div>
                 </div>
                 {med.dosage.notes && (
-                  <div className="mt-2 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                  <div className="mt-2 text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded border border-amber-200 leading-relaxed">
                     ⚡ {med.dosage.notes}
                   </div>
                 )}
