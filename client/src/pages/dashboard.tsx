@@ -505,7 +505,7 @@ export default function Dashboard() {
   const totalAllergies = effectiveProfile.selectedAllergies.length + icdAllergies.filter((i) => !i.internalId).length;
 
   const result = useMemo(() => {
-    if (effectiveProfile.selectedSymptoms.length === 0) return null;
+    if (effectiveProfile.selectedSymptoms.length === 0 && effectiveProfile.selectedConditions.length === 0) return null;
     return runClinicalEngine(effectiveProfile);
   }, [effectiveProfile]);
 

@@ -2896,3 +2896,37 @@ export const POSSIBLE_CONDITIONS: PossibleCondition[] = [
     referralNote: "Persistent insomnia (>4 weeks) requires medical assessment and CBT for insomnia (CBT-I)"
   },
 ];
+
+// ─── CONDITION → IMPLIED SYMPTOMS ────────────────────────────────────────────
+// Maps internal condition IDs to the symptom IDs whose medications are clinically
+// relevant for that condition. Used by the engine to surface Rx recommendations
+// even when only a condition (not a symptom) is selected.
+export const CONDITION_TO_SYMPTOMS: Record<string, string[]> = {
+  asthma:             ["wheeze", "dry_cough", "productive_cough"],
+  copd:               ["wheeze", "productive_cough", "dry_cough"],
+  gerd:               ["heartburn", "nausea", "stomach_cramps"],
+  gerd_chronic:       ["heartburn", "nausea", "stomach_cramps"],
+  peptic_ulcer:       ["heartburn", "stomach_cramps"],
+  gout:               ["gout_attack", "joint_pain"],
+  insomnia:           ["insomnia"],
+  urinary_tract_infection: ["dysuria", "urinary_frequency"],
+  neuropathic_pain:   ["neuropathic_pain"],
+  migraine_chronic:   ["migraine", "headache"],
+  depression_anxiety: ["insomnia"],
+  anxiety:            ["insomnia"],
+  depression:         ["insomnia"],
+  thyroid_disease:    [],
+  hypertension:       [],
+  diabetes_t2:        [],
+  heart_failure:      [],
+  ckd:                [],
+  liver_disease:      [],
+  epilepsy:           [],
+  glaucoma:           [],
+  atrial_fibrillation:[],
+  ischemic_heart_disease: [],
+  hyperlipidemia:     [],
+  bleeding_disorder:  [],
+  osteoporosis:       [],
+  parkinsons:         [],
+};

@@ -6,6 +6,7 @@ import {
   MEDICATIONS,
   POSSIBLE_CONDITIONS,
   REFERRAL_RULES,
+  CONDITION_TO_SYMPTOMS,
   type MedicationRule,
   type PossibleCondition,
   type ReferralRule,
@@ -132,9 +133,17 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   });
 
   // ─── 5. MEDICATION FILTERING ───
+  // Expand symptoms to include any implied by selected conditions
+  const expandedSymptoms = new Set(patient.selectedSymptoms);
+  for (const condId of patient.selectedConditions) {
+    const implied = CONDITION_TO_SYMPTOMS[condId] ?? [];
+    implied.forEach((s) => expandedSymptoms.add(s));
+  }
+  const activeSymptoms = Array.from(expandedSymptoms);
+
   for (const med of MEDICATIONS) {
-    // Skip medications that don't address any selected symptom
-    const treatsSymptom = med.forSymptoms.some((s) => patient.selectedSymptoms.includes(s));
+    // Skip medications that don't address any active symptom (direct + condition-implied)
+    const treatsSymptom = med.forSymptoms.some((s) => activeSymptoms.includes(s));
     if (!treatsSymptom) continue;
 
     const avoidReasons: string[] = [];
