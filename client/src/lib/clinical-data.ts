@@ -50,6 +50,8 @@ export interface MedicationRule {
     allergies: string[];
     pregnancy: "safe" | "caution" | "avoid";
     pregnancyNote?: string;
+    breastfeeding?: "safe" | "caution" | "avoid";
+    breastfeedingNote?: string;
     minAge: number;
     elderlyRisk: "safe" | "caution" | "avoid";
     elderlyNote?: string;
@@ -236,6 +238,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["paracetamol_allergy"],
       pregnancy: "safe",
       pregnancyNote: "First-line analgesic/antipyretic in pregnancy at all trimesters",
+      breastfeeding: "safe",
+      breastfeedingNote: "Compatible with breastfeeding. Excreted in breast milk at very low levels — no known adverse effects on infant at standard therapeutic doses.",
       minAge: 0,
       elderlyRisk: "safe",
       elderlyNote: "Preferred analgesic in elderly; safer than NSAIDs for GI and renal profile"
@@ -281,6 +285,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["nsaids_allergy", "aspirin_allergy"],
       pregnancy: "avoid",
       pregnancyNote: "AVOID in 3rd trimester (risk of premature closure of ductus arteriosus and oligohydramnios). Avoid after 20 weeks gestation. Caution in 1st/2nd trimester only under medical supervision.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Compatible with breastfeeding. Low levels excreted in breast milk; short half-life. Preferred NSAID for breastfeeding mothers. Avoid prolonged high-dose use.",
       minAge: 0.5,
       elderlyRisk: "caution",
       elderlyNote: "Increased risk of GI bleeding, peptic ulcer, renal impairment, and cardiovascular events in elderly. Use lowest dose for shortest duration. Consider gastroprotection (PPI)."
@@ -333,6 +339,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["nsaids_allergy", "aspirin_allergy"],
       pregnancy: "avoid",
       pregnancyNote: "Contraindicated from 20 weeks gestation onwards. Avoid in all trimesters where possible.",
+      breastfeeding: "caution",
+      breastfeedingNote: "Small amounts excreted in breast milk. Use with caution — prefer ibuprofen as the NSAID of choice in breastfeeding. Avoid prolonged use.",
       minAge: 14,
       elderlyRisk: "caution",
       elderlyNote: "Higher cardiovascular risk profile than ibuprofen in elderly. Use only if clearly indicated and with gastroprotection."
@@ -378,6 +386,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["aspirin_allergy", "nsaids_allergy"],
       pregnancy: "avoid",
       pregnancyNote: "Avoid analgesic-dose aspirin in pregnancy. Low-dose (75mg) may be prescribed by physician for specific indications (pre-eclampsia prevention).",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid analgesic doses while breastfeeding — salicylate transfers to breast milk and is associated with risk of Reye's syndrome and metabolic acidosis in the infant. Low-dose aspirin (75–150 mg/day) prescribed by a physician is generally considered acceptable.",
       minAge: 16,
       elderlyRisk: "caution",
       elderlyNote: "High risk of GI bleeding in elderly; prefer paracetamol"
@@ -423,6 +433,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["antihistamine_allergy"],
       pregnancy: "caution",
       pregnancyNote: "Loratadine is preferred antihistamine in pregnancy. Cetirizine can be used if loratadine is not available — limited human data but no established teratogenicity.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Compatible with breastfeeding. Excreted in low levels in breast milk; no adverse effects reported in breastfed infants. Preferred non-sedating antihistamine during breastfeeding.",
       minAge: 2,
       elderlyRisk: "caution",
       elderlyNote: "May cause more sedation in elderly than in younger adults; increased fall risk. Use 5mg dose in elderly."
@@ -465,6 +477,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["antihistamine_allergy"],
       pregnancy: "safe",
       pregnancyNote: "Preferred antihistamine in pregnancy based on available safety data. Considered first-line by most guidelines.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Compatible with breastfeeding. Very low transfer to breast milk. Preferred antihistamine in breastfeeding mothers.",
       minAge: 2,
       elderlyRisk: "safe",
       elderlyNote: "Preferred antihistamine in elderly due to minimal sedation and anticholinergic effects"
@@ -507,6 +521,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: ["antihistamine_allergy"],
       pregnancy: "caution",
       pregnancyNote: "Avoid; prefer loratadine. If needed in an acute emergency, short-term use may be acceptable.",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid while breastfeeding. Diphenhydramine is excreted in breast milk and can cause sedation, irritability, and feeding difficulties in the infant. May also reduce milk supply. Use cetirizine or loratadine instead.",
       minAge: 1,
       elderlyRisk: "avoid",
       elderlyNote: "Avoid in elderly: anticholinergic effects (confusion, urinary retention, constipation), falls, and sedation. Listed on Beers Criteria as inappropriate for elderly."
@@ -549,6 +565,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Avoid in first trimester (possible association with gastroschisis). Avoid throughout pregnancy if possible. Use topical decongestants (oxymetazoline) as safer alternative.",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid while breastfeeding. Pseudoephedrine significantly reduces milk production (prolactin suppression) and is excreted in breast milk, potentially causing infant irritability and disturbed sleep. Use saline nasal spray or steam inhalation instead.",
       minAge: 12,
       elderlyRisk: "avoid",
       elderlyNote: "Avoid in elderly: risk of hypertension, urinary retention, insomnia, and cardiac arrhythmias."
@@ -1972,6 +1990,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Contraindicated — teratogenic in animal studies.",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid while breastfeeding. Tramadol and its active metabolite (O-desmethyltramadol) are excreted in breast milk and can cause CNS depression, respiratory depression, and sedation in the infant. Use paracetamol or ibuprofen instead.",
       minAge: 16,
       elderlyRisk: "caution",
       elderlyNote: "Risk of excessive muscle relaxation and falls in elderly"
@@ -2014,6 +2034,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Avoid in pregnancy — teratogenic in animal studies.",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid while breastfeeding — doxycycline is excreted in breast milk and may affect infant bone and tooth development with prolonged exposure. Use amoxicillin or azithromycin as alternative if clinically appropriate.",
       minAge: 16,
       elderlyRisk: "caution",
       elderlyNote: "Dose reduction required in renal or hepatic impairment. Risk of myopathy with statins."
@@ -2059,6 +2081,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Avoid in pregnancy — use only if absolutely necessary.",
+      breastfeeding: "avoid",
+      breastfeedingNote: "Avoid while breastfeeding — pregabalin is excreted in breast milk at high levels relative to maternal plasma. Potential for CNS depression in infant. Discuss risk-benefit with physician.",
       minAge: 18,
       elderlyRisk: "caution",
       elderlyNote: "Start at very low doses (50–100 mg); titrate based on uric acid levels and renal function"
@@ -2103,6 +2127,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Avoid — associated with increased risk of major congenital malformations and spontaneous abortion.",
+      breastfeeding: "caution",
+      breastfeedingNote: "Metronidazole passes into breast milk. Single high doses (2g stat): temporarily withhold breastfeeding for 12–24 hours and discard milk. Standard short courses (400 mg TDS for 5–7 days): generally considered acceptable — monitor infant for diarrhoea or vomiting.",
       minAge: 18,
       elderlyRisk: "caution",
       elderlyNote: "Risk of falls, dizziness, and cognitive impairment in elderly. Start very low and titrate slowly."
@@ -2195,6 +2221,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "caution",
       pregnancyNote: "Limited data; use only if clearly needed.",
+      breastfeeding: "caution",
+      breastfeedingNote: "Limited data on ondansetron in breastfeeding. Small amounts may pass into breast milk. Use only if clearly needed and for short duration — monitor infant for any drowsiness or feeding changes.",
       minAge: 6,
       elderlyRisk: "caution",
       elderlyNote: "Anticholinergic effects (dry mouth, urinary retention, confusion) more pronounced in elderly"
@@ -2241,6 +2269,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "avoid",
       pregnancyNote: "Avoid single high-dose (150 mg) — linked to cardiac defects in fetus. Topical clotrimazole is preferred in pregnancy.",
+      breastfeeding: "caution",
+      breastfeedingNote: "Fluconazole single dose (150 mg): avoid breastfeeding for 24–48 hours. Prolonged doses (e.g., 200–400 mg/day): avoid breastfeeding. Low single-dose regimes are sometimes considered acceptable — confirm with physician. Topical clotrimazole is the preferred alternative.",
       minAge: 0,
       elderlyRisk: "caution",
       elderlyNote: "Dose reduction required if eGFR <50. QT prolongation risk at higher doses."
@@ -2287,6 +2317,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "safe",
       pregnancyNote: "Preferred antifungal in pregnancy for vaginal thrush. Use cream/pessary only — avoid oral fluconazole.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Topical clotrimazole is considered safe during breastfeeding — minimal systemic absorption. Avoid applying to nipple/areola area; if used there, wipe off gently before each feed.",
       minAge: 0,
       elderlyRisk: "safe",
       elderlyNote: "Safe topical antifungal"
@@ -2630,6 +2662,8 @@ export const MEDICATIONS: MedicationRule[] = [
       allergies: [],
       pregnancy: "caution",
       pregnancyNote: "Limited data; use only for severe unresponsive migraine in pregnancy. Paracetamol is first-line in pregnancy.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Compatible with breastfeeding — sumatriptan is excreted in very low levels in breast milk. Discard expressed milk for 12 hours after the dose as an extra precaution, then resume breastfeeding normally.",
       minAge: 18,
       elderlyRisk: "caution",
       elderlyNote: "Cardiovascular risk assessment essential before use in elderly. Avoid if uncontrolled hypertension."

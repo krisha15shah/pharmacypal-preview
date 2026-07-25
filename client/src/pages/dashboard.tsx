@@ -417,6 +417,7 @@ const DEFAULT_PROFILE: PatientProfile = {
   age: 35,
   gender: "male",
   isPregnant: false,
+  isBreastfeeding: false,
   selectedSymptoms: [],
   selectedConditions: [],
   selectedMedications: [],
@@ -665,7 +666,7 @@ export default function Dashboard() {
                   {(["male", "female", "other"] as const).map((g) => (
                     <button
                       key={g}
-                      onClick={() => setProfile((p) => ({ ...p, gender: g, isPregnant: g !== "female" ? false : p.isPregnant }))}
+                      onClick={() => setProfile((p) => ({ ...p, gender: g, isPregnant: g !== "female" ? false : p.isPregnant, isBreastfeeding: g !== "female" ? false : p.isBreastfeeding }))}
                       className={`flex-1 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all ${
                         profile.gender === g
                           ? "bg-[#0B3D91] text-white border-[#0B3D91]"
@@ -678,25 +679,45 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Pregnancy */}
+              {/* Pregnancy + Breastfeeding */}
               {profile.gender === "female" && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <Baby className="w-4 h-4 text-pink-500" />
-                    <span>Pregnant</span>
-                  </div>
-                  <button
-                    onClick={() => setProfile((p) => ({ ...p, isPregnant: !p.isPregnant }))}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${
-                      profile.isPregnant ? "bg-pink-500" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                        profile.isPregnant ? "translate-x-5" : "translate-x-0.5"
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <Baby className="w-4 h-4 text-pink-500" />
+                      <span>Pregnant</span>
+                    </div>
+                    <button
+                      onClick={() => setProfile((p) => ({ ...p, isPregnant: !p.isPregnant, isBreastfeeding: !p.isPregnant ? false : p.isBreastfeeding }))}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        profile.isPregnant ? "bg-pink-500" : "bg-slate-300"
                       }`}
-                    />
-                  </button>
+                    >
+                      <span
+                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          profile.isPregnant ? "translate-x-5" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <Baby className="w-4 h-4 text-teal-500" />
+                      <span>Breastfeeding</span>
+                    </div>
+                    <button
+                      onClick={() => setProfile((p) => ({ ...p, isBreastfeeding: !p.isBreastfeeding, isPregnant: !p.isBreastfeeding ? false : p.isPregnant }))}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        profile.isBreastfeeding ? "bg-teal-500" : "bg-slate-300"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          profile.isBreastfeeding ? "translate-x-5" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               )}
             </CardContent>

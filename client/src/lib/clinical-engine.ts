@@ -15,6 +15,7 @@ export interface PatientProfile {
   age: number;
   gender: "male" | "female" | "other";
   isPregnant: boolean;
+  isBreastfeeding: boolean;
   selectedSymptoms: string[];
   selectedConditions: string[];
   selectedMedications: string[];
@@ -178,6 +179,26 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
       }
     }
 
+    // ─ Breastfeeding checks ─
+    if (patient.isBreastfeeding) {
+      if (med.contraindications.breastfeeding === "avoid") {
+        avoidReasons.push(
+          `Avoid while breastfeeding. ${med.contraindications.breastfeedingNote ?? "Risk of harm to infant via breast milk."}`
+        );
+      } else if (med.contraindications.breastfeeding === "caution") {
+        cautionReasons.push(
+          `Caution while breastfeeding. ${med.contraindications.breastfeedingNote ?? "Monitor infant for any adverse effects."}`
+        );
+      } else if (med.contraindications.breastfeeding === "safe") {
+        // safe — no warning needed, but note it in counseling (handled below)
+      } else {
+        // No breastfeeding data — add a generic caution
+        cautionReasons.push(
+          `Breastfeeding safety data limited for this medication. Consult physician before use.`
+        );
+      }
+    }
+
     // ─ Age checks ─
     if (patient.age < med.contraindications.minAge) {
       avoidReasons.push(
@@ -305,6 +326,11 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   if (patient.isPregnant) {
     generalCounseling.push("Always consult your physician or obstetrician before taking any medication during pregnancy.");
     generalCounseling.push("Paracetamol is the preferred analgesic/antipyretic in pregnancy.");
+  }
+  if (patient.isBreastfeeding) {
+    generalCounseling.push("Always consult your physician before taking any medication while breastfeeding — many drugs pass into breast milk.");
+    generalCounseling.push("Paracetamol and ibuprofen are generally considered safe during breastfeeding at standard doses.");
+    generalCounseling.push("Timing medication doses immediately after a feed or just before the infant's longest sleep period can minimise infant exposure.");
   }
   if (patient.age >= 65) {
     generalCounseling.push("Elderly patients are more sensitive to medication side effects. Use the lowest effective dose.");
