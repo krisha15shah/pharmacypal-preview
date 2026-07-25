@@ -19,6 +19,38 @@ export interface PatientProfile {
   selectedConditions: string[];
   selectedMedications: string[];
   selectedAllergies: string[];
+  weight?: number; // kg
+  height?: number; // cm
+}
+
+export function calcBMI(weight: number, height: number): number {
+  const hm = height / 100;
+  return weight / (hm * hm);
+}
+
+export function bmiCategory(bmi: number): { label: string; color: string } {
+  if (bmi < 18.5) return { label: "Underweight", color: "text-blue-600" };
+  if (bmi < 25)   return { label: "Normal weight", color: "text-emerald-600" };
+  if (bmi < 30)   return { label: "Overweight", color: "text-amber-600" };
+  if (bmi < 35)   return { label: "Obese (Class I)", color: "text-orange-600" };
+  return            { label: "Obese (Class II+)", color: "text-red-600" };
+}
+
+/** Parse a dose string containing mg/kg (e.g. "25–50 mg/kg/day") and return
+ *  the calculated dose for a given weight. Returns null if no mg/kg found. */
+export function calcWeightDose(doseStr: string, weightKg: number): string | null {
+  const range = doseStr.match(/(\d+(?:\.\d+)?)\s*[–\-]\s*(\d+(?:\.\d+)?)\s*mg\/kg/i);
+  if (range) {
+    const lo = Math.round(parseFloat(range[1]) * weightKg);
+    const hi = Math.round(parseFloat(range[2]) * weightKg);
+    return `${lo}–${hi} mg  (for ${weightKg} kg)`;
+  }
+  const single = doseStr.match(/(\d+(?:\.\d+)?)\s*mg\/kg/i);
+  if (single) {
+    const dose = Math.round(parseFloat(single[1]) * weightKg);
+    return `${dose} mg  (for ${weightKg} kg)`;
+  }
+  return null;
 }
 
 export interface MedicationResult {
@@ -162,6 +194,52 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
       } else if (med.contraindications.elderlyRisk === "caution") {
         cautionReasons.push(
           `Caution in elderly: ${med.contraindications.elderlyNote ?? "Use lower doses and monitor closely."}`
+        );
+      }
+    }
+
+    // ─ BMI / Weight-based safety checks ─
+    if (patient.weight && patient.height) {
+      const bmi = calcBMI(patient.weight, patient.height);
+      const cat = bmiCategory(bmi).label;
+      const isObese = bmi >= 30;
+      const isUnderweight = bmi < 18.5;
+      const isLowWeight = patient.weight < 45;
+
+      // NSAIDs + obesity → higher CV and GI risk
+      if (med.category.toLowerCase().includes("nsaid") && isObese) {
+        cautionReasons.push(
+          `Obesity (BMI ${bmi.toFixed(1)} — ${cat}): significantly increases cardiovascular and GI bleeding risk with NSAIDs. Use lowest dose, shortest duration, with PPI cover.`
+        );
+      }
+
+      // Tramadol + obesity → use ideal body weight
+      if (med.id === "tramadol" && isObese) {
+        cautionReasons.push(
+          `Obese patient (BMI ${bmi.toFixed(1)}): dose tramadol on Ideal Body Weight, not actual weight — avoids accumulation and respiratory depression risk.`
+        );
+      }
+
+      // CNS-active drugs + underweight / very low weight
+      const cnsActive = ["tramadol", "pregabalin", "diphenhydramine", "thiocolchicoside"].includes(med.id);
+      if (cnsActive && (isUnderweight || isLowWeight)) {
+        cautionReasons.push(
+          `Low body weight (${patient.weight} kg, BMI ${bmi.toFixed(1)} — ${cat}): start at the lowest dose and titrate slowly — increased sensitivity to CNS-active medications.`
+        );
+      }
+
+      // Corticosteroids + obesity
+      if (med.id === "prednisolone" && isObese) {
+        cautionReasons.push(
+          `Obesity (BMI ${bmi.toFixed(1)}): higher risk of hyperglycaemia, hypertension, and fluid retention with systemic corticosteroids. Monitor BP and glucose closely.`
+        );
+      }
+
+      // Antibiotics with weight-based paediatric dosing — add note for low-weight adults
+      const hasWeightDosing = /mg\/kg/i.test(med.dosage.adult + " " + (med.dosage.pediatric ?? ""));
+      if (hasWeightDosing && patient.age >= 16 && isLowWeight) {
+        cautionReasons.push(
+          `Low body weight (${patient.weight} kg): standard adult fixed dose may be relatively high — consider weight-adjusted dosing and confirm with prescriber.`
         );
       }
     }

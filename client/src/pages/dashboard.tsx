@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { SYMPTOMS, CONDITIONS, ALLERGIES, CURRENT_MEDICATIONS } from "@/lib/clinical-data";
-import { runClinicalEngine, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
+import { runClinicalEngine, calcBMI, bmiCategory, calcWeightDose, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
@@ -113,9 +113,22 @@ function SeverityBadge({ severity }: { severity: "mild" | "moderate" | "severe" 
 }
 
 // ─── Medication card ───
-function MedicationCard({ result }: { result: MedicationResult }) {
+function MedicationCard({
+  result,
+  patientAge,
+  patientWeight,
+}: {
+  result: MedicationResult;
+  patientAge: number;
+  patientWeight?: number;
+}) {
   const [expanded, setExpanded] = useState(result.safetyLevel === "recommended");
   const { medication: med, safetyLevel, avoidReasons, cautionReasons, activeInteractions } = result;
+
+  // Calculate weight-based dose when patient weight is known
+  const isPaediatric = patientAge < 16;
+  const doseSrc = isPaediatric && med.dosage.pediatric ? med.dosage.pediatric : med.dosage.adult;
+  const weightCalc = patientWeight ? calcWeightDose(doseSrc, patientWeight) : null;
 
   const borderColor =
     safetyLevel === "recommended"
@@ -193,6 +206,15 @@ function MedicationCard({ result }: { result: MedicationResult }) {
                   <CheckCircle className="w-3 h-3" /> DOSAGE GUIDE
                 </div>
                 <div className="space-y-2 text-xs">
+                  {/* Weight-based calculated dose (shown first when available) */}
+                  {weightCalc && (
+                    <div className="flex gap-2 bg-indigo-50 border border-indigo-200 rounded px-2 py-1.5">
+                      <span className="text-indigo-600 font-semibold shrink-0 w-24">
+                        {isPaediatric ? "Paed calc:" : "Calc dose:"}
+                      </span>
+                      <span className="text-indigo-800 font-bold">{weightCalc}</span>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <span className="text-slate-500 font-medium shrink-0 w-24">Adult dose:</span>
                     <span className="text-slate-800">{med.dosage.adult}</span>
@@ -399,6 +421,8 @@ const DEFAULT_PROFILE: PatientProfile = {
   selectedConditions: [],
   selectedMedications: [],
   selectedAllergies: [],
+  weight: undefined,
+  height: undefined,
 };
 const DEFAULT_DRUGS: SelectedDrug[] = [];
 
@@ -575,6 +599,63 @@ export default function Dashboard() {
                 <div className="flex justify-between text-xs text-slate-400 mt-1">
                   <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
                 </div>
+              </div>
+
+              {/* Weight & Height → BMI */}
+              <div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-500 block mb-1">Weight (kg)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={300}
+                      placeholder="e.g. 70"
+                      value={profile.weight ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                        setProfile((p) => ({ ...p, weight: v }));
+                      }}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#0B3D91] focus:ring-1 focus:ring-[#0B3D91]/30"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-500 block mb-1">Height (cm)</label>
+                    <input
+                      type="number"
+                      min={30}
+                      max={250}
+                      placeholder="e.g. 170"
+                      value={profile.height ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                        setProfile((p) => ({ ...p, height: v }));
+                      }}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#0B3D91] focus:ring-1 focus:ring-[#0B3D91]/30"
+                    />
+                  </div>
+                </div>
+
+                {/* BMI display */}
+                {profile.weight && profile.height && (() => {
+                  const bmi = calcBMI(profile.weight, profile.height);
+                  const cat = bmiCategory(bmi);
+                  const bmiColor =
+                    bmi < 18.5 ? "bg-blue-50 border-blue-200" :
+                    bmi < 25   ? "bg-emerald-50 border-emerald-200" :
+                    bmi < 30   ? "bg-amber-50 border-amber-200" :
+                    bmi < 35   ? "bg-orange-50 border-orange-200" :
+                                 "bg-red-50 border-red-200";
+                  return (
+                    <div className={`mt-2 flex items-center justify-between rounded-lg border px-3 py-2 ${bmiColor}`}>
+                      <div className="text-xs text-slate-500">
+                        BMI
+                        <span className={`ml-1 font-bold text-sm ${cat.color}`}>{bmi.toFixed(1)}</span>
+                      </div>
+                      <div className={`text-xs font-semibold ${cat.color}`}>{cat.label}</div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Gender */}
@@ -858,7 +939,7 @@ export default function Dashboard() {
                       <div className="text-xs mt-1">Check the "Caution" tab for options requiring monitoring, or refer to a physician.</div>
                     </div>
                   ) : (
-                    recommended.map((r) => <MedicationCard key={r.medication.id} result={r} />)
+                    recommended.map((r) => <MedicationCard key={r.medication.id} result={r} patientAge={profile.age} patientWeight={profile.weight} />)
                   )}
                 </TabsContent>
 
@@ -872,7 +953,7 @@ export default function Dashboard() {
                         <AlertTriangle className="w-3 h-3 inline mr-1" />
                         These medications can be used but require monitoring, dose adjustment, or specific counseling due to the patient's profile.
                       </div>
-                      {caution.map((r) => <MedicationCard key={r.medication.id} result={r} />)}
+                      {caution.map((r) => <MedicationCard key={r.medication.id} result={r} patientAge={profile.age} patientWeight={profile.weight} />)}
                     </>
                   )}
                 </TabsContent>
@@ -887,7 +968,7 @@ export default function Dashboard() {
                         <XCircle className="w-3 h-3 inline mr-1" />
                         These medications are contraindicated for this patient profile. Reasons are shown in each card.
                       </div>
-                      {avoid.map((r) => <MedicationCard key={r.medication.id} result={r} />)}
+                      {avoid.map((r) => <MedicationCard key={r.medication.id} result={r} patientAge={profile.age} patientWeight={profile.weight} />)}
                     </>
                   )}
                 </TabsContent>
