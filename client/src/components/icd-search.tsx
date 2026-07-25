@@ -151,17 +151,17 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     key={item.code}
                     onClick={() => addItem(item)}
                     disabled={!!already}
-                    className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
+                    className={`w-full text-left px-3 py-2 text-sm flex items-start gap-2 transition-colors ${
                       already ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "hover:bg-blue-50 text-slate-800"
                     }`}
                   >
-                    <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${chap.bg} ${chap.text}`}>
+                    <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${chap.bg} ${chap.text}`}>
                       {item.code}
                     </span>
-                    <span className="flex-1 truncate text-xs">{item.name}</span>
-                    <span className="flex items-center gap-1 shrink-0">
+                    <span className="flex-1 text-xs leading-snug">{item.name}</span>
+                    <span className="flex items-center gap-1 shrink-0 mt-0.5">
                       {!mapped && !already && (
-                        <span className="text-xs text-slate-400 italic">no OTC rules</span>
+                        <span className="text-xs text-slate-400 italic">no rules</span>
                       )}
                       {already && <span className="text-xs text-slate-400">Added</span>}
                     </span>
@@ -191,7 +191,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                 <span className={`font-mono font-bold px-1 py-0.5 rounded text-[10px] ${colors.badge}`}>
                   {item.code}
                 </span>
-                <span className="max-w-[140px] truncate text-slate-800">{item.name}</span>
+                <span className="text-slate-800">{item.name}</span>
                 {!item.internalId && (
                   <span className={`text-[10px] italic px-1 rounded ${chap.bg} ${chap.text}`}>•</span>
                 )}
