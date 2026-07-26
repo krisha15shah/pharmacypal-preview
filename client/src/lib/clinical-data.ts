@@ -2786,15 +2786,19 @@ export const MEDICATIONS: MedicationRule[] = [
 export interface ReferralRule {
   triggerSymptoms?: string[];
   triggerConditions?: string[];
+  maxAge?: number;   // rule only fires when patient.age <= maxAge (years)
+  minAge?: number;   // rule only fires when patient.age >= minAge (years)
+  gender?: "male" | "female"; // rule only fires for this gender
   message: string;
   urgency: "emergency" | "urgent" | "routine";
   reason: string;
 }
 
 export const REFERRAL_RULES: ReferralRule[] = [
-  // Age-specific
+  // Age-specific — only fires for patients ≤ 3 months (0.25 years)
   {
     triggerSymptoms: ["mild_fever", "high_fever", "very_high_fever"],
+    maxAge: 0.25,
     message: "Fever in a child under 3 months requires IMMEDIATE medical evaluation. Do not treat with OTC antipyretics without physician review first.",
     urgency: "emergency",
     reason: "Neonatal/infant fever: possible serious bacterial infection (sepsis, meningitis)"

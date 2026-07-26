@@ -100,9 +100,15 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
 
   // ─── 3. REFERRAL RULES ───
   for (const rule of REFERRAL_RULES) {
+    // Age gates
+    if (rule.maxAge !== undefined && patient.age > rule.maxAge) continue;
+    if (rule.minAge !== undefined && patient.age < rule.minAge) continue;
+    // Gender gate
+    if (rule.gender && patient.gender !== rule.gender) continue;
+
     const hasSymptomTrigger =
       !rule.triggerSymptoms ||
-      rule.triggerSymptoms.some((s) => patient.selectedSymptoms.includes(s));
+      rule.triggerSymptoms.some((s) => activeSymptoms.includes(s));
     const hasConditionTrigger =
       !rule.triggerConditions ||
       rule.triggerConditions.some((c) => patient.selectedConditions.includes(c));
