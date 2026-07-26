@@ -87,11 +87,23 @@ export function icdToSymptomId(code: string, name?: string): string | null {
   // ─── MENSTRUAL / WOMEN'S HEALTH ─────────────────────────────────
   if (c.startsWith("N94")) return "menstrual_pain";
 
+  // ─── CARDIOVASCULAR / BLOOD PRESSURE ────────────────────────────
+  if (c.startsWith("R03")) return "elevated_bp";
+  if (c.startsWith("R00") || c.startsWith("R01")) return "palpitations";
+  if (c.startsWith("I47") || c.startsWith("I48") || c.startsWith("I49")) return "palpitations";
+  if (c.startsWith("R55") || c.startsWith("T67.0") || c.startsWith("T67.1")) return "syncope_collapse";
+  if (c.startsWith("R57")) return "syncope_collapse";
+  if (c.startsWith("R60")) return "edema_swelling";
+  if (c.startsWith("R17")) return "jaundice";
+  if (c.startsWith("R32") || c.startsWith("R33")) return "urinary_retention";
+  if (c.startsWith("R04.2")) return "productive_cough";
+
   // ─── GENERAL ────────────────────────────────────────────────────
   if (c.startsWith("R41.3") || c.startsWith("R41.0")) return "confusion_memory";
   if (c.startsWith("R42") || c.startsWith("H81")) return "dizziness";
   if (c.startsWith("G47")) return "insomnia";
-  if (c.startsWith("F41")) return "anxiety_symptoms";
+  if (c.startsWith("F41") || c.startsWith("F40")) return "anxiety_symptoms";
+  if (c.startsWith("F32") || c.startsWith("F33") || c.startsWith("F34")) return "depression_low_mood";
   if (c.startsWith("R53")) return "fatigue";
 
   // ─── INFECTIOUS DISEASE (A/B chapter) ───────────────────────────
@@ -176,6 +188,15 @@ function icdSymptomByKeyword(name: string): string | null {
   if (/dizziness|dizzy|vertigo|lightheaded/.test(n)) return "dizziness";
   if (/confusion|memory|dementia|disorientation|cognitive/.test(n)) return "confusion_memory";
   if (/fatigue|tiredness|weakness|asthenia/.test(n)) return "fatigue";
+
+  // Cardiovascular / BP
+  if (/blood.pressure|elevated.*pressure|hypertensive.*read|pressure.*read|high.*bp|bp.*high|raised.*bp/.test(n)) return "elevated_bp";
+  if (/palpitation|racing.*heart|irregular.*heart|rapid.*heart|tachycardia|bradycardia|arrhythmia|fast.*heart|heart.*fast/.test(n)) return "palpitations";
+  if (/edema|oedema|ankle.*swell|leg.*swell|swelling.*ankle|swelling.*leg|pedal.*oed|bilateral.*swell/.test(n)) return "edema_swelling";
+  if (/syncope|blackout|black.out|faint|collapse|loss.*conscious|loss.*conscious|unconscious/.test(n)) return "syncope_collapse";
+  if (/jaundice|icterus|yellow.*skin|yellow.*eye|icteric/.test(n)) return "jaundice";
+  if (/urinary.*retention|retention.*urin|unable.*pass.*urin|difficulty.*pass.*urin|poor.*stream|weak.*stream/.test(n)) return "urinary_retention";
+  if (/depression|low.*mood|depressed|major.*depressive/.test(n)) return "depression_low_mood";
 
   return null;
 }

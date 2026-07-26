@@ -878,12 +878,12 @@ export default function Dashboard() {
             <div className="space-y-3">
               {/* ── ICD-only banner (no engine rules matched) ── */}
               {!result && hasAnyData && (
-                <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-semibold text-slate-700 text-sm mb-1">No automated OTC rules for these codes</div>
-                    <div className="text-xs text-slate-600 leading-relaxed">
-                      The safety engine covers ~30 common OTC symptom categories. These ICD codes fall outside that set — apply clinical judgment, consult your standard references (BNF, MIMS, local formulary), and consider physician referral if needed.
+                    <div className="font-semibold text-amber-800 text-sm mb-1">No OTC medication rules for these codes — physician referral recommended</div>
+                    <div className="text-xs text-amber-700 leading-relaxed">
+                      The selected ICD codes represent conditions or findings that fall outside the OTC self-care range. No over-the-counter medications are indicated. Apply clinical judgment, consult BNF / MIMS / local formulary, and refer to a physician for assessment and prescription therapy where appropriate.
                     </div>
                   </div>
                 </div>

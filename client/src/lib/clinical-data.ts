@@ -113,10 +113,21 @@ export const SYMPTOMS: Symptom[] = [
 
   // General
   { id: "fatigue", label: "Fatigue / General Weakness", category: "General", isRedFlag: false },
-  { id: "dizziness", label: "Dizziness / Lightheadedness", category: "General", isRedFlag: false },
+  { id: "dizziness", label: "Dizziness / Lightheadedness / Vertigo", category: "General", isRedFlag: false },
   { id: "insomnia", label: "Insomnia / Difficulty Sleeping", category: "General", isRedFlag: false },
+  { id: "anxiety_symptoms", label: "Anxiety / Panic / Nervousness", category: "General", isRedFlag: false },
+  { id: "depression_low_mood", label: "Depression / Persistent Low Mood", category: "General", isRedFlag: false },
   { id: "jaundice", label: "Yellowing of Eyes / Skin (Jaundice)", category: "General", isRedFlag: true, redFlagMessage: "Jaundice requires urgent physician evaluation. Possible hepatic, biliary, or haematological pathology." },
   { id: "blood_in_urine", label: "Blood in Urine (Haematuria)", category: "General", isRedFlag: true, redFlagMessage: "Blood in urine requires physician evaluation to rule out UTI, kidney stones, or malignancy." },
+
+  // Cardiovascular / Clinical Findings
+  { id: "elevated_bp", label: "Elevated Blood Pressure Reading (R03.0)", category: "Cardiovascular", isRedFlag: false },
+  { id: "palpitations", label: "Palpitations / Racing or Irregular Heartbeat", category: "Cardiovascular", isRedFlag: false },
+  { id: "edema_swelling", label: "Ankle / Leg Swelling / Oedema", category: "Cardiovascular", isRedFlag: false },
+  { id: "syncope_collapse", label: "Fainting / Syncope / Collapse / Blackout", category: "Cardiovascular", isRedFlag: true, redFlagMessage: "Syncope or collapse requires urgent medical evaluation — possible cardiac arrhythmia, hypoglycaemia, or neurological event." },
+
+  // Urinary
+  { id: "urinary_retention", label: "Difficulty Passing Urine / Urinary Retention", category: "Urinary", isRedFlag: false },
 
   // Urinary / Genitourinary
   { id: "dysuria", label: "Painful Urination / Burning (Dysuria)", category: "Urinary", isRedFlag: false },
@@ -1196,6 +1207,49 @@ export const MEDICATIONS: MedicationRule[] = [
     patientExplanation: "This gargle reduces inflammation and pain in a sore throat. Gargle for 30 seconds and spit it out — don't swallow it. If your throat has white patches or fever, see a doctor.",
     referralIfNoImprovement: "5 days; refer if fever, white patches/exudate, lymphadenopathy (possible strep throat needing antibiotics)",
     source: "UpToDate: Benzydamine — Drug information; BNF preparations"
+  },
+
+  // ─── CINNARIZINE (Antivertigo / Dizziness) ───
+  {
+    id: "cinnarizine",
+    name: "Cinnarizine 25 mg",
+    brandExamples: "Stugeron, Cinazyn, Vertizine, Cinaron, Cinaryl",
+    category: "Antihistamine / Antivertigo",
+    mechanism: "H1-receptor antagonist + calcium channel blockade in the labyrinth — reduces vestibular excitability and relieves vertigo, dizziness, and motion sickness",
+    rxType: "OTC",
+    forSymptoms: ["dizziness", "nausea"],
+    dosage: {
+      adult: "25 mg three times daily for vertigo/dizziness. Motion sickness prevention: 15–30 mg 2 hours before travel, then 15 mg every 8 hours during journey.",
+      pediatric: "5–12 years: 15 mg three times daily (vertigo); 5–12 years motion sickness: 15 mg 2 hours before, then 7.5 mg every 8 hours",
+      maxDaily: "75 mg/day for vertigo",
+      frequency: "Three times daily (vertigo); as directed for motion sickness",
+      withFood: true,
+      duration: "Up to 4 weeks for vertigo; review if no improvement. Short-term for motion sickness."
+    },
+    contraindications: {
+      conditions: ["parkinsons"],
+      medications: [],
+      allergies: [],
+      pregnancy: "caution",
+      pregnancyNote: "Insufficient safety data in pregnancy. Avoid especially in first trimester; use only if benefit outweighs risk.",
+      breastfeeding: "caution",
+      breastfeedingNote: "Unknown whether excreted in breast milk; avoid during breastfeeding if possible.",
+      minAge: 5,
+      elderlyRisk: "caution",
+      elderlyNote: "Increased risk of extrapyramidal effects (Parkinson-like symptoms), sedation, and falls in elderly. Use lowest effective dose; monitor closely."
+    },
+    interactions: [],
+    counselingPoints: [
+      "Can cause drowsiness — avoid driving, operating machinery, or alcohol while taking this medication",
+      "Take with or after food to reduce stomach upset",
+      "Do NOT use if you have Parkinson's disease — cinnarizine can worsen symptoms",
+      "If dizziness is new, severe, or associated with hearing loss, tinnitus, headache, or neurological symptoms — see a physician before or instead of self-treating",
+      "If no improvement after 2 weeks, seek physician review",
+      "Motion sickness: take 2 hours before travel, not after symptoms start"
+    ],
+    patientExplanation: "This tablet reduces dizziness and vertigo by calming the balance organ in your ear. Take it with food. It can make you drowsy, so avoid driving. If you have Parkinson's disease, do not take this — tell the pharmacist.",
+    referralIfNoImprovement: "2 weeks — persistent or worsening dizziness, dizziness with hearing loss or tinnitus (possible Ménière's disease), or any neurological symptoms require physician evaluation.",
+    source: "BNF: Cinnarizine — Vestibular disorders; MIMS; WHO Essential Medicines; UpToDate: Vertigo management"
   },
 
   // ─── CHLORHEXIDINE MOUTHWASH ───
@@ -2779,6 +2833,72 @@ export const REFERRAL_RULES: ReferralRule[] = [
     message: "Diarrhea lasting more than 3 days, or associated with high fever, or in a patient with diabetes/immunosuppression, requires physician review.",
     urgency: "urgent",
     reason: "Persistent diarrhea: may indicate bacterial infection or inflammatory bowel disease"
+  },
+
+  // ─── CARDIOVASCULAR / CLINICAL FINDINGS ───
+  {
+    triggerSymptoms: ["elevated_bp"],
+    message: "Elevated blood pressure reading requires physician assessment. No OTC antihypertensive medications are available. Advise lifestyle modification: low-salt diet, regular aerobic exercise, weight reduction, smoking cessation, alcohol limitation. Refer to physician for BP monitoring and antihypertensive therapy initiation if BP ≥ 140/90 mmHg on repeat readings.",
+    urgency: "routine",
+    reason: "Hypertension management requires prescription therapy; no OTC antihypertensives exist"
+  },
+  {
+    triggerSymptoms: ["palpitations"],
+    message: "Palpitations should be assessed by a physician with an ECG. Refer urgently if associated with chest pain, breathlessness, presyncope, or if palpitations are very fast, irregular, or prolonged. Advise to avoid caffeine, alcohol, and stimulants in the meantime.",
+    urgency: "urgent",
+    reason: "Palpitations may indicate cardiac arrhythmia requiring ECG and physician evaluation"
+  },
+  {
+    triggerSymptoms: ["edema_swelling"],
+    message: "New or worsening leg/ankle oedema requires physician evaluation to exclude cardiac failure, renal impairment, hepatic disease, or venous insufficiency. No OTC treatment is appropriate until the cause is identified. Advise leg elevation while resting; refer promptly.",
+    urgency: "routine",
+    reason: "Oedema: requires physician evaluation to identify cardiac, renal, hepatic, or venous cause"
+  },
+  {
+    triggerSymptoms: ["syncope_collapse"],
+    message: "URGENT: Syncope or collapse requires immediate medical assessment. Possible causes include cardiac arrhythmia, structural heart disease, hypoglycaemia, neurological event, or vasovagal episode. Refer to emergency services or physician immediately. Do not leave patient alone.",
+    urgency: "emergency",
+    reason: "Syncope: cardiac or neurological emergency until proven otherwise"
+  },
+  {
+    triggerSymptoms: ["jaundice"],
+    message: "URGENT: Jaundice (yellow skin/eyes) requires urgent physician evaluation to identify the cause — hepatitis, biliary obstruction, haemolysis, or drug-induced liver injury. No OTC treatment is appropriate. Refer promptly.",
+    urgency: "urgent",
+    reason: "Jaundice: indicates hepatic, biliary, or haematological pathology requiring investigation"
+  },
+  {
+    triggerSymptoms: ["blood_in_urine"],
+    message: "Blood in urine requires physician evaluation to rule out UTI, kidney stones, bladder pathology, or malignancy. Refer to physician for urinalysis and further investigation. Do not delay referral even if asymptomatic.",
+    urgency: "urgent",
+    reason: "Haematuria: requires physician evaluation; may indicate serious urological or renal pathology"
+  },
+  {
+    triggerSymptoms: ["urinary_retention"],
+    message: "URGENT: Inability or significant difficulty passing urine requires urgent physician or emergency assessment. Possible causes include prostatic obstruction, urethral stricture, or neurological cause. Do not delay referral — urinary retention can cause kidney damage if untreated.",
+    urgency: "urgent",
+    reason: "Urinary retention: potential obstructive uropathy requiring urgent catheterisation"
+  },
+
+  // ─── MENTAL HEALTH ───
+  {
+    triggerSymptoms: ["anxiety_symptoms"],
+    message: "Anxiety symptoms are not appropriate for OTC self-treatment with sedatives or antihistamines in the long term. Refer to a physician or mental health professional for assessment. Evidence-based treatments include CBT (cognitive behavioural therapy) and, where appropriate, prescription anxiolytics or antidepressants.",
+    urgency: "routine",
+    reason: "Anxiety: requires physician/mental health assessment; no appropriate OTC long-term treatment"
+  },
+  {
+    triggerSymptoms: ["depression_low_mood"],
+    message: "Persistent low mood or depression requires physician assessment. No OTC antidepressants are available. Refer to physician or mental health professional. If patient expresses thoughts of self-harm, treat as emergency and refer immediately.",
+    urgency: "routine",
+    reason: "Depression: requires physician assessment; prescription antidepressants and/or psychotherapy needed"
+  },
+
+  // ─── DIZZINESS / VERTIGO ───
+  {
+    triggerSymptoms: ["dizziness"],
+    message: "Persistent or severe dizziness/vertigo requires physician evaluation to exclude BPPV, labyrinthitis, Ménière's disease, or central causes. Refer urgently if associated with hearing loss, tinnitus, facial weakness, diplopia, or ataxia (possible stroke/TIA). OTC cinnarizine may be trialled for short-term symptomatic relief of peripheral vertigo.",
+    urgency: "routine",
+    reason: "Vertigo/dizziness: central causes (stroke, TIA, tumour) must be excluded"
   },
 ];
 
