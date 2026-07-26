@@ -406,12 +406,12 @@ function LabCategoryBlock({
                       className={`text-[10px] font-bold px-1 py-0.5 rounded ${
                         isCritical
                           ? "bg-red-600 text-white"
-                          : status === "high" || status === "critical-high"
+                          : status === "high"
                           ? "bg-red-100 text-red-700"
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {isCritical ? "‼" : status === "high" || status === "critical-high" ? "H" : "L"}
+                      {isCritical ? "‼" : status === "high" ? "H" : "L"}
                     </span>
                   ) : (
                     <span className="text-[10px] text-slate-300">—</span>
