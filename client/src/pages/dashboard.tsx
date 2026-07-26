@@ -170,6 +170,20 @@ function MedicationCard({
       {expanded && (
         <div className="px-4 pb-4 border-t border-slate-100">
           <div className="mt-3 grid grid-cols-1 gap-3">
+
+            {/* ── PRESCRIPTION REQUIRED BANNER ── */}
+            {med.rxType === "Prescription" && (
+              <div className="bg-blue-50 border border-blue-300 rounded-lg px-3 py-2.5 flex items-start gap-2">
+                <svg className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <div>
+                  <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Physician Prescription Required</p>
+                  <p className="text-xs text-blue-700 mt-0.5">This is a prescription-only medication. A valid prescription from a licensed physician is required before dispensing. Verify prescription before supply.</p>
+                </div>
+              </div>
+            )}
+
             {/* Category & mechanism */}
             <div className="flex flex-wrap gap-2">
               <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{med.category}</span>

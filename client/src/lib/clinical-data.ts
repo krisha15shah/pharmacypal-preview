@@ -1167,7 +1167,7 @@ export const MEDICATIONS: MedicationRule[] = [
     brandExamples: "Difflam, Tantum Verde, Benzydamine Gargle 0.15%",
     category: "Topical NSAID / Analgesic (Oropharyngeal)",
     mechanism: "Topical anti-inflammatory and analgesic; inhibits prostaglandin synthesis locally",
-    forSymptoms: ["sore_throat"],
+    forSymptoms: ["sore_throat", "mouth_ulcer"],
     dosage: {
       adult: "Gargle or rinse 15 mL undiluted every 1.5–3 hours",
       pediatric: "6–12 years: dilute 1:1 with water; >12 years: adult dose",
@@ -1196,6 +1196,48 @@ export const MEDICATIONS: MedicationRule[] = [
     patientExplanation: "This gargle reduces inflammation and pain in a sore throat. Gargle for 30 seconds and spit it out — don't swallow it. If your throat has white patches or fever, see a doctor.",
     referralIfNoImprovement: "5 days; refer if fever, white patches/exudate, lymphadenopathy (possible strep throat needing antibiotics)",
     source: "UpToDate: Benzydamine — Drug information; BNF preparations"
+  },
+
+  // ─── CHLORHEXIDINE MOUTHWASH ───
+  {
+    id: "chlorhexidine_mouth",
+    name: "Chlorhexidine Gluconate 0.2% Mouthwash",
+    brandExamples: "Corsodyl, Chlorhex, Hexidine, Periogard",
+    category: "Antiseptic / Oral Care",
+    mechanism: "Broad-spectrum antiseptic; disrupts microbial cell membranes. Reduces oral bacterial load and speeds aphthous ulcer healing.",
+    rxType: "OTC",
+    forSymptoms: ["mouth_ulcer", "dental_abscess", "oral_thrush", "throat_infection"],
+    dosage: {
+      adult: "Rinse with 10 mL undiluted for 1 minute, twice daily (after meals). Spit out — do not swallow.",
+      pediatric: "Not recommended under 6 years. Children 6–12: use with supervision.",
+      maxDaily: "Twice daily (morning and night)",
+      frequency: "Twice daily",
+      withFood: false,
+      duration: "Up to 2 weeks for mouth ulcers; 1 week post-dental procedure"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: [],
+      pregnancy: "safe",
+      pregnancyNote: "No significant systemic absorption; considered safe in pregnancy.",
+      breastfeeding: "safe",
+      breastfeedingNote: "Negligible systemic absorption; considered safe during breastfeeding.",
+      minAge: 6,
+      elderlyRisk: "safe"
+    },
+    interactions: [],
+    counselingPoints: [
+      "Rinse for a full 60 seconds then spit out — do not swallow",
+      "Avoid eating or drinking for 30 minutes after use",
+      "May cause temporary tooth staining with prolonged use — maintain regular dental hygiene",
+      "Do not use immediately after brushing with toothpaste (toothpaste inactivates chlorhexidine) — wait 30 minutes",
+      "For mouth ulcers: use twice daily until healed; if ulcer persists beyond 2 weeks or is painless, see a physician to rule out serious cause",
+      "Not effective against viral ulcers (herpes); if cold sores are suspected, see a physician"
+    ],
+    patientExplanation: "This antiseptic mouthwash kills bacteria in the mouth and helps mouth ulcers heal faster. Rinse with 10 mL for 1 minute and spit. Don't eat or drink for 30 minutes after use. If the ulcer doesn't heal within 2 weeks, see a doctor.",
+    referralIfNoImprovement: "2 weeks — persistent painless ulcers or ulcers with induration must be referred to rule out oral malignancy.",
+    source: "BNF: Chlorhexidine — Oral hygiene; WHO Essential Medicines; UpToDate: Aphthous ulcer management"
   },
 
   // ─── DIPHENHYDRAMINE (Sleep Aid) ───
