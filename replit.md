@@ -1,4 +1,4 @@
-# Pharmaceutical Consultation System
+# MedRule — Clinical Decision Support
 
 ## Overview
 

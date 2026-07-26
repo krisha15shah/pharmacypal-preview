@@ -563,7 +563,7 @@ export default function Dashboard() {
               <PillBottle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-bold text-lg leading-tight">RxCopilot</div>
+              <div className="font-bold text-lg leading-tight">MedRule</div>
               <div className="text-xs text-blue-200">Evidence-based clinical rules · UpToDate · BNF · WHO · NICE</div>
             </div>
           </div>
