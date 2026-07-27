@@ -484,6 +484,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("recommended");
   const [labValues, setLabValues] = useState<Record<string, string>>({});
   const [labPanelOpen, setLabPanelOpen] = useState(false);
+  const [lifestyle, setLifestyle] = useState<Lifestyle>(DEFAULT_LIFESTYLE);
+  const [lifestylePanelOpen, setLifestylePanelOpen] = useState(false);
 
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
