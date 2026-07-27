@@ -208,8 +208,11 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
 
       {/* Note for codes outside the engine rule set */}
       {selectedItems.some((i) => !i.internalId) && (
-        <div className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded px-2 py-1.5">
-          📋 Some codes fall outside the automated OTC rule set — apply clinical judgment and consult your standard references.
+        <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 flex gap-1.5">
+          <span>⚕️</span>
+          <span>
+            One or more selected codes fall outside the automated OTC rule set. <strong>Physician referral is recommended</strong> — these conditions typically require prescription therapy or clinical evaluation.
+          </span>
         </div>
       )}
     </div>
