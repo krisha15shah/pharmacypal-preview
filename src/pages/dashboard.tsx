@@ -1327,6 +1327,21 @@ export default function Dashboard() {
                 {/* Counseling */}
                 <TabsContent value="counseling" className="mt-3">
                   <div className="space-y-3">
+                    {/* Lifestyle & social notes */}
+                    {lifestyleNotes.length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <div className="font-bold text-sm text-amber-900 mb-3 flex items-center gap-2">
+                          <HeartPulse className="w-4 h-4" /> Lifestyle & Social Considerations
+                        </div>
+                        {lifestyleNotes.map((pt, i) => (
+                          <div key={i} className="flex gap-2 text-sm text-amber-900 mb-2">
+                            <span className="text-amber-500 mt-0.5">•</span>
+                            <span>{pt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* General counseling */}
                     {result && result.generalCounseling.length > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
