@@ -664,6 +664,8 @@ export default function Dashboard() {
     setIcdAllergies([]);
     setLabValues({});
     setLabPanelOpen(false);
+    setLifestyle(DEFAULT_LIFESTYLE);
+    setLifestylePanelOpen(false);
     setActiveTab("recommended");
   };
 
