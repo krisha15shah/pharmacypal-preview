@@ -11,7 +11,7 @@ export function icdToSymptomId(code: string, name?: string): string | null {
   if (c.startsWith("M79.3") || c.startsWith("M79.1") || c.startsWith("R68.89")) return "body_ache";
   if (c.startsWith("R50.0") || c.startsWith("R50.8")) return "high_fever";
   if (c.startsWith("R50.9") || c.startsWith("R50")) return "mild_fever";
-  if (c.startsWith("R68.83") || c.startsWith("R68.0")) return "mild_fever"; // chills / rigors (fever-associated)
+  if (c.startsWith("R68.83") || c.startsWith("R68.0")) return "chills"; // chills / rigors
   if (c.startsWith("R07")) return "chest_pain";
 
   // ─── MUSCULOSKELETAL ────────────────────────────────────────────
@@ -132,7 +132,7 @@ function icdSymptomByKeyword(name: string): string | null {
   if (/neuropath|neuralgia|nerve pain|burning.*nerve|diabetic.*neuropathy|polyneuropathy/.test(n)) return "neuropathic_pain";
   if (/high fever|hyperpyrexia|fever.*high/.test(n)) return "high_fever";
   if (/fever|pyrexia|febrile/.test(n)) return "mild_fever";
-  if (/chills|rigor|shivering/.test(n)) return "mild_fever";
+  if (/chills|rigor|shivering/.test(n)) return "chills";
 
   // Respiratory & Infections
   if (/tonsillitis|tonsillar.*infect|streptococcal.*throat|bacterial.*tonsil/.test(n)) return "throat_infection";

@@ -89,6 +89,7 @@ export const SYMPTOMS: Symptom[] = [
   { id: "mild_fever", label: "Mild Fever (37.5–38.4°C / 99.5–101°F)", category: "Fever", isRedFlag: false },
   { id: "high_fever", label: "High Fever (≥38.5°C / ≥101.3°F)", category: "Fever", isRedFlag: false },
   { id: "very_high_fever", label: "Very High Fever (≥40°C / ≥104°F)", category: "Fever", isRedFlag: true, redFlagMessage: "Fever ≥40°C requires urgent medical evaluation. Refer to physician/ER today." },
+  { id: "chills", label: "Chills / Rigors / Shivering", category: "Fever", isRedFlag: false },
 
   // Gastrointestinal
   { id: "nausea", label: "Nausea", category: "Gastrointestinal", isRedFlag: false },
@@ -232,7 +233,7 @@ export const MEDICATIONS: MedicationRule[] = [
     brandExamples: "Panadol, Calpol, Tylenol, Dolo 650",
     category: "Analgesic / Antipyretic",
     mechanism: "Central analgesic; inhibits prostaglandin synthesis in CNS",
-    forSymptoms: ["headache", "body_ache", "joint_pain", "back_pain", "toothache", "ear_pain", "sore_throat", "menstrual_pain", "mild_fever", "high_fever", "very_high_fever", "fatigue"],
+    forSymptoms: ["headache", "body_ache", "joint_pain", "back_pain", "toothache", "ear_pain", "sore_throat", "menstrual_pain", "mild_fever", "high_fever", "very_high_fever", "chills", "fatigue"],
     dosage: {
       adult: "500–1000 mg every 4–6 hours",
       pediatric: "10–15 mg/kg every 4–6 hours (max 5 doses/day)",
@@ -279,7 +280,7 @@ export const MEDICATIONS: MedicationRule[] = [
     brandExamples: "Brufen, Advil, Nurofen, Motrin",
     category: "NSAID (Non-Steroidal Anti-Inflammatory Drug)",
     mechanism: "Non-selective COX-1 and COX-2 inhibitor; reduces prostaglandin synthesis",
-    forSymptoms: ["headache", "body_ache", "joint_pain", "back_pain", "toothache", "ear_pain", "sore_throat", "menstrual_pain", "mild_fever", "high_fever", "very_high_fever"],
+    forSymptoms: ["headache", "body_ache", "joint_pain", "back_pain", "toothache", "ear_pain", "sore_throat", "menstrual_pain", "mild_fever", "high_fever", "very_high_fever", "chills"],
     dosage: {
       adult: "400–600 mg every 6–8 hours",
       pediatric: "5–10 mg/kg every 6–8 hours (>6 months, >5kg)",
