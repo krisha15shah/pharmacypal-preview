@@ -162,7 +162,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     <span className="flex items-center gap-1 shrink-0 mt-0.5">
                       {!mapped && !already && (
                         <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
-                          Rx referral
+                          Physician referral needed
                         </span>
                       )}
                       {already && <span className="text-xs text-slate-400">Added</span>}
