@@ -538,6 +538,94 @@ export default function Dashboard() {
     return out;
   }, [labValues, profile.gender]);
 
+  // Lifestyle-derived counseling notes
+  const lifestyleNotes = useMemo<string[]>(() => {
+    const notes: string[] = [];
+    const meds = new Set(profile.selectedMedications);
+    const conds = new Set(effectiveProfile.selectedConditions);
+
+    // Smoking
+    if (lifestyle.smoking === "light" || lifestyle.smoking === "heavy") {
+      notes.push(
+        `Smoker (${lifestyle.smoking}): induces CYP1A2 — reduces levels of theophylline, clozapine, olanzapine, caffeine. Increases CV risk with NSAIDs and combined hormonal contraceptives (avoid COC if ≥35 y).`
+      );
+      if (meds.has("warfarin")) notes.push("Smoking alters warfarin metabolism — monitor INR closely, especially after cessation.");
+    }
+    if (lifestyle.smoking === "former") {
+      notes.push("Former smoker: re-check doses of CYP1A2 substrates (theophylline, clozapine) — levels rise after quitting.");
+    }
+
+    // Alcohol
+    if (lifestyle.alcohol === "moderate" || lifestyle.alcohol === "heavy") {
+      notes.push(
+        `Alcohol use (${lifestyle.alcohol}): avoid combining with paracetamol >2 g/day (hepatotoxicity), NSAIDs (GI bleeding), metronidazole/tinidazole (disulfiram reaction), sedatives, tramadol, opioids and benzodiazepines.`
+      );
+      if (lifestyle.alcohol === "heavy") {
+        notes.push("Heavy alcohol use: cap paracetamol at 2 g/day; screen for liver disease; increased bleeding risk with anticoagulants.");
+      }
+    }
+
+    // Recreational drugs
+    if (lifestyle.recreationalDrugs) {
+      notes.push("Recreational drug use disclosed: screen for interactions (opioids, MDMA, cocaine, cannabis) — avoid additional CNS depressants and serotonergic agents (tramadol, SSRIs).");
+    }
+
+    // Caffeine
+    if (lifestyle.caffeineHigh) {
+      notes.push("High caffeine intake: additive stimulant effect with pseudoephedrine, salbutamol, decongestants — may worsen tremor, palpitations, insomnia.");
+    }
+
+    // Diet
+    if (lifestyle.diet === "vegan" || lifestyle.diet === "vegetarian") {
+      notes.push(`${lifestyle.diet === "vegan" ? "Vegan" : "Vegetarian"} diet: check B12, iron, vitamin D status; some formulations contain gelatin/lactose — offer vegetarian-friendly alternatives.`);
+    }
+    if (lifestyle.diet === "highSalt" && (conds.has("hypertension") || conds.has("heart_disease") || conds.has("kidney_disease"))) {
+      notes.push("High-salt diet with cardiovascular/renal condition: counsel sodium restriction (<2 g/day) — improves BP and diuretic efficacy.");
+    }
+    if (lifestyle.diet === "lowSodium" && meds.has("lithium")) {
+      notes.push("Low-sodium diet + lithium: risk of lithium toxicity — monitor levels.");
+    }
+    if (lifestyle.diet === "highFat") {
+      notes.push("High-fat diet: affects absorption of some drugs (e.g. griseofulvin ↑, atorvastatin unchanged, alendronate ↓). Advise standardised intake around dosing.");
+    }
+
+    // Exercise
+    if (lifestyle.exercise === "sedentary") {
+      notes.push("Sedentary lifestyle: higher VTE, cardiometabolic and constipation risk — counsel activity; review need for prophylaxis if immobile.");
+    }
+    if (lifestyle.exercise === "active" && (meds.has("warfarin") || meds.has("dabigatran_rivaroxaban"))) {
+      notes.push("Active/contact-sport patient on anticoagulant: counsel bleeding/injury risk and protective measures.");
+    }
+
+    // Occupation risk
+    if (lifestyle.occupationRisk) {
+      notes.push("Drives / operates machinery: avoid sedating antihistamines (diphenhydramine, chlorpheniramine), opioids, tramadol, pregabalin, thiocolchicoside during work hours — impaired reaction time.");
+    }
+
+    // Sleep
+    if (lifestyle.poorSleep) {
+      notes.push("Poor sleep: avoid evening pseudoephedrine, caffeine-containing analgesics, and stimulating decongestants. Consider sleep hygiene counselling before hypnotics.");
+    }
+
+    // Grapefruit juice
+    if (lifestyle.grapefruitJuice) {
+      notes.push("Regular grapefruit juice: inhibits CYP3A4 — raises levels of statins (simvastatin, atorvastatin), calcium-channel blockers, some benzodiazepines, ciclosporin. Advise avoidance or drug switch.");
+    }
+
+    return notes;
+  }, [lifestyle, profile.selectedMedications, effectiveProfile.selectedConditions]);
+
+  const lifestyleActiveCount =
+    (lifestyle.smoking !== "never" ? 1 : 0) +
+    (lifestyle.alcohol !== "none" ? 1 : 0) +
+    (lifestyle.recreationalDrugs ? 1 : 0) +
+    (lifestyle.caffeineHigh ? 1 : 0) +
+    (lifestyle.diet !== "balanced" ? 1 : 0) +
+    (lifestyle.exercise !== "moderate" ? 1 : 0) +
+    (lifestyle.occupationRisk ? 1 : 0) +
+    (lifestyle.poorSleep ? 1 : 0) +
+    (lifestyle.grapefruitJuice ? 1 : 0);
+
 
   // Badge counts: chips + ICD items (including record-only ones for display)
   const totalSymptoms = effectiveProfile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
