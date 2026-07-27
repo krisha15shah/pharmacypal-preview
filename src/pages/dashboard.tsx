@@ -980,7 +980,154 @@ export default function Dashboard() {
               </CardContent>
             )}
           </Card>
+
+          {/* Lifestyle & Social */}
+          <Card className="border-slate-200">
+            <CardHeader className="pb-2 pt-3 px-4">
+              <CardTitle className="text-sm font-bold text-slate-700">
+                <button
+                  className="flex items-center gap-2 w-full text-left"
+                  onClick={() => setLifestylePanelOpen((o) => !o)}
+                >
+                  <HeartPulse className="w-4 h-4 text-[#0B3D91]" />
+                  <span>Lifestyle & Social</span>
+                  <div className="flex items-center gap-2 ml-auto">
+                    {lifestyleActiveCount > 0 && (
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                        {lifestyleActiveCount} noted
+                      </Badge>
+                    )}
+                    {lifestylePanelOpen
+                      ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                      : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  </div>
+                </button>
+              </CardTitle>
+            </CardHeader>
+            {lifestylePanelOpen && (
+              <CardContent className="px-4 pb-4 space-y-3">
+                <p className="text-xs text-slate-400">
+                  Social & lifestyle factors that influence medication choice, dose and counseling.
+                </p>
+
+                {/* Smoking */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Smoking</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["never", "former", "light", "heavy"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, smoking: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.smoking === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v === "light" ? "≤10/day" : v === "heavy" ? ">10/day" : v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Alcohol */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Alcohol</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["none", "occasional", "moderate", "heavy"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, alcohol: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.alcohol === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Diet */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Diet</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["balanced", "vegan", "vegetarian", "lowSodium", "highSalt", "highFat"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, diet: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border ${
+                          lifestyle.diet === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v === "lowSodium" ? "Low sodium" : v === "highSalt" ? "High salt" : v === "highFat" ? "High fat" : v[0].toUpperCase() + v.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Exercise */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Physical activity</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["sedentary", "moderate", "active"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, exercise: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.exercise === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Other factors</label>
+                  <div className="flex flex-wrap gap-1">
+                    {([
+                      ["recreationalDrugs", "Recreational drugs"],
+                      ["caffeineHigh", "High caffeine"],
+                      ["occupationRisk", "Drives / machinery"],
+                      ["poorSleep", "Poor sleep"],
+                      ["grapefruitJuice", "Grapefruit juice"],
+                    ] as const).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => setLifestyle((p) => ({ ...p, [key]: !p[key] }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border ${
+                          lifestyle[key]
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {lifestyleNotes.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
+                    <div className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">
+                      <Info className="w-3 h-3" /> {lifestyleNotes.length} lifestyle-based note{lifestyleNotes.length > 1 ? "s" : ""} — see Counseling tab
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            )}
+          </Card>
         </div>
+
 
         {/* ══ RIGHT PANEL — Results ══ */}
         <div className="flex-1 min-w-0 overflow-y-auto max-h-[calc(100vh-80px)] pb-4">
