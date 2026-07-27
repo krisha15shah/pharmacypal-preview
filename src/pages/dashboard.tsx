@@ -1,8 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "wouter";
 import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
-  Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical, HeartPulse
+  Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical, HeartPulse,
+  Calculator
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -701,13 +703,18 @@ export default function Dashboard() {
               <div className="text-xs text-blue-200">Evidence-based clinical rules · UpToDate · BNF · WHO · NICE</div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {result && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-blue-200">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-blue-200 mr-1">
                 <Stethoscope className="w-4 h-4" />
                 {recommended.length} recommended · {caution.length} caution · {avoid.length} avoid
               </div>
             )}
+            <Link href="/calculators">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Calculator className="w-4 h-4 mr-1" /> Calculators
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
