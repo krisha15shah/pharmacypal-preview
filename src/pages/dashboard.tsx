@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
-  Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical
+  Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical, HeartPulse
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -441,6 +441,30 @@ const DEFAULT_PROFILE: PatientProfile = {
 };
 const DEFAULT_DRUGS: SelectedDrug[] = [];
 
+// ─── Lifestyle & Social ───
+interface Lifestyle {
+  smoking: "never" | "former" | "light" | "heavy";
+  alcohol: "none" | "occasional" | "moderate" | "heavy";
+  recreationalDrugs: boolean;
+  caffeineHigh: boolean;
+  diet: "balanced" | "vegan" | "vegetarian" | "lowSodium" | "highSalt" | "highFat";
+  exercise: "sedentary" | "moderate" | "active";
+  occupationRisk: boolean;    // drives / operates machinery
+  poorSleep: boolean;
+  grapefruitJuice: boolean;
+}
+const DEFAULT_LIFESTYLE: Lifestyle = {
+  smoking: "never",
+  alcohol: "none",
+  recreationalDrugs: false,
+  caffeineHigh: false,
+  diet: "balanced",
+  exercise: "moderate",
+  occupationRisk: false,
+  poorSleep: false,
+  grapefruitJuice: false,
+};
+
 const symptomsByCategory = SYMPTOMS.reduce(
   (acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];
@@ -460,6 +484,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("recommended");
   const [labValues, setLabValues] = useState<Record<string, string>>({});
   const [labPanelOpen, setLabPanelOpen] = useState(false);
+  const [lifestyle, setLifestyle] = useState<Lifestyle>(DEFAULT_LIFESTYLE);
+  const [lifestylePanelOpen, setLifestylePanelOpen] = useState(false);
 
   const toggle = (field: keyof Pick<PatientProfile, "selectedSymptoms" | "selectedConditions" | "selectedAllergies">) =>
     (id: string) => {
@@ -512,6 +538,94 @@ export default function Dashboard() {
     return out;
   }, [labValues, profile.gender]);
 
+  // Lifestyle-derived counseling notes
+  const lifestyleNotes = useMemo<string[]>(() => {
+    const notes: string[] = [];
+    const meds = new Set(profile.selectedMedications);
+    const conds = new Set(effectiveProfile.selectedConditions);
+
+    // Smoking
+    if (lifestyle.smoking === "light" || lifestyle.smoking === "heavy") {
+      notes.push(
+        `Smoker (${lifestyle.smoking}): induces CYP1A2 — reduces levels of theophylline, clozapine, olanzapine, caffeine. Increases CV risk with NSAIDs and combined hormonal contraceptives (avoid COC if ≥35 y).`
+      );
+      if (meds.has("warfarin")) notes.push("Smoking alters warfarin metabolism — monitor INR closely, especially after cessation.");
+    }
+    if (lifestyle.smoking === "former") {
+      notes.push("Former smoker: re-check doses of CYP1A2 substrates (theophylline, clozapine) — levels rise after quitting.");
+    }
+
+    // Alcohol
+    if (lifestyle.alcohol === "moderate" || lifestyle.alcohol === "heavy") {
+      notes.push(
+        `Alcohol use (${lifestyle.alcohol}): avoid combining with paracetamol >2 g/day (hepatotoxicity), NSAIDs (GI bleeding), metronidazole/tinidazole (disulfiram reaction), sedatives, tramadol, opioids and benzodiazepines.`
+      );
+      if (lifestyle.alcohol === "heavy") {
+        notes.push("Heavy alcohol use: cap paracetamol at 2 g/day; screen for liver disease; increased bleeding risk with anticoagulants.");
+      }
+    }
+
+    // Recreational drugs
+    if (lifestyle.recreationalDrugs) {
+      notes.push("Recreational drug use disclosed: screen for interactions (opioids, MDMA, cocaine, cannabis) — avoid additional CNS depressants and serotonergic agents (tramadol, SSRIs).");
+    }
+
+    // Caffeine
+    if (lifestyle.caffeineHigh) {
+      notes.push("High caffeine intake: additive stimulant effect with pseudoephedrine, salbutamol, decongestants — may worsen tremor, palpitations, insomnia.");
+    }
+
+    // Diet
+    if (lifestyle.diet === "vegan" || lifestyle.diet === "vegetarian") {
+      notes.push(`${lifestyle.diet === "vegan" ? "Vegan" : "Vegetarian"} diet: check B12, iron, vitamin D status; some formulations contain gelatin/lactose — offer vegetarian-friendly alternatives.`);
+    }
+    if (lifestyle.diet === "highSalt" && (conds.has("hypertension") || conds.has("heart_disease") || conds.has("kidney_disease"))) {
+      notes.push("High-salt diet with cardiovascular/renal condition: counsel sodium restriction (<2 g/day) — improves BP and diuretic efficacy.");
+    }
+    if (lifestyle.diet === "lowSodium" && meds.has("lithium")) {
+      notes.push("Low-sodium diet + lithium: risk of lithium toxicity — monitor levels.");
+    }
+    if (lifestyle.diet === "highFat") {
+      notes.push("High-fat diet: affects absorption of some drugs (e.g. griseofulvin ↑, atorvastatin unchanged, alendronate ↓). Advise standardised intake around dosing.");
+    }
+
+    // Exercise
+    if (lifestyle.exercise === "sedentary") {
+      notes.push("Sedentary lifestyle: higher VTE, cardiometabolic and constipation risk — counsel activity; review need for prophylaxis if immobile.");
+    }
+    if (lifestyle.exercise === "active" && (meds.has("warfarin") || meds.has("dabigatran_rivaroxaban"))) {
+      notes.push("Active/contact-sport patient on anticoagulant: counsel bleeding/injury risk and protective measures.");
+    }
+
+    // Occupation risk
+    if (lifestyle.occupationRisk) {
+      notes.push("Drives / operates machinery: avoid sedating antihistamines (diphenhydramine, chlorpheniramine), opioids, tramadol, pregabalin, thiocolchicoside during work hours — impaired reaction time.");
+    }
+
+    // Sleep
+    if (lifestyle.poorSleep) {
+      notes.push("Poor sleep: avoid evening pseudoephedrine, caffeine-containing analgesics, and stimulating decongestants. Consider sleep hygiene counselling before hypnotics.");
+    }
+
+    // Grapefruit juice
+    if (lifestyle.grapefruitJuice) {
+      notes.push("Regular grapefruit juice: inhibits CYP3A4 — raises levels of statins (simvastatin, atorvastatin), calcium-channel blockers, some benzodiazepines, ciclosporin. Advise avoidance or drug switch.");
+    }
+
+    return notes;
+  }, [lifestyle, profile.selectedMedications, effectiveProfile.selectedConditions]);
+
+  const lifestyleActiveCount =
+    (lifestyle.smoking !== "never" ? 1 : 0) +
+    (lifestyle.alcohol !== "none" ? 1 : 0) +
+    (lifestyle.recreationalDrugs ? 1 : 0) +
+    (lifestyle.caffeineHigh ? 1 : 0) +
+    (lifestyle.diet !== "balanced" ? 1 : 0) +
+    (lifestyle.exercise !== "moderate" ? 1 : 0) +
+    (lifestyle.occupationRisk ? 1 : 0) +
+    (lifestyle.poorSleep ? 1 : 0) +
+    (lifestyle.grapefruitJuice ? 1 : 0);
+
 
   // Badge counts: chips + ICD items (including record-only ones for display)
   const totalSymptoms = effectiveProfile.selectedSymptoms.length + icdSymptoms.filter((i) => !i.internalId).length;
@@ -550,6 +664,8 @@ export default function Dashboard() {
     setIcdAllergies([]);
     setLabValues({});
     setLabPanelOpen(false);
+    setLifestyle(DEFAULT_LIFESTYLE);
+    setLifestylePanelOpen(false);
     setActiveTab("recommended");
   };
 
@@ -864,7 +980,154 @@ export default function Dashboard() {
               </CardContent>
             )}
           </Card>
+
+          {/* Lifestyle & Social */}
+          <Card className="border-slate-200">
+            <CardHeader className="pb-2 pt-3 px-4">
+              <CardTitle className="text-sm font-bold text-slate-700">
+                <button
+                  className="flex items-center gap-2 w-full text-left"
+                  onClick={() => setLifestylePanelOpen((o) => !o)}
+                >
+                  <HeartPulse className="w-4 h-4 text-[#0B3D91]" />
+                  <span>Lifestyle & Social</span>
+                  <div className="flex items-center gap-2 ml-auto">
+                    {lifestyleActiveCount > 0 && (
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                        {lifestyleActiveCount} noted
+                      </Badge>
+                    )}
+                    {lifestylePanelOpen
+                      ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                      : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  </div>
+                </button>
+              </CardTitle>
+            </CardHeader>
+            {lifestylePanelOpen && (
+              <CardContent className="px-4 pb-4 space-y-3">
+                <p className="text-xs text-slate-400">
+                  Social & lifestyle factors that influence medication choice, dose and counseling.
+                </p>
+
+                {/* Smoking */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Smoking</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["never", "former", "light", "heavy"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, smoking: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.smoking === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v === "light" ? "≤10/day" : v === "heavy" ? ">10/day" : v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Alcohol */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Alcohol</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["none", "occasional", "moderate", "heavy"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, alcohol: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.alcohol === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Diet */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Diet</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["balanced", "vegan", "vegetarian", "lowSodium", "highSalt", "highFat"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, diet: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border ${
+                          lifestyle.diet === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v === "lowSodium" ? "Low sodium" : v === "highSalt" ? "High salt" : v === "highFat" ? "High fat" : v[0].toUpperCase() + v.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Exercise */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Physical activity</label>
+                  <div className="flex flex-wrap gap-1">
+                    {(["sedentary", "moderate", "active"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setLifestyle((p) => ({ ...p, exercise: v }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border capitalize ${
+                          lifestyle.exercise === v
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Other factors</label>
+                  <div className="flex flex-wrap gap-1">
+                    {([
+                      ["recreationalDrugs", "Recreational drugs"],
+                      ["caffeineHigh", "High caffeine"],
+                      ["occupationRisk", "Drives / machinery"],
+                      ["poorSleep", "Poor sleep"],
+                      ["grapefruitJuice", "Grapefruit juice"],
+                    ] as const).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => setLifestyle((p) => ({ ...p, [key]: !p[key] }))}
+                        className={`px-2.5 py-1 rounded-full text-xs border ${
+                          lifestyle[key]
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {lifestyleNotes.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
+                    <div className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">
+                      <Info className="w-3 h-3" /> {lifestyleNotes.length} lifestyle-based note{lifestyleNotes.length > 1 ? "s" : ""} — see Counseling tab
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            )}
+          </Card>
         </div>
+
 
         {/* ══ RIGHT PANEL — Results ══ */}
         <div className="flex-1 min-w-0 overflow-y-auto max-h-[calc(100vh-80px)] pb-4">
@@ -1064,6 +1327,21 @@ export default function Dashboard() {
                 {/* Counseling */}
                 <TabsContent value="counseling" className="mt-3">
                   <div className="space-y-3">
+                    {/* Lifestyle & social notes */}
+                    {lifestyleNotes.length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <div className="font-bold text-sm text-amber-900 mb-3 flex items-center gap-2">
+                          <HeartPulse className="w-4 h-4" /> Lifestyle & Social Considerations
+                        </div>
+                        {lifestyleNotes.map((pt, i) => (
+                          <div key={i} className="flex gap-2 text-sm text-amber-900 mb-2">
+                            <span className="text-amber-500 mt-0.5">•</span>
+                            <span>{pt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* General counseling */}
                     {result && result.generalCounseling.length > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
