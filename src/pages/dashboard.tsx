@@ -441,6 +441,30 @@ const DEFAULT_PROFILE: PatientProfile = {
 };
 const DEFAULT_DRUGS: SelectedDrug[] = [];
 
+// ─── Lifestyle & Social ───
+interface Lifestyle {
+  smoking: "never" | "former" | "light" | "heavy";
+  alcohol: "none" | "occasional" | "moderate" | "heavy";
+  recreationalDrugs: boolean;
+  caffeineHigh: boolean;
+  diet: "balanced" | "vegan" | "vegetarian" | "lowSodium" | "highSalt" | "highFat";
+  exercise: "sedentary" | "moderate" | "active";
+  occupationRisk: boolean;    // drives / operates machinery
+  poorSleep: boolean;
+  grapefruitJuice: boolean;
+}
+const DEFAULT_LIFESTYLE: Lifestyle = {
+  smoking: "never",
+  alcohol: "none",
+  recreationalDrugs: false,
+  caffeineHigh: false,
+  diet: "balanced",
+  exercise: "moderate",
+  occupationRisk: false,
+  poorSleep: false,
+  grapefruitJuice: false,
+};
+
 const symptomsByCategory = SYMPTOMS.reduce(
   (acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];
