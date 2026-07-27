@@ -125,10 +125,8 @@ function MedicationCard({
   const [expanded, setExpanded] = useState(result.safetyLevel === "recommended");
   const { medication: med, safetyLevel, avoidReasons, cautionReasons, activeInteractions } = result;
 
-  // Calculate weight-based dose when patient weight is known
-  const isPaediatric = patientAge < 16;
-  const doseSrc = isPaediatric && med.dosage.pediatric ? med.dosage.pediatric : med.dosage.adult;
-  const weightCalc = patientWeight ? calcWeightDose(doseSrc, patientWeight) : null;
+  // Dose recommendation tailored to this specific patient (age / weight / BMI / gender)
+  const pd = result.personalizedDose;
 
   const borderColor =
     safetyLevel === "recommended"

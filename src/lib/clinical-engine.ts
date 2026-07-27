@@ -55,12 +55,107 @@ export function calcWeightDose(doseStr: string, weightKg: number): string | null
   return null;
 }
 
+/** Ideal Body Weight (Devine formula), used to dose obese patients on weight-based
+ *  regimens so actual (fat) mass does not inflate the dose. Needs gender + height. */
+export function idealBodyWeight(gender: PatientProfile["gender"], heightCm: number): number {
+  const inches = heightCm / 2.54;
+  const over5ft = Math.max(0, inches - 60);
+  const base = gender === "female" ? 45.5 : gender === "male" ? 50 : 47.75;
+  return Math.round((base + 2.3 * over5ft) * 10) / 10;
+}
+
+/** Parse a max-daily string containing mg/kg/day and return the per-patient cap. */
+export function calcMaxDailyDose(maxDailyStr: string, weightKg: number): string | null {
+  const m = maxDailyStr.match(/(\d+(?:\.\d+)?)\s*mg\/kg\/day/i);
+  if (m) {
+    const dose = Math.round(parseFloat(m[1]) * weightKg);
+    return `${dose} mg/day (for ${weightKg} kg)`;
+  }
+  return null;
+}
+
+function formatAge(age: number): string {
+  if (age < 1) return `${Math.round(age * 12)} mo`;
+  return `${age} yr`;
+}
+
+export interface PersonalizedDose {
+  bandLabel: string;           // e.g. "Adult · age 34", "Paediatric · age 8 yr", "Elderly · age 72"
+  bandDose: string;            // the reference dose string for the applicable age band
+  weightBasedDose?: string;    // numeric dose computed from mg/kg × (ideal or actual) weight
+  maxDailyForPatient?: string; // per-patient max/day when a mg/kg/day cap exists
+  adjustments: string[];       // human-readable age / gender / BMI personalisation notes
+}
+
+/** Build a dose recommendation tailored to THIS patient's age, weight, BMI, and gender. */
+export function personalizeDose(med: MedicationRule, patient: PatientProfile): PersonalizedDose {
+  const age = patient.age;
+  const isChild = age < 12;
+  const isElderly = age >= 65;
+  const adjustments: string[] = [];
+
+  let bandLabel: string;
+  let bandDose: string;
+  if (isChild && med.dosage.pediatric) {
+    bandLabel = `Paediatric · age ${formatAge(age)}`;
+    bandDose = med.dosage.pediatric;
+  } else if (isElderly && med.dosage.elderly) {
+    bandLabel = `Elderly · age ${age}`;
+    bandDose = med.dosage.elderly;
+    adjustments.push("Elderly: begin at the lowest effective dose — reduced renal/hepatic clearance raises drug exposure.");
+  } else if (isElderly) {
+    bandLabel = `Elderly · age ${age}`;
+    bandDose = med.dosage.adult;
+    adjustments.push("Elderly: no separate geriatric dose on file — use the lower end of the adult range and monitor closely.");
+  } else if (isChild) {
+    bandLabel = `Child · age ${formatAge(age)}`;
+    bandDose = med.dosage.adult;
+    adjustments.push("No paediatric dose on file for this medicine — confirm suitability with a physician before dispensing to a child.");
+  } else {
+    bandLabel = `Adult · age ${age}`;
+    bandDose = med.dosage.adult;
+  }
+
+  // Weight / BMI based personalisation
+  let weightBasedDose: string | undefined;
+  let dosingWeight = patient.weight;
+  if (patient.weight && patient.height) {
+    const bmi = calcBMI(patient.weight, patient.height);
+    if (bmi >= 30 && /mg\/kg/i.test(bandDose)) {
+      const ibw = idealBodyWeight(patient.gender, patient.height);
+      if (ibw > 0 && ibw < patient.weight) {
+        dosingWeight = ibw;
+        adjustments.push(`Obese (BMI ${bmi.toFixed(1)}): weight-based dose calculated on ideal body weight ${ibw} kg rather than actual ${patient.weight} kg to avoid overdosing.`);
+      }
+    }
+  }
+  if (dosingWeight) {
+    const wc = calcWeightDose(bandDose, dosingWeight);
+    if (wc) weightBasedDose = wc;
+  }
+
+  // Per-patient max daily cap (when a mg/kg/day limit exists)
+  let maxDailyForPatient: string | undefined;
+  if (patient.weight) {
+    const md = calcMaxDailyDose(med.dosage.maxDaily, patient.weight);
+    if (md) maxDailyForPatient = md;
+  }
+
+  // Gender / pregnancy note
+  if (patient.gender === "female" && patient.isPregnant && med.contraindications.pregnancy === "safe") {
+    adjustments.push("Pregnancy: considered safe at standard doses — still use the lowest effective dose for the shortest time.");
+  }
+
+  return { bandLabel, bandDose, weightBasedDose, maxDailyForPatient, adjustments };
+}
+
 export interface MedicationResult {
   medication: MedicationRule;
   safetyLevel: "recommended" | "caution" | "avoid";
   avoidReasons: string[];
   cautionReasons: string[];
   activeInteractions: Array<{ drug: string; effect: string; severity: "mild" | "moderate" | "severe" }>;
+  personalizedDose: PersonalizedDose;
 }
 
 export interface EngineResult {
@@ -325,7 +420,8 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
       safetyLevel,
       avoidReasons,
       cautionReasons,
-      activeInteractions
+      activeInteractions,
+      personalizedDose: personalizeDose(med, patient)
     });
   }
 
