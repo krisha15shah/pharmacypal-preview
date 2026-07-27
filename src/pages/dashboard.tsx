@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { SYMPTOMS, CONDITIONS, ALLERGIES, CURRENT_MEDICATIONS } from "@/lib/clinical-data";
-import { runClinicalEngine, calcBMI, bmiCategory, calcWeightDose, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
+import { runClinicalEngine, calcBMI, bmiCategory, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
@@ -125,10 +125,8 @@ function MedicationCard({
   const [expanded, setExpanded] = useState(result.safetyLevel === "recommended");
   const { medication: med, safetyLevel, avoidReasons, cautionReasons, activeInteractions } = result;
 
-  // Calculate weight-based dose when patient weight is known
-  const isPaediatric = patientAge < 16;
-  const doseSrc = isPaediatric && med.dosage.pediatric ? med.dosage.pediatric : med.dosage.adult;
-  const weightCalc = patientWeight ? calcWeightDose(doseSrc, patientWeight) : null;
+  // Dose recommendation tailored to this specific patient (age / weight / BMI / gender)
+  const pd = result.personalizedDose;
 
   const borderColor =
     safetyLevel === "recommended"
@@ -219,16 +217,36 @@ function MedicationCard({
                 <div className="text-xs font-bold text-emerald-700 mb-2 flex items-center gap-1">
                   <CheckCircle className="w-3 h-3" /> DOSAGE GUIDE
                 </div>
-                <div className="space-y-2 text-xs">
-                  {/* Weight-based calculated dose (shown first when available) */}
-                  {weightCalc && (
-                    <div className="flex gap-2 bg-indigo-50 border border-indigo-200 rounded px-2 py-1.5">
-                      <span className="text-indigo-600 font-semibold shrink-0 w-24">
-                        {isPaediatric ? "Paed calc:" : "Calc dose:"}
-                      </span>
-                      <span className="text-indigo-800 font-bold">{weightCalc}</span>
+                {/* ── PERSONALISED DOSE (this patient) ── */}
+                <div className="mb-3 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                  <div className="text-xs font-bold text-indigo-700 mb-1.5 flex items-center gap-1">
+                    <User className="w-3 h-3" /> RECOMMENDED FOR THIS PATIENT
+                  </div>
+                  <div className="text-xs text-indigo-500 font-medium mb-1">{pd.bandLabel}</div>
+                  {pd.weightBasedDose ? (
+                    <div className="flex gap-2 items-baseline">
+                      <span className="text-indigo-800 font-bold text-sm">{pd.weightBasedDose}</span>
+                      <span className="text-indigo-400 text-[11px]">(weight-based)</span>
+                    </div>
+                  ) : (
+                    <div className="text-indigo-800 font-bold text-sm">{pd.bandDose}</div>
+                  )}
+                  {pd.maxDailyForPatient && (
+                    <div className="text-xs text-indigo-600 mt-1">Max/day for patient: <span className="font-semibold">{pd.maxDailyForPatient}</span></div>
+                  )}
+                  {pd.adjustments.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {pd.adjustments.map((a, i) => (
+                        <div key={i} className="text-[11px] text-indigo-700 leading-relaxed flex gap-1">
+                          <span className="shrink-0">↳</span><span>{a}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
+                </div>
+
+                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Reference ranges</div>
+                <div className="space-y-2 text-xs">
                   <div className="flex gap-2">
                     <span className="text-slate-500 font-medium shrink-0 w-24">Adult dose:</span>
                     <span className="text-slate-800">{med.dosage.adult}</span>

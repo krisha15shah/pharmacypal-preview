@@ -13,7 +13,21 @@ export type IcdMode = "symptom" | "condition" | "allergy";
 interface IcdResult {
   code: string;
   name: string;
+  // When set, selecting this result adds multiple ICD items at once (e.g. "fever with chills").
+  expandsTo?: { code: string; name: string }[];
 }
+
+// ICD-10-CM has no single "chills with fever" code: R68.83 is explicitly
+// "Chills (without fever)" and fever-with-chills is indexed to R50.9.
+// Offer a synthetic combined option that captures both symptoms in one click.
+const CHILLS_FEVER_COMBO: IcdResult = {
+  code: "R50.9+R68.83",
+  name: "Fever with chills",
+  expandsTo: [
+    { code: "R50.9", name: "Fever, unspecified (with chills)" },
+    { code: "R68.83", name: "Chills (without fever)" },
+  ],
+};
 
 function mapToInternal(code: string, name: string, mode: IcdMode): string | null {
   if (mode === "symptom") return icdToSymptomId(code, name);
@@ -74,6 +88,11 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
       const res = await fetch(url.toString());
       const data: [number, string[], null, string[][]] = await res.json();
       const items: IcdResult[] = (data[3] ?? []).map(([code, name]) => ({ code, name }));
+      // Surface a synthetic "Fever with chills" option when relevant, since ICD-10 has no combined code.
+      const q = searchTerm.toLowerCase();
+      if (mode === "symptom" && /chill|rigor|shiver|fever|pyrex|febrile/.test(q)) {
+        items.unshift(CHILLS_FEVER_COMBO);
+      }
       setResults(items);
       setOpen(items.length > 0);
     } catch {
@@ -102,8 +121,11 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
   }, []);
 
   const addItem = (item: IcdResult) => {
-    if (selectedItems.find((i) => i.code === item.code)) { setQuery(""); setOpen(false); return; }
-    onItemsChange([...selectedItems, { code: item.code, name: item.name, internalId: mapToInternal(item.code, item.name, mode) }]);
+    const toAdd = item.expandsTo ?? [{ code: item.code, name: item.name }];
+    const additions = toAdd
+      .filter((a) => !selectedItems.find((i) => i.code === a.code))
+      .map((a) => ({ code: a.code, name: a.name, internalId: mapToInternal(a.code, a.name, mode) }));
+    if (additions.length > 0) onItemsChange([...selectedItems, ...additions]);
     setQuery("");
     setResults([]);
     setOpen(false);
@@ -162,7 +184,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     <span className="flex items-center gap-1 shrink-0 mt-0.5">
                       {!mapped && !already && (
                         <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
-                          Rx referral
+                          Physician referral needed
                         </span>
                       )}
                       {already && <span className="text-xs text-slate-400">Added</span>}
