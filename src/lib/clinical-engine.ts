@@ -98,6 +98,14 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
     });
   }
 
+  // Expand symptoms to include any implied by selected conditions
+  const expandedSymptoms = new Set(patient.selectedSymptoms);
+  for (const condId of patient.selectedConditions) {
+    const implied = CONDITION_TO_SYMPTOMS[condId] ?? [];
+    implied.forEach((s) => expandedSymptoms.add(s));
+  }
+  const activeSymptoms = Array.from(expandedSymptoms);
+
   // ─── 3. REFERRAL RULES ───
   for (const rule of REFERRAL_RULES) {
     // Age gates
@@ -139,13 +147,6 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   });
 
   // ─── 5. MEDICATION FILTERING ───
-  // Expand symptoms to include any implied by selected conditions
-  const expandedSymptoms = new Set(patient.selectedSymptoms);
-  for (const condId of patient.selectedConditions) {
-    const implied = CONDITION_TO_SYMPTOMS[condId] ?? [];
-    implied.forEach((s) => expandedSymptoms.add(s));
-  }
-  const activeSymptoms = Array.from(expandedSymptoms);
 
   for (const med of MEDICATIONS) {
     // Skip medications that don't address any active symptom (direct + condition-implied)
