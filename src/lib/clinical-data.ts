@@ -32,7 +32,7 @@ export interface MedicationRule {
   name: string;
   brandExamples: string;
   category: string;
-  mechanism: string;
+  mechanism?: string;
   forSymptoms: string[];
   dosage: {
     adult: string;
