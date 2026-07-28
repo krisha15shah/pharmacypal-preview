@@ -206,36 +206,93 @@ function icdSymptomByKeyword(name: string): string | null {
 // Maps ICD-10-CM codes → internal condition IDs used by the clinical engine.
 export function icdToConditionId(code: string): string | null {
   const c = code.toUpperCase().replace(/\s/g, "");
+
+  // ─── Cardiovascular ─────────────────────────────────────────────
   if (c === "I10" || c.startsWith("I11") || c.startsWith("I12") || c.startsWith("I13") || c.startsWith("I1A")) return "hypertension";
-  if (c.startsWith("E11")) return "diabetes_t2";
-  if (c.startsWith("E10")) return "diabetes_t2";
-  if (c.startsWith("E13")) return "diabetes_t2";
+  if (c.startsWith("I50")) return "heart_failure";
+  if (c.startsWith("I48")) return "atrial_fibrillation";
+  if (c.startsWith("I20") || c.startsWith("I25") || c.startsWith("I21") || c.startsWith("I22") || c.startsWith("I24")) return "ischemic_heart_disease";
+  if (c.startsWith("I63") || c.startsWith("I64") || c.startsWith("I65") || c.startsWith("I66") || c.startsWith("I69") || c.startsWith("G45")) return "stroke_ischemic";
+  if (c.startsWith("I80") || c.startsWith("I81") || c.startsWith("I82") || c.startsWith("I26")) return "dvt_pe";
+  if (c.startsWith("E78")) return "hyperlipidemia";
+
+  // ─── Endocrine ──────────────────────────────────────────────────
+  if (c.startsWith("E11") || c.startsWith("E13")) return "diabetes_t2";
+  if (c.startsWith("E10")) return "diabetes_t1";
+  if (c.startsWith("E00") || c.startsWith("E01") || c.startsWith("E02") || c.startsWith("E03")) return "hypothyroidism";
+  if (c.startsWith("E05")) return "hyperthyroidism";
+  if (c.startsWith("E04") || c.startsWith("E06") || c.startsWith("E07")) return "thyroid_disease";
+
+  // ─── Respiratory ────────────────────────────────────────────────
   if (c.startsWith("J45")) return "asthma";
   if (c.startsWith("J44")) return "copd";
-  if (c.startsWith("I50")) return "heart_failure";
+  if (c.startsWith("J18") || c.startsWith("J15") || c.startsWith("J13") || c.startsWith("J14") || c.startsWith("J17")) return "pneumonia_cap";
+  if (c.startsWith("J01") || c.startsWith("J32")) return "sinusitis";
+  if (c.startsWith("J02.0") || c.startsWith("J03")) return "strep_pharyngitis";
+  if (c.startsWith("J30") || c.startsWith("J31.0")) return "allergic_rhinitis";
+
+  // ─── ENT / Eye ──────────────────────────────────────────────────
+  if (c.startsWith("H65") || c.startsWith("H66") || c.startsWith("H67")) return "otitis_media";
+  if (c.startsWith("H40") || c.startsWith("H42")) return "glaucoma";
+
+  // ─── Renal / GU ─────────────────────────────────────────────────
   if (c.startsWith("N18")) return "ckd";
+  if (c.startsWith("N30") || c.startsWith("N39.0")) return "uti_lower";
+  if (c.startsWith("N10") || c.startsWith("N11") || c.startsWith("N12")) return "pyelonephritis";
+  if (c.startsWith("N40")) return "bph";
+  if (c.startsWith("N52") || c.startsWith("F52.2")) return "erectile_dysfunction";
+  if (c.startsWith("Z30")) return "contraception_needed";
+
+  // ─── Gastrointestinal ───────────────────────────────────────────
+  if (c.startsWith("K21")) return "gerd";
+  if (c.startsWith("K25") || c.startsWith("K26") || c.startsWith("K27") || c.startsWith("K28")) return "peptic_ulcer";
+  if (c.startsWith("K50") || c.startsWith("K51")) return "ibd";
   if (
     c.startsWith("K70") || c.startsWith("K71") || c.startsWith("K72") ||
     c.startsWith("K73") || c.startsWith("K74") || c.startsWith("K75") || c.startsWith("K76")
   ) return "liver_disease";
-  if (c.startsWith("K25") || c.startsWith("K26") || c.startsWith("K27") || c.startsWith("K28")) return "peptic_ulcer";
-  if (c.startsWith("K21")) return "gerd";
+  if (c.startsWith("B18.1")) return "hepatitis_b";
+  if (c.startsWith("B18.2")) return "hepatitis_c";
+
+  // ─── Infections (A/B) ───────────────────────────────────────────
+  if (c.startsWith("A15") || c.startsWith("A16") || c.startsWith("A17") || c.startsWith("A18") || c.startsWith("A19")) return "tuberculosis";
+  if (c.startsWith("B50") || c.startsWith("B51") || c.startsWith("B52") || c.startsWith("B53") || c.startsWith("B54")) return "malaria";
+  if (c.startsWith("B20") || c.startsWith("B24") || c.startsWith("Z21")) return "hiv";
+  if (c.startsWith("A56") || c.startsWith("A74")) return "chlamydia";
+  if (c.startsWith("A54")) return "gonorrhea";
+  if (c.startsWith("A50") || c.startsWith("A51") || c.startsWith("A52") || c.startsWith("A53")) return "syphilis";
+  if (c.startsWith("B96.81") || c === "K29.9") return "h_pylori";
+  if (c.startsWith("L03") || c.startsWith("L08")) return "cellulitis";
+  if (c.startsWith("B86")) return "scabies";
+  if (c.startsWith("B35")) return "tinea_infection";
+
+  // ─── Neuro / Psych ──────────────────────────────────────────────
   if (c.startsWith("G40") || c.startsWith("G41")) return "epilepsy";
-  if (c.startsWith("H40") || c.startsWith("H42")) return "glaucoma";
-  if (
-    c.startsWith("E00") || c.startsWith("E01") || c.startsWith("E02") ||
-    c.startsWith("E03") || c.startsWith("E04") || c.startsWith("E05") ||
-    c.startsWith("E06") || c.startsWith("E07")
-  ) return "thyroid_disease";
-  if (c.startsWith("M10") || c.startsWith("M1A")) return "gout";
-  if (c.startsWith("F32") || c.startsWith("F33")) return "depression";
-  if (c.startsWith("F41")) return "anxiety";
   if (c.startsWith("G20") || c.startsWith("G21")) return "parkinsons";
+  if (c.startsWith("G30") || c.startsWith("F00") || c.startsWith("F01") || c.startsWith("F03")) return "alzheimers";
+  if (c.startsWith("G43")) return "migraine_prophylaxis";
+  if (c.startsWith("G50") || c.startsWith("G56") || c.startsWith("G57") || c.startsWith("G62") || c.startsWith("G63")) return "neuropathic_pain_chronic";
+  if (c.startsWith("F32") || c.startsWith("F33")) return "depression";
+  if (c.startsWith("F41") || c.startsWith("F40")) return "anxiety";
+  if (c.startsWith("F20") || c.startsWith("F22") || c.startsWith("F23") || c.startsWith("F25") || c.startsWith("F29")) return "schizophrenia";
+  if (c.startsWith("F31")) return "bipolar";
+
+  // ─── MSK / Rheum ────────────────────────────────────────────────
+  if (c.startsWith("M10") || c.startsWith("M1A")) return "gout";
+  if (c.startsWith("M15") || c.startsWith("M16") || c.startsWith("M17") || c.startsWith("M18") || c.startsWith("M19")) return "osteoarthritis";
+  if (c.startsWith("M05") || c.startsWith("M06")) return "rheumatoid_arthritis";
   if (c.startsWith("M80") || c.startsWith("M81")) return "osteoporosis";
+
+  // ─── Skin ───────────────────────────────────────────────────────
+  if (c.startsWith("L70")) return "acne_moderate";
+  if (c.startsWith("L20") || c.startsWith("L30")) return "eczema_atopic";
+  if (c.startsWith("L40")) return "psoriasis";
+
+  // ─── Haematology ────────────────────────────────────────────────
+  if (c.startsWith("D50")) return "iron_deficiency_anemia";
+  if (c.startsWith("D51") || c.startsWith("D52")) return "b12_deficiency";
   if (c.startsWith("D65") || c.startsWith("D66") || c.startsWith("D67") || c.startsWith("D68") || c.startsWith("D69")) return "bleeding_disorder";
-  if (c.startsWith("I48")) return "atrial_fibrillation";
-  if (c.startsWith("I20") || c.startsWith("I25")) return "ischemic_heart_disease";
-  if (c.startsWith("E78")) return "hyperlipidemia";
+
   if (c.startsWith("J06") || c.startsWith("J00")) return null;
   return null;
 }

@@ -16,6 +16,7 @@ import { runClinicalEngine, calcBMI, bmiCategory, type PatientProfile, type Medi
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
+import { getTherapyFor, type ConditionTherapy } from "@/lib/who-eml-therapy";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -667,9 +668,24 @@ export default function Dashboard() {
     0
   ) ?? 0;
 
+  // WHO EML therapies driven by the union of chip-selected + ICD-mapped condition IDs
+  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy }>>(() => {
+    const ids = new Set<string>([
+      ...effectiveProfile.selectedConditions,
+      ...icdConditions.map((i) => i.internalId).filter((x): x is string => !!x),
+    ]);
+    const out: Array<{ id: string; therapy: ConditionTherapy }> = [];
+    ids.forEach((id) => {
+      const t = getTherapyFor(id);
+      if (t) out.push({ id, therapy: t });
+    });
+    return out;
+  }, [effectiveProfile.selectedConditions, icdConditions]);
+
   // Panel is visible when any clinical data is present — not just when engine matches
   const hasAnyData =
     result !== null ||
+    whoTherapies.length > 0 ||
     icdSymptoms.length > 0 ||
     icdConditions.length > 0 ||
     profile.selectedConditions.length > 0 ||
@@ -1164,8 +1180,51 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {/* ── ICD-only banner (no engine rules matched) ── */}
-              {!result && hasAnyData && (
+              {/* ── WHO EML guideline-based therapy card(s) ── */}
+              {whoTherapies.length > 0 && (
+                <div className="space-y-3">
+                  {whoTherapies.map(({ id, therapy }) => (
+                    <div key={id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <div className="text-sm font-bold text-slate-800">{therapy.label}</div>
+                          <div className="text-[11px] text-slate-500">{therapy.source}</div>
+                        </div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded px-2 py-0.5 shrink-0">WHO EML</span>
+                      </div>
+                      <div className="space-y-2 mt-3">
+                        {therapy.options.map((opt, i) => (
+                          <div key={i} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="text-sm font-semibold text-slate-800">{opt.drug}</div>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                opt.rx === "OTC" ? "bg-green-100 text-green-700"
+                                : opt.rx === "Rx" ? "bg-blue-100 text-blue-700"
+                                : "bg-purple-100 text-purple-700"
+                              }`}>{opt.rx}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 italic">{opt.drugClass}</div>
+                            <div className="text-xs text-slate-700 mt-1"><span className="font-semibold">Adult:</span> {opt.adultDose}</div>
+                            {opt.pediatricDose && <div className="text-xs text-slate-700"><span className="font-semibold">Paeds:</span> {opt.pediatricDose}</div>}
+                            {opt.note && <div className="text-[11px] text-slate-600 mt-1">💡 {opt.note}</div>}
+                            {opt.rx !== "OTC" && (
+                              <div className="text-[10px] text-blue-700 mt-1 font-medium">⚕️ Valid prescription required before dispensing.</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {therapy.referralNote && (
+                        <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mt-2">
+                          ⚠️ {therapy.referralNote}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── ICD-only banner (no engine rules AND no WHO therapies matched) ── */}
+              {!result && whoTherapies.length === 0 && hasAnyData && (
                 <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
