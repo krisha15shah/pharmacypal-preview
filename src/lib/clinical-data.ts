@@ -2807,7 +2807,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "avoid",
       minAge: 6,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "simvastatin", effect: "Increases simvastatin exposure — cap simvastatin at 20 mg/day.", severity: "moderate" },
@@ -2846,7 +2846,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "potassium_sparing_diuretics", effect: "Risk of hyperkalaemia.", severity: "moderate" },
@@ -2886,7 +2886,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "potassium_sparing_diuretics", effect: "Risk of hyperkalaemia.", severity: "moderate" },
@@ -2926,7 +2926,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "verapamil", effect: "Risk of bradycardia and heart block — avoid combination.", severity: "severe" },
@@ -2966,7 +2966,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "digoxin", effect: "Hypokalaemia increases digoxin toxicity risk.", severity: "moderate" },
@@ -3010,7 +3010,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 10,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "alcohol_heavy", effect: "Increased risk of lactic acidosis.", severity: "moderate" },
@@ -3050,7 +3050,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: true
+      elderlyRisk: "caution"
     },
     interactions: [
       { withMed: "fluconazole", effect: "Markedly increases gliclazide levels — risk of severe hypoglycaemia.", severity: "severe" },
@@ -3090,7 +3090,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "digoxin", effect: "Slight increase in digoxin levels — monitor.", severity: "mild" }
@@ -3132,7 +3132,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 6,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "maoi", effect: "Risk of serotonin syndrome — fatal; do not combine. Wait 14 days after stopping MAOI.", severity: "severe" },
@@ -3174,7 +3174,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 12,
-      elderlyRisk: true
+      elderlyRisk: "caution"
     },
     interactions: [
       { withMed: "maoi", effect: "Serotonin syndrome risk — contraindicated.", severity: "severe" },
@@ -3218,7 +3218,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "safe",
       breastfeeding: "safe",
       minAge: 5,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [],
     counselingPoints: [
@@ -3254,7 +3254,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 2,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "phenobarbital", effect: "Phenobarbital may reduce montelukast levels.", severity: "mild" }
@@ -3292,7 +3292,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "other_antimuscarinics", effect: "Additive anticholinergic effects (dry mouth, urinary retention).", severity: "moderate" }
@@ -3334,7 +3334,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 0,
-      elderlyRisk: true
+      elderlyRisk: "caution"
     },
     interactions: [
       { withMed: "digoxin", effect: "Hypokalaemia from furosemide increases digoxin toxicity.", severity: "severe" },
@@ -3375,7 +3375,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "ace_inhibitors", effect: "High risk of hyperkalaemia — monitor potassium closely.", severity: "severe" },
@@ -3419,7 +3419,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "safe",
       breastfeeding: "safe",
       minAge: 0,
-      elderlyRisk: true
+      elderlyRisk: "caution"
     },
     interactions: [
       { withMed: "calcium_supplements", effect: "Calcium reduces levothyroxine absorption — separate by ≥4 hours.", severity: "moderate" },
@@ -3461,7 +3461,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 0,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "warfarin", effect: "Hyperthyroidism correction alters warfarin sensitivity — monitor INR.", severity: "moderate" }
@@ -3503,7 +3503,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "azole_antifungals", effect: "Ketoconazole/itraconazole substantially increase apixaban levels — avoid or use with caution.", severity: "severe" },
@@ -3545,7 +3545,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 0,
-      elderlyRisk: true
+      elderlyRisk: "caution"
     },
     interactions: [
       { withMed: "amiodarone", effect: "Amiodarone doubles digoxin levels — halve digoxin dose.", severity: "severe" },
@@ -3589,7 +3589,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "caution",
       breastfeeding: "caution",
       minAge: 1,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [],
     counselingPoints: [
@@ -3625,7 +3625,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "caution",
       minAge: 0,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "carbapenems", effect: "Meropenem and other carbapenems dramatically reduce valproate levels — avoid.", severity: "severe" },
@@ -3669,7 +3669,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 18,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "calcium_supplements", effect: "Calcium impairs alendronate absorption — take alendronate first, then wait ≥30 min before calcium.", severity: "moderate" },
@@ -3713,7 +3713,7 @@ export const MEDICATIONS: MedicationRule[] = [
       pregnancy: "avoid",
       breastfeeding: "avoid",
       minAge: 10,
-      elderlyRisk: false
+      elderlyRisk: "safe"
     },
     interactions: [
       { withMed: "amlodipine", effect: "Amlodipine increases atorvastatin exposure — cap atorvastatin at 40 mg with amlodipine 10 mg.", severity: "mild" },
