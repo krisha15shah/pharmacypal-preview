@@ -16,6 +16,7 @@ import { runClinicalEngine, calcBMI, bmiCategory, type PatientProfile, type Medi
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
+import { getTherapyFor, type ConditionTherapy } from "@/lib/who-eml-therapy";
 
 // ─── Chip selector ───
 function ChipSelector({
