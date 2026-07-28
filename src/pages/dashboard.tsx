@@ -668,9 +668,24 @@ export default function Dashboard() {
     0
   ) ?? 0;
 
+  // WHO EML therapies driven by the union of chip-selected + ICD-mapped condition IDs
+  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy }>>(() => {
+    const ids = new Set<string>([
+      ...effectiveProfile.selectedConditions,
+      ...icdConditions.map((i) => i.internalId).filter((x): x is string => !!x),
+    ]);
+    const out: Array<{ id: string; therapy: ConditionTherapy }> = [];
+    ids.forEach((id) => {
+      const t = getTherapyFor(id);
+      if (t) out.push({ id, therapy: t });
+    });
+    return out;
+  }, [effectiveProfile.selectedConditions, icdConditions]);
+
   // Panel is visible when any clinical data is present — not just when engine matches
   const hasAnyData =
     result !== null ||
+    whoTherapies.length > 0 ||
     icdSymptoms.length > 0 ||
     icdConditions.length > 0 ||
     profile.selectedConditions.length > 0 ||
