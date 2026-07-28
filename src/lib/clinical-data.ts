@@ -2781,6 +2781,957 @@ export const MEDICATIONS: MedicationRule[] = [
     referralIfNoImprovement: "Consider preventive therapy if migraines occur >4 days/month; refer to neurology",
     source: "UpToDate: Sumatriptan — Drug information; NICE Headache Guidelines NG150; BNF"
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — HYPERTENSION MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "amlodipine",
+    name: "Amlodipine",
+    brandExamples: "Norvasc, Istin, Amlopin",
+    category: "Calcium Channel Blocker (CCB)",
+    rxType: "Prescription",
+    forSymptoms: ["bp_management"],
+    dosage: {
+      adult: "5 mg once daily; may increase to 10 mg once daily after 2 weeks",
+      elderly: "Start 2.5 mg once daily; titrate slowly",
+      maxDaily: "10 mg/day",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["cardiogenic_shock"],
+      medications: [],
+      allergies: ["dihydropyridine_ccb"],
+      pregnancy: "caution",
+      breastfeeding: "avoid",
+      minAge: 6,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "simvastatin", effect: "Increases simvastatin exposure — cap simvastatin at 20 mg/day.", severity: "moderate" },
+      { withMed: "cyclosporin", effect: "Increased cyclosporin levels.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take at the same time each day — morning or evening, your choice",
+      "Ankle swelling (oedema) is common, especially in the first few weeks; elevate legs if troublesome",
+      "Do not stop suddenly — continue even when feeling well",
+      "Monitor blood pressure at home and record readings for your next appointment",
+      "Grapefruit juice may slightly increase drug levels — best avoided"
+    ],
+    patientExplanation: "Amlodipine relaxes the blood vessels, making it easier for your heart to pump. It works best when taken consistently every day.",
+    referralIfNoImprovement: "If BP remains >140/90 mmHg on maximum dose, add a second agent (ACE inhibitor or ARB)",
+    source: "NICE NG136 Hypertension; BNF; JNC 8 Guidelines"
+  },
+  {
+    id: "lisinopril",
+    name: "Lisinopril",
+    brandExamples: "Zestril, Prinivil, Carace",
+    category: "ACE Inhibitor",
+    rxType: "Prescription",
+    forSymptoms: ["bp_management", "hf_management"],
+    dosage: {
+      adult: "Hypertension: 10 mg once daily; titrate to 20–40 mg. Heart failure: start 2.5 mg once daily",
+      elderly: "Start 2.5–5 mg once daily; monitor renal function and potassium closely",
+      maxDaily: "40 mg/day",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "bilateral_renal_artery_stenosis"],
+      medications: ["arbs", "aliskiren_diabetics"],
+      allergies: ["ace_inhibitors"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "potassium_sparing_diuretics", effect: "Risk of hyperkalaemia.", severity: "moderate" },
+      { withMed: "nsaids", effect: "NSAIDs may reduce antihypertensive effect and worsen renal function.", severity: "moderate" },
+      { withMed: "lithium", effect: "ACE inhibitors increase lithium toxicity risk.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "A dry cough affects up to 10–15% of patients — if troublesome, switch to an ARB",
+      "Avoid potassium supplements or salt substitutes unless directed by your doctor",
+      "Check renal function and electrolytes 1–2 weeks after starting and after each dose increase",
+      "Stop immediately and seek emergency care if you develop facial/tongue swelling (angioedema)",
+      "Absolutely contraindicated in pregnancy — use reliable contraception"
+    ],
+    patientExplanation: "Lisinopril protects your kidneys and heart while lowering blood pressure. It's especially recommended if you have diabetes or heart failure.",
+    referralIfNoImprovement: "Consider adding CCB (amlodipine) or thiazide diuretic for resistant hypertension",
+    source: "NICE NG136; ESC 2023 Hypertension Guidelines; BNF"
+  },
+  {
+    id: "losartan",
+    name: "Losartan",
+    brandExamples: "Cozaar, Losarec, Lortaan",
+    category: "Angiotensin Receptor Blocker (ARB)",
+    rxType: "Prescription",
+    forSymptoms: ["bp_management", "hf_management"],
+    dosage: {
+      adult: "50 mg once daily; may increase to 100 mg once daily",
+      elderly: "Start 25–50 mg; lower doses if volume-depleted",
+      maxDaily: "100 mg/day",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["bilateral_renal_artery_stenosis"],
+      medications: ["ace_inhibitors", "aliskiren_diabetics"],
+      allergies: ["arbs"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "potassium_sparing_diuretics", effect: "Risk of hyperkalaemia.", severity: "moderate" },
+      { withMed: "nsaids", effect: "Reduced antihypertensive effect; worsened renal function.", severity: "moderate" },
+      { withMed: "lithium", effect: "Increased lithium levels.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Preferred over ACE inhibitors if you have a dry cough with ACE inhibitors",
+      "Monitor potassium and renal function 1–2 weeks after initiation",
+      "Avoid in pregnancy — same as ACE inhibitors",
+      "Continue even when feeling well; stopping can cause rapid BP rebound",
+      "Avoid potassium-rich salt substitutes"
+    ],
+    patientExplanation: "Losartan blocks the hormone that tightens blood vessels. It works just like an ACE inhibitor but without the cough side effect.",
+    referralIfNoImprovement: "Combine with CCB or thiazide diuretic if BP target not achieved",
+    source: "ESC 2023 Hypertension; BNF; NICE NG136"
+  },
+  {
+    id: "bisoprolol",
+    name: "Bisoprolol",
+    brandExamples: "Cardicor, Emcor, Concor",
+    category: "Beta-Blocker (β₁-selective)",
+    rxType: "Prescription",
+    forSymptoms: ["bp_management", "hf_management", "afib_management"],
+    dosage: {
+      adult: "Hypertension/AF: 5–10 mg once daily. Heart failure: start 1.25 mg once daily, titrate slowly over weeks",
+      elderly: "Start low (1.25–2.5 mg); titrate cautiously",
+      maxDaily: "20 mg/day (hypertension); 10 mg/day (heart failure)",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["asthma", "copd", "heart_block_2_3", "bradycardia"],
+      medications: ["verapamil_diltiazem_iv"],
+      allergies: ["beta_blockers"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "verapamil", effect: "Risk of bradycardia and heart block — avoid combination.", severity: "severe" },
+      { withMed: "digoxin", effect: "Additive bradycardia.", severity: "moderate" },
+      { withMed: "insulin", effect: "May mask hypoglycaemia symptoms (tachycardia); sweating still present.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Never stop bisoprolol suddenly — taper over at least 2 weeks to avoid rebound hypertension or angina",
+      "Avoid in asthma — even cardioselective beta-blockers can trigger bronchospasm",
+      "May cause fatigue and cold extremities, especially initially",
+      "May mask the racing heart of a hypo if you have diabetes — check glucose if feeling unwell",
+      "Heart failure patients: temporary worsening of symptoms is normal when starting — persist unless severe"
+    ],
+    patientExplanation: "Bisoprolol slows and steadies the heartbeat. It reduces strain on the heart and lowers blood pressure.",
+    referralIfNoImprovement: "Review rate control target in AF; consider rhythm control strategy",
+    source: "ESC 2023 AF Guidelines; NICE NG106 Heart Failure; BNF"
+  },
+  {
+    id: "indapamide",
+    name: "Indapamide",
+    brandExamples: "Natrilix, Lozol",
+    category: "Thiazide-like Diuretic",
+    rxType: "Prescription",
+    forSymptoms: ["bp_management"],
+    dosage: {
+      adult: "1.5 mg (modified-release) once daily, or 2.5 mg once daily",
+      elderly: "No dose adjustment required; monitor electrolytes closely",
+      maxDaily: "2.5 mg/day",
+      frequency: "Once daily (morning preferred)",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "severe_hepatic_impairment", "hypokalaemia"],
+      medications: ["lithium"],
+      allergies: ["sulfonamides"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "digoxin", effect: "Hypokalaemia increases digoxin toxicity risk.", severity: "moderate" },
+      { withMed: "lithium", effect: "Thiazides increase lithium toxicity.", severity: "severe" },
+      { withMed: "nsaids", effect: "Reduced diuretic effect; risk of renal impairment.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take in the morning to avoid night-time urination",
+      "Monitor potassium — may need supplements if levels fall",
+      "Stay well hydrated, especially in hot weather",
+      "Report muscle cramps or weakness (sign of low potassium)",
+      "Blood and urine tests required periodically to monitor electrolytes and kidney function"
+    ],
+    patientExplanation: "Indapamide gently removes excess fluid through your kidneys, which lowers your blood pressure.",
+    referralIfNoImprovement: "Combine with CCB or RAAS blocker for step-up therapy",
+    source: "NICE NG136; ESC 2023 Hypertension Guidelines; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — DIABETES TYPE 2 MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "metformin",
+    name: "Metformin",
+    brandExamples: "Glucophage, Metabet, Bolamyn",
+    category: "Biguanide / Antidiabetic",
+    rxType: "Prescription",
+    forSymptoms: ["glucose_management"],
+    dosage: {
+      adult: "500 mg twice daily with meals; increase by 500 mg every 1–2 weeks. Usual dose 1500–2000 mg/day in divided doses",
+      elderly: "Use with caution if eGFR <45; avoid if eGFR <30",
+      maxDaily: "3000 mg/day",
+      frequency: "2–3 times daily with meals",
+      withFood: true,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["kidney_disease"],
+      medications: ["iv_contrast_within_48h"],
+      allergies: ["metformin"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 10,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "alcohol_heavy", effect: "Increased risk of lactic acidosis.", severity: "moderate" },
+      { withMed: "iv_contrast", effect: "Withhold metformin 48h before and after IV iodinated contrast.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Always take with food to minimise GI side effects (nausea, diarrhoea)",
+      "Start at low dose and increase gradually to reduce gut side effects",
+      "Does NOT cause hypoglycaemia when used alone",
+      "Withhold before any operation or IV contrast procedure — inform your doctor",
+      "If you are unwell with vomiting and unable to eat, hold the dose and seek advice",
+      "HbA1c should be checked every 3–6 months when starting therapy"
+    ],
+    patientExplanation: "Metformin is the first-choice tablet for type 2 diabetes. It helps your body use insulin properly without causing low blood sugar on its own.",
+    referralIfNoImprovement: "If HbA1c >58 mmol/mol (7.5%) on metformin alone, add a second agent (SGLT2i, DPP4i, or sulfonylurea)",
+    source: "NICE NG28 Type 2 Diabetes; ADA Standards 2024; BNF"
+  },
+  {
+    id: "gliclazide",
+    name: "Gliclazide",
+    brandExamples: "Diamicron, Dacadis, Zinat",
+    category: "Sulfonylurea / Antidiabetic",
+    rxType: "Prescription",
+    forSymptoms: ["glucose_management"],
+    dosage: {
+      adult: "40–80 mg once daily with breakfast; MR formulation: 30–120 mg once daily",
+      elderly: "Start low (40 mg); higher hypoglycaemia risk — use with care",
+      maxDaily: "320 mg/day (standard); 120 mg/day (MR)",
+      frequency: "Once or twice daily with meals",
+      withFood: true,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "liver_disease"],
+      medications: ["fluconazole", "miconazole"],
+      allergies: ["sulfonamides"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: true
+    },
+    interactions: [
+      { withMed: "fluconazole", effect: "Markedly increases gliclazide levels — risk of severe hypoglycaemia.", severity: "severe" },
+      { withMed: "nsaids", effect: "NSAIDs may potentiate hypoglycaemic effect.", severity: "moderate" },
+      { withMed: "alcohol_heavy", effect: "Increased risk of hypoglycaemia.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Always eat shortly after taking — skipping meals causes hypoglycaemia",
+      "Know the signs of low blood sugar: shakiness, sweating, confusion, hunger",
+      "Carry glucose tablets or a sugary snack at all times",
+      "Alcohol increases hypoglycaemia risk — drink with food only",
+      "Monitor blood glucose more frequently when unwell, fasting, or changing diet"
+    ],
+    patientExplanation: "Gliclazide stimulates your pancreas to make more insulin. You must eat when you take it to avoid low blood sugar.",
+    referralIfNoImprovement: "Consider adding SGLT2 inhibitor if cardiovascular or renal protection needed",
+    source: "NICE NG28; ADA 2024; BNF"
+  },
+  {
+    id: "sitagliptin",
+    name: "Sitagliptin",
+    brandExamples: "Januvia, Tesavel",
+    category: "DPP-4 Inhibitor / Antidiabetic",
+    rxType: "Prescription",
+    forSymptoms: ["glucose_management"],
+    dosage: {
+      adult: "100 mg once daily; reduce to 50 mg if eGFR 30–50; 25 mg if eGFR <30",
+      elderly: "Dose adjust by eGFR; generally well tolerated in elderly",
+      maxDaily: "100 mg/day",
+      frequency: "Once daily, with or without food",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: ["sitagliptin", "dpp4_inhibitors"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "digoxin", effect: "Slight increase in digoxin levels — monitor.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "Does not cause weight gain and has low hypoglycaemia risk",
+      "Stop and seek medical attention if you develop severe joint pain (rare side effect)",
+      "Report persistent nausea, vomiting, or severe abdominal pain (possible pancreatitis — rare)",
+      "Dose reduction is needed in kidney disease — inform your doctor of any kidney problems",
+      "HbA1c check every 6 months"
+    ],
+    patientExplanation: "Sitagliptin helps your body release insulin only when blood sugar is high, so it doesn't usually cause hypoglycaemia.",
+    referralIfNoImprovement: "Consider SGLT2 inhibitor (empagliflozin, dapagliflozin) for added cardiovascular/renal benefit",
+    source: "NICE NG28; ADA 2024; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — DEPRESSION / ANXIETY
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "sertraline",
+    name: "Sertraline",
+    brandExamples: "Lustral, Zoloft",
+    category: "SSRI Antidepressant",
+    rxType: "Prescription",
+    forSymptoms: ["mood_management", "depression_low_mood"],
+    dosage: {
+      adult: "Depression: 50 mg once daily; may increase to 200 mg. Anxiety/PTSD: start 25 mg for 1 week, then 50 mg",
+      elderly: "Start 25 mg once daily; usual dose 50–100 mg",
+      maxDaily: "200 mg/day",
+      frequency: "Once daily (morning or evening)",
+      withFood: true,
+      duration: "Minimum 6 months for depression; 12+ months for recurrent episodes"
+    },
+    contraindications: {
+      conditions: [],
+      medications: ["maoi", "pimozide", "linezolid"],
+      allergies: ["sertraline", "ssri"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 6,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "maoi", effect: "Risk of serotonin syndrome — fatal; do not combine. Wait 14 days after stopping MAOI.", severity: "severe" },
+      { withMed: "tramadol", effect: "Risk of serotonin syndrome; seizure threshold lowered.", severity: "severe" },
+      { withMed: "warfarin", effect: "Increased bleeding risk; monitor INR closely.", severity: "moderate" },
+      { withMed: "nsaids", effect: "Increased GI bleeding risk when combined with NSAIDs or aspirin.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Antidepressants take 2–4 weeks to show effect — do not stop prematurely",
+      "Initial anxiety or agitation can occur in the first 1–2 weeks — this usually settles",
+      "Do not stop suddenly — taper over at least 4 weeks to avoid discontinuation symptoms",
+      "Increased suicidal thoughts are possible in under-25s early in treatment — monitor closely",
+      "Avoid alcohol — it worsens depression and interacts with the medication",
+      "Report any thoughts of self-harm immediately"
+    ],
+    patientExplanation: "Sertraline gradually corrects the chemical imbalance associated with depression and anxiety. It takes a few weeks to work — this is normal.",
+    referralIfNoImprovement: "If no response after 4–6 weeks at adequate dose, refer to psychiatry; consider augmentation",
+    source: "NICE NG222 Depression; NICE NG26 Generalised Anxiety; BNF"
+  },
+  {
+    id: "escitalopram",
+    name: "Escitalopram",
+    brandExamples: "Cipralex, Lexapro",
+    category: "SSRI Antidepressant",
+    rxType: "Prescription",
+    forSymptoms: ["mood_management", "depression_low_mood"],
+    dosage: {
+      adult: "10 mg once daily; may increase to 20 mg after at least 2–4 weeks",
+      elderly: "Maximum 10 mg/day (QTc prolongation risk at higher doses)",
+      maxDaily: "20 mg/day (10 mg in elderly)",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Minimum 6 months for depression"
+    },
+    contraindications: {
+      conditions: [],
+      medications: ["maoi", "pimozide", "linezolid"],
+      allergies: ["escitalopram", "citalopram", "ssri"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 12,
+      elderlyRisk: true
+    },
+    interactions: [
+      { withMed: "maoi", effect: "Serotonin syndrome risk — contraindicated.", severity: "severe" },
+      { withMed: "tramadol", effect: "Serotonin syndrome risk.", severity: "severe" },
+      { withMed: "qt_prolonging_drugs", effect: "Additive QT prolongation risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "One of the best-tolerated SSRIs — commonly used for both depression and anxiety disorders",
+      "Takes 2–6 weeks for full antidepressant effect",
+      "Sexual dysfunction (delayed orgasm, reduced libido) is common — discuss if bothersome",
+      "Do not stop suddenly — discontinue gradually",
+      "Maximum dose is 10 mg/day in elderly due to QT prolongation risk"
+    ],
+    patientExplanation: "Escitalopram is a well-tolerated medication for both depression and anxiety. Full benefit takes a few weeks to develop.",
+    referralIfNoImprovement: "If inadequate response after 6 weeks, consider increasing dose, switching agent, or augmentation with CBT",
+    source: "NICE NG222; BNF; CANMAT 2023"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — ASTHMA / COPD
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "beclometasone_inhaler",
+    name: "Beclometasone Inhaled Corticosteroid",
+    brandExamples: "Clenil Modulite, QVAR, Beconase (nasal)",
+    category: "Inhaled Corticosteroid (ICS)",
+    rxType: "Prescription",
+    forSymptoms: ["wheeze", "dry_cough"],
+    dosage: {
+      adult: "Low dose: 100–200 mcg twice daily; medium: 200–400 mcg twice daily; high: >400 mcg twice daily",
+      pediatric: "50–100 mcg twice daily (low dose); titrate to lowest effective dose",
+      maxDaily: "800 mcg/day (standard); up to 2000 mcg/day in severe asthma",
+      frequency: "Twice daily (morning and evening)",
+      withFood: false,
+      duration: "Long-term / indefinite — do not stop without medical advice"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: ["beclometasone"],
+      pregnancy: "safe",
+      breastfeeding: "safe",
+      minAge: 5,
+      elderlyRisk: false
+    },
+    interactions: [],
+    counselingPoints: [
+      "This is a PREVENTER inhaler — use every day even when well; it does NOT provide quick relief",
+      "Rinse mouth and spit after each use to prevent oral thrush",
+      "Must use correct inhaler technique — ask pharmacist to check your technique",
+      "It may take 4–8 weeks for full benefit",
+      "Carry your blue reliever (salbutamol) for acute attacks; this inhaler will not work fast enough"
+    ],
+    patientExplanation: "Beclometasone reduces inflammation in your airways every day, preventing asthma attacks. It must be used regularly — not just when you feel bad.",
+    referralIfNoImprovement: "Step up to ICS/LABA combination (e.g., budesonide/formoterol) or refer to respiratory specialist",
+    source: "GINA 2023 Asthma Guidelines; NICE NG80; BNF"
+  },
+  {
+    id: "montelukast",
+    name: "Montelukast",
+    brandExamples: "Singulair, Lukasm",
+    category: "Leukotriene Receptor Antagonist",
+    rxType: "Prescription",
+    forSymptoms: ["wheeze", "runny_nose", "sneezing", "nasal_congestion"],
+    dosage: {
+      adult: "10 mg once daily in the evening",
+      pediatric: "6–14 years: 5 mg once daily. 2–5 years: 4 mg once daily",
+      maxDaily: "10 mg/day",
+      frequency: "Once daily (evening)",
+      withFood: false,
+      duration: "Long-term"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: ["montelukast"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 2,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "phenobarbital", effect: "Phenobarbital may reduce montelukast levels.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "FDA/MHRA warning: can cause neuropsychiatric effects — mood changes, vivid dreams, depression, suicidal thinking (rare). Stop and seek advice if these occur",
+      "Useful for asthma with co-existing allergic rhinitis",
+      "Takes 1–2 weeks to see full benefit",
+      "Not a rescue medication — does not work immediately for acute attacks",
+      "Discuss neuropsychiatric risk particularly with patients with history of mental health conditions"
+    ],
+    patientExplanation: "Montelukast is a daily tablet that reduces inflammation in your airways and nose. It works well if you have both asthma and hayfever.",
+    referralIfNoImprovement: "Add or step up to ICS/LABA; refer to respiratory specialist if symptoms remain uncontrolled",
+    source: "GINA 2023; NICE NG80; FDA/MHRA montelukast safety communication"
+  },
+  {
+    id: "tiotropium",
+    name: "Tiotropium",
+    brandExamples: "Spiriva, Braltus",
+    category: "Long-acting Muscarinic Antagonist (LAMA) — COPD",
+    rxType: "Prescription",
+    forSymptoms: ["wheeze", "productive_cough", "dry_cough"],
+    dosage: {
+      adult: "18 mcg (HandiHaler) or 5 mcg (Respimat) once daily",
+      elderly: "No dose adjustment needed; monitor for urinary retention in elderly males",
+      maxDaily: "18 mcg/day (HandiHaler); 5 mcg/day (Respimat)",
+      frequency: "Once daily (same time each day)",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["narrow_angle_glaucoma", "prostate"],
+      medications: [],
+      allergies: ["tiotropium", "ipratropium"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "other_antimuscarinics", effect: "Additive anticholinergic effects (dry mouth, urinary retention).", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "This is a once-daily MAINTENANCE inhaler for COPD — not for sudden breathlessness",
+      "Use your short-acting reliever (salbutamol/ipratropium) for acute breathlessness",
+      "Common side effect: dry mouth — sip water regularly",
+      "Report difficulty urinating or eye pain immediately",
+      "Correct inhaler technique is essential — ask your pharmacist or nurse for a demonstration"
+    ],
+    patientExplanation: "Tiotropium keeps your airways open all day by relaxing the muscles around them. It's taken once a day and helps reduce flare-ups of COPD.",
+    referralIfNoImprovement: "Combine with ICS/LABA; refer to respiratory specialist. Ensure pulmonary rehabilitation is offered",
+    source: "GOLD 2024 COPD Report; NICE NG115; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — HEART FAILURE
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "furosemide",
+    name: "Furosemide (Frusemide)",
+    brandExamples: "Lasix, Frusol",
+    category: "Loop Diuretic",
+    rxType: "Prescription",
+    forSymptoms: ["hf_management", "oedema"],
+    dosage: {
+      adult: "20–40 mg once daily in the morning; titrate to response. Severe heart failure: up to 160–240 mg/day in divided doses",
+      elderly: "Start low (20 mg); high risk of electrolyte disturbance and falls",
+      maxDaily: "600 mg/day (severe HF under specialist care)",
+      frequency: "Once or twice daily (morning / midday — avoid evening doses)",
+      withFood: false,
+      duration: "Long-term"
+    },
+    contraindications: {
+      conditions: ["anuria", "severe_dehydration"],
+      medications: ["aminoglycosides_concurrent"],
+      allergies: ["sulfonamides"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 0,
+      elderlyRisk: true
+    },
+    interactions: [
+      { withMed: "digoxin", effect: "Hypokalaemia from furosemide increases digoxin toxicity.", severity: "severe" },
+      { withMed: "ace_inhibitors", effect: "Profound first-dose hypotension if volume-depleted; start ACEi at low dose.", severity: "moderate" },
+      { withMed: "nsaids", effect: "NSAIDs antagonise diuretic effect and worsen renal function.", severity: "moderate" },
+      { withMed: "lithium", effect: "Furosemide reduces lithium excretion — toxicity risk.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Take in the morning — taking it later causes disruptive night-time urination",
+      "Weigh yourself daily (same time, same clothing): if weight increases >2 kg in 2 days, contact your GP or HF nurse",
+      "Restrict fluid to 1.5–2 L/day if advised and limit dietary salt",
+      "Report muscle cramps or weakness (low potassium sign)",
+      "Do not stop suddenly — fluid can accumulate rapidly in heart failure"
+    ],
+    patientExplanation: "Furosemide removes excess fluid from your body through increased urination. This reduces the strain on your heart and the swelling in your legs.",
+    referralIfNoImprovement: "Escalate to HF specialist if refractory oedema; consider addition of spironolactone",
+    source: "NICE NG106 Chronic Heart Failure; ESC 2021 HF Guidelines; BNF"
+  },
+  {
+    id: "spironolactone",
+    name: "Spironolactone",
+    brandExamples: "Aldactone, Spiractin",
+    category: "Mineralocorticoid Receptor Antagonist",
+    rxType: "Prescription",
+    forSymptoms: ["hf_management"],
+    dosage: {
+      adult: "25 mg once daily; may increase to 50 mg after 4–8 weeks if tolerated",
+      elderly: "Start 12.5–25 mg; monitor K⁺ and renal function closely",
+      maxDaily: "50 mg/day (HF); up to 400 mg/day for hyperaldosteronism",
+      frequency: "Once daily with food",
+      withFood: true,
+      duration: "Long-term"
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "hyperkalaemia", "addisons_disease"],
+      medications: ["ace_inhibitors", "arbs", "potassium_supplements"],
+      allergies: ["spironolactone"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "ace_inhibitors", effect: "High risk of hyperkalaemia — monitor potassium closely.", severity: "severe" },
+      { withMed: "nsaids", effect: "Reduced diuretic effect; increased risk of renal impairment and hyperkalaemia.", severity: "moderate" },
+      { withMed: "digoxin", effect: "Spironolactone increases digoxin levels — monitor.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Monitor potassium and renal function within 1 week of starting and monthly for 3 months",
+      "Avoid potassium supplements and potassium-rich salt substitutes",
+      "Report breast tenderness or enlargement (gynaecomastia — more common in men)",
+      "Avoid NSAIDs including ibuprofen",
+      "A normal potassium is essential before each dose increase"
+    ],
+    patientExplanation: "Spironolactone is a gentle diuretic that protects your heart muscle while removing excess fluid. It has proven benefit in heart failure.",
+    referralIfNoImprovement: "Consider eplerenone (better tolerated) if gynaecomastia occurs; refer to HF specialist",
+    source: "NICE NG106; ESC 2021 HF Guidelines; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — THYROID
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "levothyroxine",
+    name: "Levothyroxine (T4)",
+    brandExamples: "Eltroxin, Euthyrox, Synthroid",
+    category: "Thyroid Hormone Replacement",
+    rxType: "Prescription",
+    forSymptoms: ["thyroid_management"],
+    dosage: {
+      adult: "Start 25–50 mcg once daily; increase by 25 mcg every 4–6 weeks to target TSH. Usual maintenance 100–200 mcg/day",
+      elderly: "Start 12.5–25 mcg; increase very slowly every 6–8 weeks (cardiac risk of rapid titration)",
+      maxDaily: "Titrate to normal TSH; typically 100–200 mcg/day",
+      frequency: "Once daily, 30–60 min before breakfast on an empty stomach",
+      withFood: false,
+      duration: "Lifelong (for primary hypothyroidism)"
+    },
+    contraindications: {
+      conditions: ["thyrotoxicosis", "adrenal_insufficiency_untreated"],
+      medications: [],
+      allergies: ["levothyroxine"],
+      pregnancy: "safe",
+      breastfeeding: "safe",
+      minAge: 0,
+      elderlyRisk: true
+    },
+    interactions: [
+      { withMed: "calcium_supplements", effect: "Calcium reduces levothyroxine absorption — separate by ≥4 hours.", severity: "moderate" },
+      { withMed: "iron_supplements", effect: "Iron reduces levothyroxine absorption — separate by ≥4 hours.", severity: "moderate" },
+      { withMed: "antacids", effect: "Antacids reduce absorption — separate by ≥4 hours.", severity: "moderate" },
+      { withMed: "warfarin", effect: "Thyroid replacement increases warfarin sensitivity — monitor INR.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take on an empty stomach, at least 30–60 minutes before breakfast or coffee",
+      "Separate from calcium, iron, or antacids by at least 4 hours",
+      "Symptoms improve gradually over 2–3 months — do not self-adjust the dose",
+      "TSH blood test needed 4–6 weeks after each dose change and annually when stable",
+      "Symptoms of over-treatment: palpitations, tremor, sweating, weight loss — contact your doctor",
+      "Do not switch brands without medical advice — different brands may have slightly different absorption"
+    ],
+    patientExplanation: "Levothyroxine replaces the thyroid hormone your body isn't making enough of. It must be taken at the same time every day, on an empty stomach.",
+    referralIfNoImprovement: "If symptoms persist despite normal TSH, check T3; consider endocrinology referral",
+    source: "ATA/ETA Hypothyroidism Guidelines 2014; NICE; BNF"
+  },
+  {
+    id: "carbimazole",
+    name: "Carbimazole",
+    brandExamples: "Neo-Mercazole",
+    category: "Antithyroid Drug",
+    rxType: "Prescription",
+    forSymptoms: ["thyroid_management"],
+    dosage: {
+      adult: "20–40 mg once daily initially; reduce to maintenance 5–15 mg once daily when euthyroid",
+      elderly: "Same dosing; monitor closely for agranulocytosis",
+      maxDaily: "60 mg/day (titration phase)",
+      frequency: "Once daily or in divided doses",
+      withFood: false,
+      duration: "12–18 months for Graves' disease; reassess for definitive therapy"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: ["carbimazole", "propylthiouracil"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 0,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "warfarin", effect: "Hyperthyroidism correction alters warfarin sensitivity — monitor INR.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "EMERGENCY: If you develop a sore throat, fever, or mouth ulcers — STOP the drug and go to A&E immediately for a blood count (agranulocytosis risk)",
+      "Do not stop without medical advice — rebound thyrotoxicosis can occur",
+      "Blood tests (TFTs, FBC) required every 6–8 weeks initially",
+      "Pregnancy: discuss with endocrinologist urgently if pregnant or planning to conceive",
+      "Report any unusual bleeding or bruising"
+    ],
+    patientExplanation: "Carbimazole blocks your thyroid from making too much hormone. The most important thing to know: go to A&E immediately if you develop a sore throat or fever.",
+    referralIfNoImprovement: "Refer to endocrinology for radioiodine or thyroidectomy if remission not achieved",
+    source: "BTA/ATA Hyperthyroidism Guidelines; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — ATRIAL FIBRILLATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "apixaban",
+    name: "Apixaban",
+    brandExamples: "Eliquis",
+    category: "Direct Oral Anticoagulant (DOAC) — Factor Xa Inhibitor",
+    rxType: "Prescription",
+    forSymptoms: ["afib_management"],
+    dosage: {
+      adult: "AF stroke prevention: 5 mg twice daily. Reduce to 2.5 mg twice daily if ≥2 of: age ≥80, weight ≤60 kg, creatinine ≥1.5 mg/dL",
+      elderly: "Dose reduction criteria above — do not reduce arbitrarily based on age alone",
+      maxDaily: "10 mg/day (standard dose)",
+      frequency: "Twice daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["active_major_bleeding", "severe_hepatic_impairment"],
+      medications: ["other_anticoagulants"],
+      allergies: ["apixaban"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "azole_antifungals", effect: "Ketoconazole/itraconazole substantially increase apixaban levels — avoid or use with caution.", severity: "severe" },
+      { withMed: "rifampicin", effect: "Rifampicin reduces apixaban levels — avoid combination.", severity: "severe" },
+      { withMed: "nsaids", effect: "Increased bleeding risk.", severity: "moderate" },
+      { withMed: "aspirin", effect: "Increased bleeding risk.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Take twice daily — do not miss doses; if missed, take as soon as remembered same day",
+      "No routine INR monitoring needed (unlike warfarin)",
+      "Inform all healthcare providers (dentist, surgeons) that you take an anticoagulant",
+      "Seek emergency care for any unusual or heavy bleeding, especially from head or gut",
+      "Reversal agent (andexanet alfa) available if major bleeding occurs",
+      "Avoid NSAIDs and minimise alcohol intake"
+    ],
+    patientExplanation: "Apixaban prevents blood clots that can cause strokes in atrial fibrillation. It works reliably without the frequent blood tests needed for warfarin.",
+    referralIfNoImprovement: "If bleeding on anticoagulation, reassess HAS-BLED score; consider switching agent or dose",
+    source: "ESC 2020 AF Guidelines; NICE TA275; BNF"
+  },
+  {
+    id: "digoxin",
+    name: "Digoxin",
+    brandExamples: "Lanoxin",
+    category: "Cardiac Glycoside",
+    rxType: "Prescription",
+    forSymptoms: ["afib_management", "hf_management"],
+    dosage: {
+      adult: "125–250 mcg once daily. Titrate to heart rate target and serum digoxin levels",
+      elderly: "62.5–125 mcg once daily — narrow therapeutic index; high toxicity risk in elderly with reduced renal function",
+      maxDaily: "250 mcg/day (typically)",
+      frequency: "Once daily",
+      withFood: false,
+      duration: "Long-term"
+    },
+    contraindications: {
+      conditions: ["heart_block_2_3", "hypertrophic_obstructive_cardiomyopathy", "wpw_syndrome"],
+      medications: ["amiodarone"],
+      allergies: ["digoxin"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 0,
+      elderlyRisk: true
+    },
+    interactions: [
+      { withMed: "amiodarone", effect: "Amiodarone doubles digoxin levels — halve digoxin dose.", severity: "severe" },
+      { withMed: "furosemide", effect: "Hypokalaemia from diuretics increases digoxin toxicity.", severity: "severe" },
+      { withMed: "macrolides", effect: "Clarithromycin/erythromycin increase digoxin levels.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "Check pulse before each dose — if <60 bpm, withhold and contact prescriber",
+      "Narrow therapeutic index — even slight overdose is toxic",
+      "Toxicity signs: nausea, vomiting, yellow-green visual disturbance, irregular heartbeat",
+      "Regular blood tests for digoxin levels, renal function, and potassium",
+      "Many drugs interact with digoxin — always inform your pharmacist of any new medicines"
+    ],
+    patientExplanation: "Digoxin slows and steadies your heart rate. It has a very narrow safe range, so regular monitoring is essential.",
+    referralIfNoImprovement: "Consider rate-control alternatives (beta-blocker, diltiazem); rhythm control referral to cardiology",
+    source: "ESC 2020 AF; NICE NG106; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — EPILEPSY
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "levetiracetam",
+    name: "Levetiracetam",
+    brandExamples: "Keppra, Desitrend",
+    category: "Antiepileptic Drug (AED)",
+    rxType: "Prescription",
+    forSymptoms: ["seizure_management"],
+    dosage: {
+      adult: "Start 250 mg twice daily; increase by 250–500 mg twice daily every 2–4 weeks. Usual range 1000–3000 mg/day",
+      elderly: "Dose reduce for renal impairment; start 250 mg twice daily",
+      maxDaily: "3000 mg/day",
+      frequency: "Twice daily",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: [],
+      medications: [],
+      allergies: ["levetiracetam"],
+      pregnancy: "caution",
+      breastfeeding: "caution",
+      minAge: 1,
+      elderlyRisk: false
+    },
+    interactions: [],
+    counselingPoints: [
+      "Do not stop without medical advice — stopping suddenly can trigger seizures",
+      "Behavioural changes (irritability, aggression, depression) occur in up to 10% — report promptly",
+      "You must not drive until seizure-free for the legally required period in your country",
+      "Take at the same times daily; if a dose is missed, take it as soon as possible",
+      "Women of childbearing age: folic acid 5 mg/day recommended; discuss contraception and pregnancy planning"
+    ],
+    patientExplanation: "Levetiracetam prevents epileptic seizures by stabilising electrical activity in the brain. It must be taken regularly and never stopped suddenly.",
+    referralIfNoImprovement: "Review diagnosis and EEG; consider adding sodium valproate or lamotrigine; refer to neurologist",
+    source: "NICE NG217 Epilepsies; BNF"
+  },
+  {
+    id: "sodium_valproate",
+    name: "Sodium Valproate",
+    brandExamples: "Epilim, Depakote, Convulex",
+    category: "Antiepileptic Drug (AED) / Mood Stabiliser",
+    rxType: "Prescription",
+    forSymptoms: ["seizure_management"],
+    dosage: {
+      adult: "Start 600 mg/day in 2 divided doses; usual range 1000–2000 mg/day. MR formulation preferred",
+      elderly: "Lower doses; monitor closely for toxicity",
+      maxDaily: "2500 mg/day",
+      frequency: "Twice daily (MR formulation)",
+      withFood: true,
+      duration: "Long-term"
+    },
+    contraindications: {
+      conditions: ["liver_disease", "urea_cycle_disorders"],
+      medications: ["carbapenems"],
+      allergies: ["valproate"],
+      pregnancy: "avoid",
+      breastfeeding: "caution",
+      minAge: 0,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "carbapenems", effect: "Meropenem and other carbapenems dramatically reduce valproate levels — avoid.", severity: "severe" },
+      { withMed: "lamotrigine", effect: "Valproate doubles lamotrigine levels — require dose reduction of lamotrigine.", severity: "moderate" },
+      { withMed: "warfarin", effect: "Valproate may increase free warfarin — monitor INR.", severity: "moderate" }
+    ],
+    counselingPoints: [
+      "PREGNANCY WARNING — VALPROATE PREGNANCY PREVENTION PROGRAMME: Must not be used in women of childbearing potential unless they are on the MHRA Pregnancy Prevention Programme with two reliable forms of contraception. Causes serious foetal harm (neural tube defects, developmental delay).",
+      "Never stop suddenly — risk of severe rebound seizures",
+      "Report nausea, vomiting, abdominal pain, or jaundice (rare but serious liver toxicity)",
+      "Regular LFTs and FBC required during therapy",
+      "Take with food to reduce GI side effects"
+    ],
+    patientExplanation: "Sodium valproate is an effective anti-seizure medicine. Women who could become pregnant MUST use reliable contraception and be enrolled in the pregnancy prevention programme.",
+    referralIfNoImprovement: "Review EEG and seizure diary; neurology referral for refractory epilepsy or surgery assessment",
+    source: "NICE NG217; MHRA Valproate Safety; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — OSTEOPOROSIS
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "alendronate",
+    name: "Alendronic Acid (Alendronate)",
+    brandExamples: "Fosamax, Binosto",
+    category: "Bisphosphonate",
+    rxType: "Prescription",
+    forSymptoms: ["osteoporosis_management"],
+    dosage: {
+      adult: "70 mg once weekly OR 10 mg once daily",
+      elderly: "No dose adjustment; ensure adequate calcium and vitamin D supplementation",
+      maxDaily: "10 mg/day (or 70 mg/week)",
+      frequency: "Once weekly (preferred) or once daily",
+      withFood: false,
+      duration: "5 years (review annually); holiday after 5 years in lower-risk patients"
+    },
+    contraindications: {
+      conditions: ["kidney_disease", "oesophageal_disorders", "inability_to_sit_upright"],
+      medications: [],
+      allergies: ["bisphosphonates"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 18,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "calcium_supplements", effect: "Calcium impairs alendronate absorption — take alendronate first, then wait ≥30 min before calcium.", severity: "moderate" },
+      { withMed: "iron_supplements", effect: "Iron reduces absorption — separate doses.", severity: "moderate" },
+      { withMed: "nsaids", effect: "Additive GI irritation risk.", severity: "mild" }
+    ],
+    counselingPoints: [
+      "Take on waking, with a FULL glass of plain water (not coffee or juice), at least 30 minutes before any food, drink, or other medicine",
+      "Remain fully upright (sitting or standing) for at least 30 minutes after taking — prevents oesophageal ulceration",
+      "Stop and seek advice if you develop chest pain, new heartburn, or difficulty swallowing",
+      "Dental check recommended before starting — rare risk of osteonecrosis of the jaw (especially with invasive dental procedures)",
+      "Supplement with calcium (1000 mg/day) and vitamin D (800 IU/day) if dietary intake is low"
+    ],
+    patientExplanation: "Alendronic acid strengthens your bones and reduces fracture risk. The administration routine — upright, on an empty stomach, with water — is essential to prevent oesophageal irritation.",
+    referralIfNoImprovement: "Review adherence and check DEXA scan. Consider IV zoledronate or denosumab for non-adherence or worsening BMD",
+    source: "NICE TA160/464 Osteoporosis; NOGG 2021 Guidelines; BNF"
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRESCRIPTION — STATINS (Cardiovascular / Lipid Management)
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: "atorvastatin",
+    name: "Atorvastatin",
+    brandExamples: "Lipitor, Torvast",
+    category: "HMG-CoA Reductase Inhibitor (Statin)",
+    rxType: "Prescription",
+    forSymptoms: ["lipid_management", "bp_management"],
+    dosage: {
+      adult: "Primary prevention (ASCVD risk ≥10%): 20 mg once daily. Secondary prevention / high risk: 40–80 mg once daily",
+      elderly: "No dose adjustment required; monitor for myopathy",
+      maxDaily: "80 mg/day",
+      frequency: "Once daily (any time)",
+      withFood: false,
+      duration: "Long-term / indefinite"
+    },
+    contraindications: {
+      conditions: ["liver_disease", "unexplained_elevated_transaminases"],
+      medications: ["gemfibrozil", "ciclosporin"],
+      allergies: ["statins"],
+      pregnancy: "avoid",
+      breastfeeding: "avoid",
+      minAge: 10,
+      elderlyRisk: false
+    },
+    interactions: [
+      { withMed: "amlodipine", effect: "Amlodipine increases atorvastatin exposure — cap atorvastatin at 40 mg with amlodipine 10 mg.", severity: "mild" },
+      { withMed: "macrolides", effect: "Clarithromycin/erythromycin increase statin levels — temporary hold of statin if short course.", severity: "moderate" },
+      { withMed: "gemfibrozil", effect: "Substantially increases myopathy risk — avoid combination.", severity: "severe" }
+    ],
+    counselingPoints: [
+      "Report unexplained muscle pain, weakness, or dark urine immediately (rhabdomyolysis — rare)",
+      "Takes 4–6 weeks to see full LDL-lowering effect — fasting lipid profile after 3 months",
+      "Can be taken at any time of day — take at the same time consistently",
+      "Avoid grapefruit juice (small effect — less than with simvastatin, but best avoided)",
+      "Liver function tests at baseline; routine monitoring not required unless symptomatic",
+      "Statin muscle side effects are over-reported in public — only ~5% are genuinely statin-related"
+    ],
+    patientExplanation: "Atorvastatin lowers the 'bad' cholesterol in your blood, significantly reducing your risk of heart attack and stroke over the years.",
+    referralIfNoImprovement: "If LDL reduction <50% on maximum tolerated dose, add ezetimibe; refer to lipid clinic if familial hypercholesterolaemia suspected",
+    source: "NICE NG238 CVD Risk; ACC/AHA 2019 Cholesterol Guidelines; BNF"
+  },
 ];
 
 // ─── RED FLAG REFERRAL RULES ───
@@ -3069,31 +4020,41 @@ export const POSSIBLE_CONDITIONS: PossibleCondition[] = [
 // relevant for that condition. Used by the engine to surface Rx recommendations
 // even when only a condition (not a symptom) is selected.
 export const CONDITION_TO_SYMPTOMS: Record<string, string[]> = {
-  asthma:             ["wheeze", "dry_cough", "productive_cough"],
-  copd:               ["wheeze", "productive_cough", "dry_cough"],
-  gerd:               ["heartburn", "nausea", "stomach_cramps"],
-  gerd_chronic:       ["heartburn", "nausea", "stomach_cramps"],
-  peptic_ulcer:       ["heartburn", "stomach_cramps"],
-  gout:               ["gout_attack", "joint_pain"],
-  insomnia:           ["insomnia"],
+  // ── Conditions with real symptom overlaps ──────────────────────────────────
+  asthma:                  ["wheeze", "dry_cough", "productive_cough"],
+  copd:                    ["wheeze", "productive_cough", "dry_cough"],
+  gerd:                    ["heartburn", "nausea", "stomach_cramps"],
+  gerd_chronic:            ["heartburn", "nausea", "stomach_cramps"],
+  peptic_ulcer:            ["heartburn", "stomach_cramps"],
+  gout:                    ["gout_attack", "joint_pain"],
+  insomnia:                ["insomnia"],
   urinary_tract_infection: ["dysuria", "urinary_frequency"],
-  neuropathic_pain:   ["neuropathic_pain"],
-  migraine_chronic:   ["migraine", "headache"],
-  depression_anxiety: ["insomnia"],
-  anxiety:            ["insomnia"],
-  depression:         ["insomnia"],
-  thyroid_disease:    [],
-  hypertension:       [],
-  diabetes_t2:        [],
-  heart_failure:      [],
-  ckd:                [],
-  liver_disease:      [],
-  epilepsy:           [],
-  glaucoma:           [],
-  atrial_fibrillation:[],
-  ischemic_heart_disease: [],
-  hyperlipidemia:     [],
-  bleeding_disorder:  [],
-  osteoporosis:       [],
-  parkinsons:         [],
+  neuropathic_pain:        ["neuropathic_pain"],
+  migraine_chronic:        ["migraine", "headache"],
+
+  // ── Conditions that now trigger prescription drug recommendations ──────────
+  // Virtual symptom IDs (not shown in UI) are matched by forSymptoms in drug rules
+  hypertension:            ["bp_management"],
+  heart_disease:           ["bp_management", "lipid_management"],
+  heart_failure:           ["hf_management"],
+  atrial_fibrillation:     ["afib_management"],
+  diabetes:                ["glucose_management"],
+  diabetes_t2:             ["glucose_management"],
+  depression_anxiety:      ["mood_management", "depression_low_mood", "insomnia"],
+  anxiety:                 ["mood_management", "insomnia"],
+  depression:              ["mood_management", "depression_low_mood", "insomnia"],
+  thyroid:                 ["thyroid_management"],
+  thyroid_disease:         ["thyroid_management"],
+  epilepsy:                ["seizure_management"],
+  osteoporosis:            ["osteoporosis_management"],
+  hyperlipidemia:          ["lipid_management"],
+
+  // ── Conditions with no directly applicable drug rules (safety checks only) ─
+  kidney_disease:          [],
+  liver_disease:           [],
+  glaucoma:                [],
+  ischemic_heart_disease:  ["bp_management", "lipid_management"],
+  bleeding_disorder:       [],
+  parkinsons:              [],
+  copd_condition:          ["wheeze", "productive_cough"],
 };

@@ -1160,7 +1160,7 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-24">
               <Activity className="w-16 h-16 mb-4 text-slate-300" />
               <div className="text-xl font-semibold text-slate-500 mb-2">Select symptoms to begin</div>
-              <div className="text-sm max-w-sm">Search and select symptoms, conditions, or ICD-10 codes on the left to see OTC safety screening, drug recommendations, and referral guidance.</div>
+              <div className="text-sm max-w-sm">Search and select symptoms, conditions, or ICD-10 codes on the left to see drug safety screening, medication recommendations, and referral guidance.</div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1169,9 +1169,9 @@ export default function Dashboard() {
                 <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-semibold text-amber-800 text-sm mb-1">No OTC medication rules for these codes — physician referral recommended</div>
+                    <div className="font-semibold text-amber-800 text-sm mb-1">No medication rules matched for these codes — physician referral recommended</div>
                     <div className="text-xs text-amber-700 leading-relaxed">
-                      The selected ICD codes represent conditions or findings that fall outside the OTC self-care range. No over-the-counter medications are indicated. Apply clinical judgment, consult BNF / MIMS / local formulary, and refer to a physician for assessment and prescription therapy where appropriate.
+                      The selected ICD codes represent conditions or findings with no matched clinical rules. Apply clinical judgment, consult BNF / MIMS / local formulary, and refer to a physician for assessment and appropriate therapy.
                     </div>
                   </div>
                 </div>
@@ -1190,7 +1190,7 @@ export default function Dashboard() {
                       <div className="text-xs text-red-100 mt-1">{rf.message}</div>
                     </div>
                   ))}
-                  <div className="text-xs text-red-100 mt-2">⚠️ Do not recommend OTC medications for the red flag symptoms above without physician evaluation.</div>
+                  <div className="text-xs text-red-100 mt-2">⚠️ Do not recommend any medications for the red flag symptoms above without physician evaluation.</div>
                 </div>
               )}
 
@@ -1258,7 +1258,7 @@ export default function Dashboard() {
                   {recommended.length === 0 ? (
                     <div className="text-center text-slate-400 py-12">
                       <CheckCircle className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-                      <div className="text-sm">No fully safe OTC medications found for the selected profile.</div>
+                      <div className="text-sm">No fully safe medications found for the selected profile.</div>
                       <div className="text-xs mt-1">Check the "Caution" tab for options requiring monitoring, or refer to a physician.</div>
                     </div>
                   ) : (
@@ -1315,7 +1315,7 @@ export default function Dashboard() {
                                 {cond.likelihood === "common" ? "Common" : "Possible"}
                               </Badge>
                               <Badge className={cond.otcManageable ? "bg-blue-100 text-blue-700 text-xs" : "bg-orange-100 text-orange-700 text-xs"}>
-                                {cond.otcManageable ? "OTC manageable" : "Rx/Referral needed"}
+                                {cond.otcManageable ? "Self-care / OTC" : "Rx/Referral needed"}
                               </Badge>
                             </div>
                           </div>
