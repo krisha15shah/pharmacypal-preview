@@ -669,18 +669,31 @@ export default function Dashboard() {
   ) ?? 0;
 
   // WHO EML therapies driven by the union of chip-selected + ICD-mapped condition IDs
-  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy }>>(() => {
+  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy; fallback?: boolean; codes?: string[] }>>(() => {
     const ids = new Set<string>([
       ...effectiveProfile.selectedConditions,
       ...icdConditions.map((i) => i.internalId).filter((x): x is string => !!x),
     ]);
-    const out: Array<{ id: string; therapy: ConditionTherapy }> = [];
+    const out: Array<{ id: string; therapy: ConditionTherapy; fallback?: boolean; codes?: string[] }> = [];
     ids.forEach((id) => {
       const t = getTherapyFor(id);
       if (t) out.push({ id, therapy: t });
     });
+    // Chapter-level fallback so unmapped ICD codes still get actionable guidance
+    const grouped = new Map<string, { therapy: ConditionTherapy; codes: string[] }>();
+    [...icdConditions, ...icdSymptoms]
+      .filter((i) => !i.internalId)
+      .forEach((i) => {
+        const t = getFallbackTherapyForIcd(i.code);
+        if (!t) return;
+        const g = grouped.get(t.label);
+        if (g) g.codes.push(i.code);
+        else grouped.set(t.label, { therapy: t, codes: [i.code] });
+      });
+    grouped.forEach(({ therapy, codes }, label) => out.push({ id: `fallback-${label}`, therapy, fallback: true, codes }));
     return out;
-  }, [effectiveProfile.selectedConditions, icdConditions]);
+  }, [effectiveProfile.selectedConditions, icdConditions, icdSymptoms]);
+
 
   // Panel is visible when any clinical data is present — not just when engine matches
   const hasAnyData =
