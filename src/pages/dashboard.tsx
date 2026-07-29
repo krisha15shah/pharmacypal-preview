@@ -17,6 +17,7 @@ import MedicationSearch, { type SelectedDrug } from "@/components/medication-sea
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
 import { getTherapyFor, getFallbackTherapyForIcd, type ConditionTherapy } from "@/lib/who-eml-therapy";
+import { getUaePricing, STATUS_CONFIG } from "@/lib/uae-pricing";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -1331,6 +1332,9 @@ export default function Dashboard() {
                   <TabsTrigger value="counseling" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-slate-700 data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
                     💬 Counseling
                   </TabsTrigger>
+                  <TabsTrigger value="uae_prices" disabled={!result} className="flex-1 text-xs data-[state=active]:bg-[#006341] data-[state=active]:text-white rounded disabled:opacity-40 disabled:cursor-not-allowed">
+                    🇦🇪 UAE Prices
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Recommended */}
@@ -1505,6 +1509,132 @@ export default function Dashboard() {
                       <div className="text-center text-slate-400 py-12 text-sm">
                         <MessageSquare className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                         Select symptoms to see counseling guidance.
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* UAE Prices */}
+                <TabsContent value="uae_prices" className="mt-3">
+                  <div className="space-y-3">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800 flex gap-2">
+                      <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                      <span>Approximate UAE retail prices (AED). Prices vary by pharmacy chain and may change. All prescription (Rx) and controlled medicines require a valid prescription under UAE Federal Law.</span>
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {(["OTC","Pharmacist","Rx","Controlled"] as const).map((s) => (
+                        <span key={s} className={`px-2 py-0.5 rounded-full border font-medium ${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} ${STATUS_CONFIG[s].border}`}>
+                          {STATUS_CONFIG[s].label}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Recommended meds pricing */}
+                    {[...recommended, ...caution].length === 0 ? (
+                      <div className="text-center text-slate-400 py-12 text-sm">
+                        <Pill className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                        Select symptoms to see UAE pricing for recommended medications.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {[...recommended, ...caution].map((r) => {
+                          const pricing = getUaePricing(r.medication.id);
+                          const isRecommended = recommended.includes(r);
+                          if (!pricing) return null;
+                          const sc = STATUS_CONFIG[pricing.uaeStatus];
+                          return (
+                            <div key={r.medication.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                              {/* Header */}
+                              <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Pill className={`w-4 h-4 shrink-0 ${isRecommended ? "text-emerald-600" : "text-amber-500"}`} />
+                                  <div>
+                                    <div className="font-semibold text-sm text-slate-800">{r.medication.name}</div>
+                                    <div className="text-xs text-slate-500">{pricing.genericName}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {!isRecommended && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">Caution</span>
+                                  )}
+                                  <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${sc.bg} ${sc.color} ${sc.border}`}>
+                                    {sc.label}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Pricing table */}
+                              <div className="px-4 py-3">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="text-slate-400 uppercase tracking-wide">
+                                      <th className="text-left font-medium pb-2">Option</th>
+                                      <th className="text-left font-medium pb-2">Pack size</th>
+                                      <th className="text-right font-medium pb-2">Price (AED)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {/* Generic row */}
+                                    {pricing.genericPriceAed !== null && (
+                                      <tr>
+                                        <td className="py-1.5 pr-2">
+                                          <span className="font-medium text-slate-700">Generic</span>
+                                          <span className="ml-1.5 px-1 py-0.5 text-[10px] rounded bg-slate-100 text-slate-500">generic</span>
+                                        </td>
+                                        <td className="py-1.5 text-slate-500">{pricing.genericPackSize ?? "—"}</td>
+                                        <td className="py-1.5 text-right">
+                                          <span className="font-semibold text-slate-800">{pricing.genericPriceAed.toFixed(0)}</span>
+                                          <span className="text-slate-400 ml-0.5">AED</span>
+                                        </td>
+                                      </tr>
+                                    )}
+                                    {/* Branded rows */}
+                                    {pricing.brandedOptions.map((b, i) => (
+                                      <tr key={i}>
+                                        <td className="py-1.5 pr-2">
+                                          <span className="font-medium text-slate-700">{b.brand}</span>
+                                          <span className="ml-1.5 px-1 py-0.5 text-[10px] rounded bg-blue-50 text-blue-600">branded</span>
+                                        </td>
+                                        <td className="py-1.5 text-slate-500">{b.packSize}</td>
+                                        <td className="py-1.5 text-right">
+                                          <span className="font-semibold text-slate-800">{b.priceAed.toFixed(0)}</span>
+                                          <span className="text-slate-400 ml-0.5">AED</span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+
+                                {/* Savings callout */}
+                                {pricing.genericPriceAed !== null && pricing.brandedOptions.length > 0 && (() => {
+                                  const cheapestBranded = Math.min(...pricing.brandedOptions.map(b => b.priceAed));
+                                  const saving = cheapestBranded - pricing.genericPriceAed;
+                                  return saving > 0 ? (
+                                    <div className="mt-2 text-xs text-emerald-700 bg-emerald-50 px-2 py-1.5 rounded border border-emerald-200">
+                                      💡 Generic saves approx. <span className="font-semibold">{saving.toFixed(0)} AED</span> vs. cheapest branded option.
+                                    </div>
+                                  ) : null;
+                                })()}
+
+                                {/* UAE note */}
+                                {pricing.note && (
+                                  <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-200">
+                                    ℹ️ {pricing.note}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Meds not in UAE pricing DB */}
+                        {[...recommended, ...caution].filter(r => !getUaePricing(r.medication.id)).length > 0 && (
+                          <div className="text-xs text-slate-400 text-center py-2">
+                            {[...recommended, ...caution].filter(r => !getUaePricing(r.medication.id)).map(r => r.medication.name).join(", ")} — UAE pricing not yet available.
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
