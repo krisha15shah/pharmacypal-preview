@@ -677,3 +677,256 @@ export const CONDITION_THERAPIES: Record<string, ConditionTherapy> = {
 export function getTherapyFor(conditionId: string): ConditionTherapy | null {
   return CONDITION_THERAPIES[conditionId] ?? null;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CHAPTER-LEVEL FALLBACK
+// Any ICD-10 code that has no specific internal mapping still gets
+// class-level, guideline-anchored guidance instead of a dead end.
+// ═══════════════════════════════════════════════════════════════
+
+interface ChapterFallback {
+  /** Inclusive ICD-10 chapter letter range test */
+  test: (code: string) => boolean;
+  label: string;
+  source: string;
+  options: TherapyOption[];
+  referralNote: string;
+}
+
+const L = (code: string) => code.charAt(0).toUpperCase();
+const N = (code: string) => parseInt(code.slice(1, 3), 10) || 0;
+
+const SYMPTOMATIC_CORE: TherapyOption[] = [
+  { drug: "Paracetamol (acetaminophen)", drugClass: "Analgesic / antipyretic", adultDose: "500–1000 mg PO q6h, max 4 g/24 h (max 2 g if hepatic impairment / alcohol use)", pediatricDose: "15 mg/kg/dose q6h, max 60 mg/kg/day", rx: "OTC", note: "First-line analgesia across most conditions." },
+  { drug: "Ibuprofen", drugClass: "NSAID", adultDose: "200–400 mg PO q6–8h with food, max 1.2 g/24 h OTC", pediatricDose: "5–10 mg/kg/dose q6–8h", rx: "OTC", note: "Avoid in peptic ulcer, CKD, heart failure, 3rd trimester, or on anticoagulants." },
+  { drug: "Oral rehydration salts (ORS)", drugClass: "Rehydration", adultDose: "200–400 mL after each loose stool / with fever or vomiting", pediatricDose: "10 mL/kg after each loose stool", rx: "OTC", note: "Supportive care for any febrile or fluid-losing illness." },
+];
+
+const CHAPTER_FALLBACKS: ChapterFallback[] = [
+  {
+    test: (c) => L(c) === "A" || L(c) === "B",
+    label: "Infectious / parasitic disease (unspecified)",
+    source: "WHO EML 22 · WHO AWaRe antibiotic book 2022",
+    options: [
+      { drug: "Amoxicillin", drugClass: "Aminopenicillin (AWaRe: Access)", adultDose: "500 mg–1 g PO TID ×5–7 d", pediatricDose: "40–50 mg/kg/day PO divided TID", rx: "Rx", note: "Empiric Access-group first choice for most community bacterial infections." },
+      { drug: "Amoxicillin–clavulanate", drugClass: "β-lactam + β-lactamase inhibitor (Access)", adultDose: "500/125 mg PO TID or 875/125 mg BID ×5–7 d", rx: "Rx", note: "Use when resistance or abscess/mixed flora is likely." },
+      { drug: "Doxycycline", drugClass: "Tetracycline (Access)", adultDose: "100 mg PO BID ×7 d", rx: "Rx", note: "Penicillin allergy, atypicals, rickettsial disease. Avoid <8 y and in pregnancy." },
+      ...SYMPTOMATIC_CORE.slice(0, 1),
+      SYMPTOMATIC_CORE[2],
+    ],
+    referralNote: "Culture/sensitivity where feasible; follow local antimicrobial stewardship. Sepsis features (fever + hypotension, confusion, tachypnoea) → immediate emergency referral.",
+  },
+  {
+    test: (c) => L(c) === "C" || (L(c) === "D" && N(c) <= 48),
+    label: "Neoplasm (unspecified)",
+    source: "WHO EML 22 — cancer & palliative care",
+    options: [
+      { drug: "Oncology referral — tissue diagnosis + staging first", drugClass: "Specialist pathway", adultDose: "—", rx: "Rx / specialist", note: "No empiric therapy; chemotherapy is protocol- and stage-driven." },
+      { drug: "Morphine (immediate release)", drugClass: "Opioid analgesic — WHO ladder step 3", adultDose: "5–10 mg PO q4h, titrate to effect", rx: "Rx", note: "Cancer pain per WHO analgesic ladder; co-prescribe a laxative." },
+      { drug: "Ondansetron", drugClass: "5-HT₃ antagonist", adultDose: "8 mg PO/IV BID", rx: "Rx", note: "Chemotherapy-induced nausea/vomiting." },
+      { drug: "Dexamethasone", drugClass: "Corticosteroid", adultDose: "4–8 mg PO daily", rx: "Rx", note: "Adjunct for pain, appetite, raised ICP, CINV." },
+    ],
+    referralNote: "All suspected or confirmed neoplasms require oncology assessment. Pharmacist role: analgesia, antiemetics, mucositis and interaction screening.",
+  },
+  {
+    test: (c) => L(c) === "D" && N(c) >= 50,
+    label: "Blood / immune disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Ferrous sulfate", drugClass: "Oral iron", adultDose: "200 mg (65 mg elemental) PO daily–TID with vitamin C", pediatricDose: "3–6 mg/kg/day elemental iron", rx: "OTC", note: "Confirm iron deficiency with ferritin before long-term use." },
+      { drug: "Folic acid", drugClass: "Vitamin", adultDose: "5 mg PO daily", rx: "OTC" },
+      { drug: "Vitamin B12 (hydroxocobalamin)", drugClass: "Vitamin", adultDose: "1 mg IM alternate days ×2 wks then 3-monthly", rx: "Rx" },
+    ],
+    referralNote: "Unexplained cytopenias, pancytopenia or bleeding → haematology. Investigate the cause of any anaemia before iron replacement.",
+  },
+  {
+    test: (c) => L(c) === "E",
+    label: "Endocrine / metabolic / nutritional disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Investigate before treating (glucose, HbA1c, TSH, U&E, lipids)", drugClass: "Diagnostic step", adultDose: "—", rx: "Rx / specialist" },
+      { drug: "Multivitamin / micronutrient supplement", drugClass: "Nutritional support", adultDose: "1 tab PO daily", rx: "OTC", note: "Nutritional deficiency states; correct the specific deficit where identified." },
+      { drug: "Oral rehydration + electrolyte correction", drugClass: "Supportive", adultDose: "Per deficit and serum electrolytes", rx: "OTC" },
+    ],
+    referralNote: "Endocrine disorders need biochemical confirmation and prescriber-led titration.",
+  },
+  {
+    test: (c) => L(c) === "F",
+    label: "Mental / behavioural disorder (unspecified)",
+    source: "WHO mhGAP 2023 · WHO EML 22",
+    options: [
+      { drug: "Psychological / psychosocial intervention first-line", drugClass: "Non-pharmacological", adultDose: "—", rx: "OTC", note: "mhGAP recommends brief psychological intervention before medicines in mild presentations." },
+      { drug: "Fluoxetine", drugClass: "SSRI", adultDose: "20 mg PO daily, review at 4–6 wks", rx: "Rx", note: "Monitor for early suicidality in <25 y; serotonin syndrome risk with tramadol/triptans." },
+      { drug: "Diazepam (short-term only)", drugClass: "Benzodiazepine", adultDose: "2–5 mg PO up to TID, max 2–4 wks", rx: "Rx", note: "Dependence risk — avoid routine use." },
+    ],
+    referralNote: "Suicidal ideation, psychosis or self-neglect → urgent mental health referral.",
+  },
+  {
+    test: (c) => L(c) === "G",
+    label: "Nervous system disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      ...SYMPTOMATIC_CORE.slice(0, 2),
+      { drug: "Amitriptyline", drugClass: "TCA — neuropathic pain", adultDose: "10–25 mg PO nocte, titrate to 75 mg", rx: "Rx", note: "Anticholinergic; avoid in elderly (Beers) where possible." },
+      { drug: "Carbamazepine", drugClass: "Anticonvulsant", adultDose: "100–200 mg PO BID titrated", rx: "Rx", note: "Strong CYP3A4 inducer — check interactions; HLA-B*1502 screening in at-risk ancestry." },
+    ],
+    referralNote: "New seizures, focal deficit, thunderclap headache or progressive weakness → urgent neurology/emergency referral.",
+  },
+  {
+    test: (c) => L(c) === "H" && N(c) <= 59,
+    label: "Eye disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Lubricating eye drops (hypromellose / carmellose)", drugClass: "Ocular lubricant", adultDose: "1–2 drops PRN up to 6×/day", rx: "OTC" },
+      { drug: "Chloramphenicol 0.5% eye drops", drugClass: "Topical antibiotic", adultDose: "1 drop q2–6h ×5 d", rx: "OTC", note: "Bacterial conjunctivitis only." },
+    ],
+    referralNote: "Red painful eye, visual loss, photophobia or contact-lens wearer → same-day ophthalmology.",
+  },
+  {
+    test: (c) => L(c) === "H" && N(c) >= 60,
+    label: "Ear / mastoid disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      SYMPTOMATIC_CORE[0],
+      { drug: "Amoxicillin", drugClass: "Aminopenicillin", adultDose: "500 mg PO TID ×5 d", pediatricDose: "40–50 mg/kg/day divided TID", rx: "Rx", note: "Acute otitis media when systemically unwell or no improvement at 48–72 h." },
+    ],
+    referralNote: "Mastoid tenderness, facial palsy or sudden hearing loss → urgent ENT.",
+  },
+  {
+    test: (c) => L(c) === "I",
+    label: "Cardiovascular disorder (unspecified)",
+    source: "WHO EML 22 · WHO HEARTS",
+    options: [
+      { drug: "Amlodipine", drugClass: "Dihydropyridine CCB", adultDose: "5–10 mg PO daily", rx: "Rx" },
+      { drug: "Enalapril / lisinopril", drugClass: "ACE inhibitor", adultDose: "5–20 mg PO daily (titrate)", rx: "Rx", note: "Monitor U&E; contraindicated in pregnancy." },
+      { drug: "Atorvastatin", drugClass: "Statin", adultDose: "20–40 mg PO nocte", rx: "Rx", note: "Secondary prevention in established CVD." },
+      { drug: "Aspirin 75–100 mg", drugClass: "Antiplatelet", adultDose: "75–100 mg PO daily", rx: "OTC", note: "Secondary prevention only — not routine primary prevention." },
+    ],
+    referralNote: "Chest pain, syncope, new arrhythmia or acute breathlessness → emergency assessment.",
+  },
+  {
+    test: (c) => L(c) === "J",
+    label: "Respiratory disorder (unspecified)",
+    source: "WHO EML 22 · GINA/GOLD 2024",
+    options: [
+      { drug: "Salbutamol inhaler", drugClass: "SABA", adultDose: "100–200 mcg inhaled PRN q4–6h", pediatricDose: "100–200 mcg PRN via spacer", rx: "Rx", note: "Reliever for any wheeze/bronchospasm." },
+      { drug: "Beclometasone inhaler", drugClass: "Inhaled corticosteroid", adultDose: "200–400 mcg inhaled BID", rx: "Rx" },
+      { drug: "Amoxicillin", drugClass: "Aminopenicillin", adultDose: "500 mg–1 g PO TID ×5 d", rx: "Rx", note: "Community-acquired pneumonia / infective exacerbation." },
+      SYMPTOMATIC_CORE[0],
+    ],
+    referralNote: "SpO₂ <94%, RR >24, confusion or cyanosis → emergency referral.",
+  },
+  {
+    test: (c) => L(c) === "K",
+    label: "Digestive system disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Omeprazole", drugClass: "Proton pump inhibitor", adultDose: "20–40 mg PO daily ×4–8 wks", rx: "OTC", note: "Acid-related dyspepsia, GORD, ulcer healing." },
+      { drug: "Hyoscine butylbromide", drugClass: "Antispasmodic", adultDose: "10–20 mg PO TID–QID PRN", rx: "OTC", note: "Colic / cramping abdominal pain." },
+      { drug: "Metronidazole ± ciprofloxacin", drugClass: "Anti-anaerobe ± fluoroquinolone", adultDose: "Metronidazole 400 mg PO TID ×7 d; ciprofloxacin 500 mg PO BID", rx: "Rx", note: "Intra-abdominal, stoma-site or peri-anal infection — swab first where possible." },
+      SYMPTOMATIC_CORE[0],
+      SYMPTOMATIC_CORE[2],
+    ],
+    referralNote: "GI bleeding, persistent vomiting, jaundice, peritonism, or a stoma/device site with spreading cellulitis → same-day medical or surgical review.",
+  },
+  {
+    test: (c) => L(c) === "L",
+    label: "Skin / subcutaneous disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Emollient (white soft paraffin / aqueous cream)", drugClass: "Emollient", adultDose: "Apply liberally 2–4×/day", rx: "OTC" },
+      { drug: "Hydrocortisone 1% cream", drugClass: "Mild topical corticosteroid", adultDose: "Apply thinly BID ≤7 d", rx: "OTC", note: "Avoid on face/flexures beyond short courses." },
+      { drug: "Flucloxacillin", drugClass: "Antistaphylococcal penicillin", adultDose: "500 mg PO QID ×5–7 d", rx: "Rx", note: "Cellulitis / impetigo with systemic features." },
+    ],
+    referralNote: "Rapidly spreading erythema, blistering, mucosal involvement or systemic upset → urgent referral (consider SJS/TEN, necrotising infection).",
+  },
+  {
+    test: (c) => L(c) === "M",
+    label: "Musculoskeletal disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      ...SYMPTOMATIC_CORE.slice(0, 2),
+      { drug: "Topical NSAID (diclofenac gel)", drugClass: "Topical NSAID", adultDose: "Apply 2–4 g to affected area TID–QID", rx: "OTC", note: "Preferred over oral NSAIDs in elderly / GI or renal risk." },
+      { drug: "Physiotherapy + graded exercise", drugClass: "Non-pharmacological", adultDose: "—", rx: "OTC", note: "Core first-line for most MSK conditions." },
+    ],
+    referralNote: "Hot swollen joint, trauma with deformity, or new inflammatory back pain → urgent assessment (septic arthritis must be excluded).",
+  },
+  {
+    test: (c) => L(c) === "N",
+    label: "Genitourinary disorder (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Nitrofurantoin", drugClass: "Urinary antibacterial (Access)", adultDose: "100 mg MR PO BID ×3 d (women) / ×7 d (men)", rx: "Rx", note: "Avoid if eGFR <45 mL/min." },
+      { drug: "Trimethoprim", drugClass: "Folate antagonist", adultDose: "200 mg PO BID ×3 d", rx: "Rx", note: "Avoid first trimester." },
+      SYMPTOMATIC_CORE[0],
+    ],
+    referralNote: "Loin pain + fever, haematuria, or reduced urine output → same-day medical review. Review all renally-cleared drugs against eGFR.",
+  },
+  {
+    test: (c) => L(c) === "O",
+    label: "Pregnancy / childbirth-related (unspecified)",
+    source: "WHO EML 22 · WHO ANC 2016",
+    options: [
+      { drug: "Folic acid 400 mcg (+ iron)", drugClass: "Antenatal supplement", adultDose: "400 mcg PO daily preconception–12 wks; iron 30–60 mg elemental daily", rx: "OTC" },
+      { drug: "Paracetamol", drugClass: "Analgesic", adultDose: "500–1000 mg PO q6h, max 4 g/day", rx: "OTC", note: "Analgesic of choice in pregnancy; avoid NSAIDs after 20 wks." },
+      { drug: "Prescriber-led review of all medicines", drugClass: "Medication safety", adultDose: "—", rx: "Rx / specialist", note: "Screen every drug for teratogenicity and lactation safety." },
+    ],
+    referralNote: "Bleeding, reduced fetal movements, severe headache/visual change or BP ≥140/90 → immediate obstetric referral.",
+  },
+  {
+    test: (c) => L(c) === "P",
+    label: "Perinatal / neonatal condition (unspecified)",
+    source: "WHO EML 22 — neonatal care",
+    options: [
+      { drug: "Neonatal / paediatric specialist assessment", drugClass: "Specialist pathway", adultDose: "—", rx: "Rx / specialist", note: "Neonatal dosing is strictly weight- and postmenstrual-age based." },
+    ],
+    referralNote: "All neonatal conditions require paediatric prescriber involvement — no OTC self-care.",
+  },
+  {
+    test: (c) => L(c) === "Q",
+    label: "Congenital anomaly (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      { drug: "Multidisciplinary specialist management", drugClass: "Specialist pathway", adultDose: "—", rx: "Rx / specialist" },
+    ],
+    referralNote: "Managed by the relevant specialty; pharmacist role is interaction, dosing and adherence support.",
+  },
+  {
+    test: (c) => L(c) === "R",
+    label: "Symptom / abnormal finding (unspecified)",
+    source: "WHO EML 22 — symptomatic care",
+    options: SYMPTOMATIC_CORE,
+    referralNote: "Symptom codes are not a diagnosis. If symptoms persist >7 days, recur, or occur with red flags (weight loss, night sweats, bleeding, severe pain), refer for diagnosis.",
+  },
+  {
+    test: (c) => L(c) === "S" || L(c) === "T",
+    label: "Injury / poisoning / drug effect (unspecified)",
+    source: "WHO EML 22",
+    options: [
+      SYMPTOMATIC_CORE[0],
+      { drug: "Wound care + tetanus prophylaxis review", drugClass: "Non-pharmacological / immunisation", adultDose: "Td booster if >10 y since last dose (or >5 y for dirty wounds)", rx: "Rx" },
+      { drug: "Stop / substitute the causative agent (adverse drug effect)", drugClass: "Medication review", adultDose: "—", rx: "Rx", note: "Report suspected ADRs to the national pharmacovigilance scheme." },
+    ],
+    referralNote: "Suspected poisoning or overdose → contact poisons centre and refer to emergency care immediately.",
+  },
+  {
+    test: (c) => L(c) === "Z",
+    label: "Health status / contact with services",
+    source: "WHO EML 22",
+    options: [
+      { drug: "No pharmacotherapy indicated by this code alone", drugClass: "Administrative / status code", adultDose: "—", rx: "OTC", note: "Use alongside the clinical diagnosis codes for therapy decisions." },
+      { drug: "Preventive care: vaccination, screening, lifestyle counselling", drugClass: "Preventive", adultDose: "Per national schedule", rx: "Rx / specialist" },
+    ],
+    referralNote: "Confirm allergy/status codes against the patient record before dispensing.",
+  },
+];
+
+/**
+ * Chapter-level fallback therapy for any ICD-10 code with no specific mapping.
+ * Guarantees the recommendation panel is never a dead end.
+ */
+export function getFallbackTherapyForIcd(code: string): ConditionTherapy | null {
+  const hit = CHAPTER_FALLBACKS.find((f) => f.test(code));
+  if (!hit) return null;
+  return { label: hit.label, source: hit.source + " · chapter-level guidance", options: hit.options, referralNote: hit.referralNote };
+}

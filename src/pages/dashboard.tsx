@@ -16,7 +16,7 @@ import { runClinicalEngine, calcBMI, bmiCategory, type PatientProfile, type Medi
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
-import { getTherapyFor, type ConditionTherapy } from "@/lib/who-eml-therapy";
+import { getTherapyFor, getFallbackTherapyForIcd, type ConditionTherapy } from "@/lib/who-eml-therapy";
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -669,18 +669,31 @@ export default function Dashboard() {
   ) ?? 0;
 
   // WHO EML therapies driven by the union of chip-selected + ICD-mapped condition IDs
-  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy }>>(() => {
+  const whoTherapies = useMemo<Array<{ id: string; therapy: ConditionTherapy; fallback?: boolean; codes?: string[] }>>(() => {
     const ids = new Set<string>([
       ...effectiveProfile.selectedConditions,
       ...icdConditions.map((i) => i.internalId).filter((x): x is string => !!x),
     ]);
-    const out: Array<{ id: string; therapy: ConditionTherapy }> = [];
+    const out: Array<{ id: string; therapy: ConditionTherapy; fallback?: boolean; codes?: string[] }> = [];
     ids.forEach((id) => {
       const t = getTherapyFor(id);
       if (t) out.push({ id, therapy: t });
     });
+    // Chapter-level fallback so unmapped ICD codes still get actionable guidance
+    const grouped = new Map<string, { therapy: ConditionTherapy; codes: string[] }>();
+    [...icdConditions, ...icdSymptoms]
+      .filter((i) => !i.internalId)
+      .forEach((i) => {
+        const t = getFallbackTherapyForIcd(i.code);
+        if (!t) return;
+        const g = grouped.get(t.label);
+        if (g) g.codes.push(i.code);
+        else grouped.set(t.label, { therapy: t, codes: [i.code] });
+      });
+    grouped.forEach(({ therapy, codes }, label) => out.push({ id: `fallback-${label}`, therapy, fallback: true, codes }));
     return out;
-  }, [effectiveProfile.selectedConditions, icdConditions]);
+  }, [effectiveProfile.selectedConditions, icdConditions, icdSymptoms]);
+
 
   // Panel is visible when any clinical data is present — not just when engine matches
   const hasAnyData =
@@ -1183,15 +1196,23 @@ export default function Dashboard() {
               {/* ── WHO EML guideline-based therapy card(s) ── */}
               {whoTherapies.length > 0 && (
                 <div className="space-y-3">
-                  {whoTherapies.map(({ id, therapy }) => (
-                    <div key={id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  {whoTherapies.map(({ id, therapy, fallback, codes }) => (
+                    <div key={id} className={`bg-white border rounded-xl p-4 shadow-sm ${fallback ? "border-indigo-200" : "border-slate-200"}`}>
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div>
                           <div className="text-sm font-bold text-slate-800">{therapy.label}</div>
                           <div className="text-[11px] text-slate-500">{therapy.source}</div>
+                          {fallback && codes && (
+                            <div className="text-[11px] text-slate-500 mt-1">
+                              Class-level guidance for {codes.join(", ")} — no code-specific protocol; confirm the working diagnosis.
+                            </div>
+                          )}
                         </div>
-                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded px-2 py-0.5 shrink-0">WHO EML</span>
+                        <span className={`text-[10px] font-semibold uppercase tracking-wide rounded px-2 py-0.5 shrink-0 ${fallback ? "bg-slate-100 text-slate-600" : "bg-indigo-100 text-indigo-700"}`}>
+                          {fallback ? "General guidance" : "WHO EML"}
+                        </span>
                       </div>
+
                       <div className="space-y-2 mt-3">
                         {therapy.options.map((opt, i) => (
                           <div key={i} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50">
