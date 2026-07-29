@@ -1196,15 +1196,23 @@ export default function Dashboard() {
               {/* ── WHO EML guideline-based therapy card(s) ── */}
               {whoTherapies.length > 0 && (
                 <div className="space-y-3">
-                  {whoTherapies.map(({ id, therapy }) => (
-                    <div key={id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  {whoTherapies.map(({ id, therapy, fallback, codes }) => (
+                    <div key={id} className={`bg-white border rounded-xl p-4 shadow-sm ${fallback ? "border-indigo-200" : "border-slate-200"}`}>
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div>
                           <div className="text-sm font-bold text-slate-800">{therapy.label}</div>
                           <div className="text-[11px] text-slate-500">{therapy.source}</div>
+                          {fallback && codes && (
+                            <div className="text-[11px] text-slate-500 mt-1">
+                              Class-level guidance for {codes.join(", ")} — no code-specific protocol; confirm the working diagnosis.
+                            </div>
+                          )}
                         </div>
-                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded px-2 py-0.5 shrink-0">WHO EML</span>
+                        <span className={`text-[10px] font-semibold uppercase tracking-wide rounded px-2 py-0.5 shrink-0 ${fallback ? "bg-slate-100 text-slate-600" : "bg-indigo-100 text-indigo-700"}`}>
+                          {fallback ? "General guidance" : "WHO EML"}
+                        </span>
                       </div>
+
                       <div className="space-y-2 mt-3">
                         {therapy.options.map((opt, i) => (
                           <div key={i} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50">
