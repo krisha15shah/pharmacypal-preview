@@ -778,7 +778,7 @@ const CHAPTER_FALLBACKS: ChapterFallback[] = [
     source: "WHO EML 22",
     options: [
       { drug: "Lubricating eye drops (hypromellose / carmellose)", drugClass: "Ocular lubricant", adultDose: "1–2 drops PRN up to 6×/day", rx: "OTC" },
-      { drug: "Chloramphenicol 0.5% eye drops", drugClass: "Topical antibiotic", adultDose: "1 drop q2–6h ×5 d", rx: "OTC / Rx", note: "Bacterial conjunctivitis only." } as TherapyOption,
+      { drug: "Chloramphenicol 0.5% eye drops", drugClass: "Topical antibiotic", adultDose: "1 drop q2–6h ×5 d", rx: "OTC", note: "Bacterial conjunctivitis only." },
     ],
     referralNote: "Red painful eye, visual loss, photophobia or contact-lens wearer → same-day ophthalmology.",
   },
@@ -800,7 +800,7 @@ const CHAPTER_FALLBACKS: ChapterFallback[] = [
       { drug: "Amlodipine", drugClass: "Dihydropyridine CCB", adultDose: "5–10 mg PO daily", rx: "Rx" },
       { drug: "Enalapril / lisinopril", drugClass: "ACE inhibitor", adultDose: "5–20 mg PO daily (titrate)", rx: "Rx", note: "Monitor U&E; contraindicated in pregnancy." },
       { drug: "Atorvastatin", drugClass: "Statin", adultDose: "20–40 mg PO nocte", rx: "Rx", note: "Secondary prevention in established CVD." },
-      { drug: "Aspirin 75–100 mg", drugClass: "Antiplatelet", adultDose: "75–100 mg PO daily", rx: "OTC / Rx", note: "Secondary prevention only — not routine primary prevention." } as TherapyOption,
+      { drug: "Aspirin 75–100 mg", drugClass: "Antiplatelet", adultDose: "75–100 mg PO daily", rx: "OTC", note: "Secondary prevention only — not routine primary prevention." },
     ],
     referralNote: "Chest pain, syncope, new arrhythmia or acute breathlessness → emergency assessment.",
   },
@@ -821,7 +821,7 @@ const CHAPTER_FALLBACKS: ChapterFallback[] = [
     label: "Digestive system disorder (unspecified)",
     source: "WHO EML 22",
     options: [
-      { drug: "Omeprazole", drugClass: "Proton pump inhibitor", adultDose: "20–40 mg PO daily ×4–8 wks", rx: "OTC / Rx", note: "Acid-related dyspepsia, GORD, ulcer healing." } as TherapyOption,
+      { drug: "Omeprazole", drugClass: "Proton pump inhibitor", adultDose: "20–40 mg PO daily ×4–8 wks", rx: "OTC", note: "Acid-related dyspepsia, GORD, ulcer healing." },
       { drug: "Hyoscine butylbromide", drugClass: "Antispasmodic", adultDose: "10–20 mg PO TID–QID PRN", rx: "OTC", note: "Colic / cramping abdominal pain." },
       { drug: "Metronidazole ± ciprofloxacin", drugClass: "Anti-anaerobe ± fluoroquinolone", adultDose: "Metronidazole 400 mg PO TID ×7 d; ciprofloxacin 500 mg PO BID", rx: "Rx", note: "Intra-abdominal, stoma-site or peri-anal infection — swab first where possible." },
       SYMPTOMATIC_CORE[0],
