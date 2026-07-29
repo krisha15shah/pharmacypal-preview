@@ -82,8 +82,8 @@ export function icdToSymptomId(code: string, name?: string): string | null {
   if (c.startsWith("B35") || c.startsWith("B36") || c.startsWith("B37.2")) return "fungal_skin";
   if (c.startsWith("L01")) return "wound_infection";
   if (c.startsWith("L08") || c.startsWith("L03")) return "wound_infection";
-  if (c.startsWith("L30") || c.startsWith("L20") || c.startsWith("L23") || c.startsWith("L50") || c.startsWith("L29")) return "skin_rash";
   if (c.startsWith("L29")) return "itching";
+  if (c.startsWith("L30") || c.startsWith("L20") || c.startsWith("L23") || c.startsWith("L50")) return "skin_rash";
 
   // ─── MENSTRUAL / WOMEN'S HEALTH ─────────────────────────────────
   if (c.startsWith("N94")) return "menstrual_pain";
