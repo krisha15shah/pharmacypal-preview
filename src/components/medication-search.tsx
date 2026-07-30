@@ -45,6 +45,7 @@ function mapToInternalId(drugName: string): string | null {
   if (n.includes("theophylline") || n.includes("aminophylline")) return "theophylline";
   if (n.includes("ciprofloxacin") || n.includes("levofloxacin") || n.includes("moxifloxacin") || n.includes("ofloxacin") || n.includes("norfloxacin")) return "quinolone_antibiotics";
   if (n.includes("ibuprofen") || n.includes("diclofenac") || n.includes("naproxen") || n.includes("indomethacin") || n.includes("celecoxib") || n.includes("mefenamic") || n.includes("piroxicam") || n.includes("meloxicam") || n.includes("etoricoxib")) return "nsaids";
+  if (n.includes("paracetamol") || n.includes("acetaminophen") || n.includes("panadol") || n.includes("tylenol") || n.includes("calpol") || n.includes("dolo") || n.includes("panadeine") || n.includes("paramol") || n.includes("hedex") || n.includes("perfalgan")) return "paracetamol";
   return null;
 }
 
@@ -79,6 +80,7 @@ function classLabel(internalId: string | null): { label: string; color: string }
     theophylline: { label: "Bronchodilator", color: "bg-sky-100 text-sky-700" },
     quinolone_antibiotics: { label: "Quinolone Abx", color: "bg-rose-100 text-rose-700" },
     nsaids: { label: "NSAID", color: "bg-orange-100 text-orange-700" },
+    paracetamol: { label: "Paracetamol", color: "bg-green-100 text-green-700" },
   };
   return internalId ? (map[internalId] ?? null) : null;
 }
