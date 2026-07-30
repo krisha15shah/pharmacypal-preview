@@ -1339,17 +1339,6 @@ export default function Dashboard() {
 
                 {/* Recommended */}
                 <TabsContent value="recommended" className="mt-3">
-                  {/* Inline current-medication safety warnings */}
-                  {result && result.currentMedWarnings.length > 0 && (
-                    <div className="space-y-2 mb-3">
-                      {result.currentMedWarnings.map((w, i) => (
-                        <div key={i} className="bg-red-50 border border-red-300 rounded-lg px-3 py-2.5 text-xs text-red-800 font-medium flex gap-2">
-                          <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-                          <span>{w}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   {recommended.length === 0 ? (
                     <div className="text-center text-slate-400 py-12">
                       <CheckCircle className="w-10 h-10 mx-auto mb-3 text-slate-300" />

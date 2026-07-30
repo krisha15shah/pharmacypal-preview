@@ -194,25 +194,6 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   const generalCounseling: string[] = [];
   const currentMedWarnings: string[] = [];
 
-  // ─── CONCURRENT SAME-CLASS DRUG SAFETY CHECK ───────────────────────────────
-  // Count occurrences of each class in selectedMedications (duplicates = patient on 2+ of same class)
-  const classCounts: Record<string, number> = {};
-  for (const cls of patient.selectedMedications) {
-    classCounts[cls] = (classCounts[cls] ?? 0) + 1;
-  }
-
-  if ((classCounts["nsaids"] ?? 0) >= 2) {
-    currentMedWarnings.push(
-      "🚨 Dual NSAID alert: patient is currently taking 2 NSAIDs simultaneously (e.g. ibuprofen + celecoxib). This is contraindicated — significantly increases GI bleeding, cardiovascular, and renal toxicity risk with no added benefit. One NSAID must be stopped. Physician review required."
-    );
-  }
-
-  if ((classCounts["paracetamol"] ?? 0) >= 2) {
-    currentMedWarnings.push(
-      "🚨 Duplicate paracetamol: patient appears to be taking paracetamol from two separate products. Risk of accidental overdose (max 4 g/day). Check all medications for hidden paracetamol content."
-    );
-  }
-
   // ─── 1. RED FLAGS ───
   for (const symId of patient.selectedSymptoms) {
     const sym = SYMPTOMS.find((s) => s.id === symId);
