@@ -94,7 +94,7 @@ export async function loadUaeDirectory(): Promise<UaeProduct[]> {
         strength: row[1],
         form: row[2],
         pack: row[3],
-        priceAed: row[4],
+        priceAed: row[4] && row[4] > 0 ? row[4] : null,
         manufacturer: row[5],
         mode: (row[6] as DispensingMode) ?? "NA",
         ingredients: row[7] ?? "",
@@ -110,9 +110,15 @@ export async function loadUaeDirectory(): Promise<UaeProduct[]> {
   return loading;
 }
 
+const COMMON_FORMS = /tablet|capsule|syrup|suspension|oral|cream|ointment|drops|inhal|sachet|gel|spray/i;
+
+/** Everyday dispensable forms first, then cheapest priced, unpriced last. */
 function sortProducts(list: UaeProduct[]): UaeProduct[] {
   return list.sort((a, b) => {
-    if (a.priceAed === null) return 1;
+    const fa = COMMON_FORMS.test(a.form) ? 0 : 1;
+    const fb = COMMON_FORMS.test(b.form) ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    if (a.priceAed === null) return b.priceAed === null ? 0 : 1;
     if (b.priceAed === null) return -1;
     return a.priceAed - b.priceAed;
   });
