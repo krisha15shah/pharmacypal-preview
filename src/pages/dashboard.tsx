@@ -695,6 +695,18 @@ export default function Dashboard() {
     return out;
   }, [effectiveProfile.selectedConditions, icdConditions, icdSymptoms]);
 
+  // Generic / INN names fed into the UAE registry lookup
+  const directoryGenerics = useMemo(() => {
+    const names = [
+      ...[...recommended, ...caution].map((r) => getUaePricing(r.medication.id)?.genericName ?? r.medication.name),
+      ...whoTherapies.flatMap((t) => t.therapy.options.map((o) => o.drug)),
+    ];
+    return names.map((n) => n.replace(/\(.*?\)/g, "").trim()).filter(Boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result, whoTherapies]);
+
+
+
 
   // Panel is visible when any clinical data is present — not just when engine matches
   const hasAnyData =
