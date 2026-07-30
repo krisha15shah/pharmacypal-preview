@@ -166,12 +166,56 @@ export interface EngineResult {
   generalCounseling: string[];
 }
 
+// ── Drug class map: medication rule ID → internal class ID (same as medication-search.tsx internalId) ──
+const DRUG_CLASS_MAP: Record<string, string> = {
+  paracetamol: "paracetamol",
+  ibuprofen: "nsaids",
+  diclofenac: "nsaids",
+  naproxen: "nsaids",
+  celecoxib: "nsaids",
+  aspirin: "nsaids",
+  tramadol: "tramadol_class",
+  codeine: "codeine_class",
+};
+
+const DRUG_CLASS_LABELS: Record<string, string> = {
+  nsaids: "NSAID (ibuprofen / diclofenac / celecoxib / naproxen)",
+  paracetamol: "Paracetamol / Acetaminophen",
+  tramadol_class: "Tramadol",
+  codeine_class: "Codeine",
+};
+
 export function runClinicalEngine(patient: PatientProfile): EngineResult {
   const redFlags: EngineResult["redFlags"] = [];
   const referralAdvice: EngineResult["referralAdvice"] = [];
   const possibleConditions: PossibleCondition[] = [];
   const medicationResults: MedicationResult[] = [];
   const generalCounseling: string[] = [];
+
+  // ─── CONCURRENT SAME-CLASS DRUG SAFETY CHECK ───────────────────────────────
+  // Count occurrences of each class in selectedMedications (duplicates = patient on 2+ of same class)
+  const classCounts: Record<string, number> = {};
+  for (const cls of patient.selectedMedications) {
+    classCounts[cls] = (classCounts[cls] ?? 0) + 1;
+  }
+
+  if ((classCounts["nsaids"] ?? 0) >= 2) {
+    referralAdvice.push({
+      message: "⚠️ Concurrent NSAID use detected: patient is currently taking 2 or more NSAIDs simultaneously. This combination is contraindicated — it significantly increases GI bleeding, cardiovascular, and renal toxicity risk with no added therapeutic benefit. One NSAID must be discontinued. Physician review required.",
+      urgency: "urgent",
+      reason: "Dual NSAID therapy — contraindicated per MHRA, FDA, and clinical guidelines",
+    });
+    generalCounseling.unshift("🚨 Dual NSAID alert: combining two NSAIDs (e.g. ibuprofen + celecoxib) is contraindicated. Stop one immediately and consult a physician.");
+  }
+
+  if ((classCounts["paracetamol"] ?? 0) >= 2) {
+    referralAdvice.push({
+      message: "⚠️ Duplicate paracetamol detected: patient appears to be taking paracetamol from two separate products. This risks accidental overdose (max 4g/day adult). Review all medications for hidden paracetamol content.",
+      urgency: "urgent",
+      reason: "Paracetamol duplication — hepatotoxicity risk",
+    });
+    generalCounseling.unshift("🚨 Paracetamol duplication alert: patient may be taking paracetamol from more than one source. Risk of accidental overdose and liver damage. Check all products for hidden paracetamol.");
+  }
 
   // ─── 1. RED FLAGS ───
   for (const symId of patient.selectedSymptoms) {
@@ -380,6 +424,15 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
     if (patient.gender === "male" && med.forSymptoms.includes("menstrual_pain")) {
       // menstrual pain medications are still listed as they treat general pain
       // no gender restriction in drug rules
+    }
+
+    // ─ Already taking same drug class ─
+    const medClass = DRUG_CLASS_MAP[med.id] ?? null;
+    if (medClass && patient.selectedMedications.includes(medClass)) {
+      const classLabel = DRUG_CLASS_LABELS[medClass] ?? medClass;
+      avoidReasons.push(
+        `Patient is already taking a ${classLabel}. Adding a second agent from the same class provides no additional benefit and increases the risk of side effects and toxicity. Do not recommend without physician review.`
+      );
     }
 
     // ─ Drug interactions ─
