@@ -164,6 +164,7 @@ export interface EngineResult {
   possibleConditions: PossibleCondition[];
   medicationResults: MedicationResult[];
   generalCounseling: string[];
+  currentMedWarnings: string[]; // inline safety alerts about the patient's current medication list
 }
 
 // ── Drug class map: medication rule ID → internal class ID (same as medication-search.tsx internalId) ──
@@ -191,6 +192,7 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   const possibleConditions: PossibleCondition[] = [];
   const medicationResults: MedicationResult[] = [];
   const generalCounseling: string[] = [];
+  const currentMedWarnings: string[] = [];
 
   // ─── CONCURRENT SAME-CLASS DRUG SAFETY CHECK ───────────────────────────────
   // Count occurrences of each class in selectedMedications (duplicates = patient on 2+ of same class)
@@ -200,21 +202,15 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
   }
 
   if ((classCounts["nsaids"] ?? 0) >= 2) {
-    referralAdvice.push({
-      message: "⚠️ Concurrent NSAID use detected: patient is currently taking 2 or more NSAIDs simultaneously. This combination is contraindicated — it significantly increases GI bleeding, cardiovascular, and renal toxicity risk with no added therapeutic benefit. One NSAID must be discontinued. Physician review required.",
-      urgency: "urgent",
-      reason: "Dual NSAID therapy — contraindicated per MHRA, FDA, and clinical guidelines",
-    });
-    generalCounseling.unshift("🚨 Dual NSAID alert: combining two NSAIDs (e.g. ibuprofen + celecoxib) is contraindicated. Stop one immediately and consult a physician.");
+    currentMedWarnings.push(
+      "🚨 Dual NSAID alert: patient is currently taking 2 NSAIDs simultaneously (e.g. ibuprofen + celecoxib). This is contraindicated — significantly increases GI bleeding, cardiovascular, and renal toxicity risk with no added benefit. One NSAID must be stopped. Physician review required."
+    );
   }
 
   if ((classCounts["paracetamol"] ?? 0) >= 2) {
-    referralAdvice.push({
-      message: "⚠️ Duplicate paracetamol detected: patient appears to be taking paracetamol from two separate products. This risks accidental overdose (max 4g/day adult). Review all medications for hidden paracetamol content.",
-      urgency: "urgent",
-      reason: "Paracetamol duplication — hepatotoxicity risk",
-    });
-    generalCounseling.unshift("🚨 Paracetamol duplication alert: patient may be taking paracetamol from more than one source. Risk of accidental overdose and liver damage. Check all products for hidden paracetamol.");
+    currentMedWarnings.push(
+      "🚨 Duplicate paracetamol: patient appears to be taking paracetamol from two separate products. Risk of accidental overdose (max 4 g/day). Check all medications for hidden paracetamol content."
+    );
   }
 
   // ─── 1. RED FLAGS ───
@@ -426,13 +422,10 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
       // no gender restriction in drug rules
     }
 
-    // ─ Already taking same drug class ─
+    // ─ Already taking same drug class → exclude entirely ─
     const medClass = DRUG_CLASS_MAP[med.id] ?? null;
     if (medClass && patient.selectedMedications.includes(medClass)) {
-      const classLabel = DRUG_CLASS_LABELS[medClass] ?? medClass;
-      avoidReasons.push(
-        `Patient is already taking a ${classLabel}. Adding a second agent from the same class provides no additional benefit and increases the risk of side effects and toxicity. Do not recommend without physician review.`
-      );
+      continue; // patient already on this class — omit from all results
     }
 
     // ─ Drug interactions ─
@@ -527,5 +520,5 @@ export function runClinicalEngine(patient: PatientProfile): EngineResult {
     generalCounseling.push("Patient is on anticoagulants — avoid all NSAIDs (ibuprofen, diclofenac, aspirin, naproxen). Risk of serious bleeding.");
   }
 
-  return { redFlags, referralAdvice, possibleConditions, medicationResults, generalCounseling };
+  return { redFlags, referralAdvice, possibleConditions, medicationResults, generalCounseling, currentMedWarnings };
 }
