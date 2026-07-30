@@ -18,6 +18,8 @@ import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
 import { getTherapyFor, getFallbackTherapyForIcd, type ConditionTherapy } from "@/lib/who-eml-therapy";
 import { getUaePricing, STATUS_CONFIG } from "@/lib/uae-pricing";
+import { UaeBrandLookup } from "@/components/uae-brand-lookup";
+
 
 // ─── Chip selector ───
 function ChipSelector({
