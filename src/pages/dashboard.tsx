@@ -1522,6 +1522,10 @@ export default function Dashboard() {
                       <span>Approximate UAE retail prices (AED). Prices vary by pharmacy chain and may change. All prescription (Rx) and controlled medicines require a valid prescription under UAE Federal Law.</span>
                     </div>
 
+                    {/* Official UAE registry: every registered brand + public price */}
+                    <UaeBrandLookup generics={directoryGenerics} />
+
+
                     {/* Legend */}
                     <div className="flex flex-wrap gap-2 text-xs">
                       {(["OTC","Pharmacist","Rx","Controlled"] as const).map((s) => (
