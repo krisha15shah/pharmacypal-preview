@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, X, Loader2, ExternalLink } from "lucide-react";
+import { Search, X, Loader2, ExternalLink, Zap } from "lucide-react";
 import { icdToSymptomId, icdToConditionId, icdToAllergyId, icdChapterColor } from "@/lib/icd-mapping";
+import { SYMPTOMS } from "@/lib/clinical-data";
 
 export interface SelectedIcdItem {
   code: string;
@@ -13,6 +14,9 @@ export type IcdMode = "symptom" | "condition" | "allergy";
 interface IcdResult {
   code: string;
   name: string;
+  isLocal?: boolean;          // true = came from local SYMPTOMS list
+  internalIdDirect?: string;  // pre-resolved for local picks
+  isRedFlag?: boolean;
   // When set, selecting this result adds multiple ICD items at once (e.g. "fever with chills").
   expandsTo?: { code: string; name: string }[];
 }
@@ -39,7 +43,7 @@ function mapToInternal(code: string, name: string, mode: IcdMode): string | null
 const ALLERGY_DEFAULT_TERM = "Z88";
 
 const PLACEHOLDERS: Record<IcdMode, string> = {
-  symptom: "Search ICD-10 symptom code (e.g. headache, fever…)",
+  symptom: "Search symptom (e.g. itching, headache, cough…)",
   condition: "Search ICD-10 diagnosis (e.g. hypertension, asthma…)",
   allergy: "Search drug allergy code (e.g. penicillin, NSAID…)",
 };
@@ -59,6 +63,26 @@ const MODE_COLORS: Record<IcdMode, { chip: string; badge: string }> = {
   },
 };
 
+/** Search the local SYMPTOMS list for instant plain-English matches. */
+function searchLocalSymptoms(query: string): IcdResult[] {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+  return SYMPTOMS
+    .filter((s) => {
+      const label = s.label.toLowerCase();
+      const id = s.id.replace(/_/g, " ");
+      return label.includes(q) || id.includes(q);
+    })
+    .slice(0, 6)
+    .map((s) => ({
+      code: `SX:${s.id}`,
+      name: s.label,
+      isLocal: true,
+      internalIdDirect: s.id,
+      isRedFlag: s.isRedFlag,
+    }));
+}
+
 interface IcdSearchProps {
   mode: IcdMode;
   selectedItems: SelectedIcdItem[];
@@ -69,6 +93,7 @@ interface IcdSearchProps {
 export default function IcdSearch({ mode, selectedItems, onItemsChange, label }: IcdSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IcdResult[]>([]);
+  const [localResults, setLocalResults] = useState<IcdResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,6 +102,13 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
 
   const searchIcd = useCallback(async (term: string, forceDefault = false) => {
     const searchTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
+
+    // Always update local symptom results immediately (no debounce needed)
+    if (mode === "symptom") {
+      const local = searchLocalSymptoms(searchTerm);
+      setLocalResults(local);
+    }
+
     if (!searchTerm) { setResults([]); setOpen(false); return; }
     setLoading(true);
     try {
@@ -94,13 +126,23 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
         items.unshift(CHILLS_FEVER_COMBO);
       }
       setResults(items);
-      setOpen(items.length > 0);
+      setOpen(true);
     } catch {
       setResults([]);
+      setOpen(localResults.length > 0);
     } finally {
       setLoading(false);
     }
-  }, [mode]);
+  }, [mode, localResults.length]);
+
+  // Update local results immediately on every keystroke (no debounce)
+  useEffect(() => {
+    if (mode === "symptom") {
+      const local = searchLocalSymptoms(query);
+      setLocalResults(local);
+      if (local.length > 0 && query.trim()) setOpen(true);
+    }
+  }, [query, mode]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -121,6 +163,23 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
   }, []);
 
   const addItem = (item: IcdResult) => {
+    if (item.isLocal) {
+      // Local symptom — use synthetic code so it doesn't clash with real ICD codes
+      const already = selectedItems.find((i) => i.code === item.code);
+      if (!already) {
+        onItemsChange([...selectedItems, {
+          code: item.code,
+          name: item.name,
+          internalId: item.internalIdDirect ?? null,
+        }]);
+      }
+      setQuery("");
+      setResults([]);
+      setLocalResults([]);
+      setOpen(false);
+      return;
+    }
+
     const toAdd = item.expandsTo ?? [{ code: item.code, name: item.name }];
     const additions = toAdd
       .filter((a) => !selectedItems.find((i) => i.code === a.code))
@@ -128,12 +187,14 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
     if (additions.length > 0) onItemsChange([...selectedItems, ...additions]);
     setQuery("");
     setResults([]);
+    setLocalResults([]);
     setOpen(false);
   };
 
   const removeItem = (code: string) => onItemsChange(selectedItems.filter((i) => i.code !== code));
 
   const colors = MODE_COLORS[mode];
+  const allVisible = open && (localResults.length > 0 || results.length > 0);
 
   return (
     <div className="space-y-2">
@@ -148,54 +209,102 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => { if (results.length > 0) setOpen(true); else searchIcd(query, true); }}
+            onFocus={() => {
+              if (localResults.length > 0 || results.length > 0) setOpen(true);
+              else searchIcd(query, true);
+            }}
             placeholder={PLACEHOLDERS[mode]}
             className="flex-1 px-2 py-2 text-sm bg-transparent outline-none placeholder-slate-400"
           />
           {loading && <Loader2 className="w-4 h-4 text-slate-400 mr-3 animate-spin shrink-0" />}
           {query && !loading && (
-            <button onClick={() => { setQuery(""); setResults([]); setOpen(false); }} className="mr-2">
+            <button onClick={() => { setQuery(""); setResults([]); setLocalResults([]); setOpen(false); }} className="mr-2">
               <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
             </button>
           )}
         </div>
 
         {/* Dropdown */}
-        {open && results.length > 0 && (
+        {allVisible && (
           <div ref={dropdownRef} className="absolute z-50 top-full mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-            <div className="py-1 max-h-52 overflow-y-auto">
-              {results.map((item) => {
-                const already = selectedItems.find((i) => i.code === item.code);
-                const chap = icdChapterColor(item.code);
-                const mapped = mapToInternal(item.code, item.name, mode);
-                return (
-                  <button
-                    key={item.code}
-                    onClick={() => addItem(item)}
-                    disabled={!!already}
-                    className={`w-full text-left px-3 py-2 text-sm flex items-start gap-2 transition-colors ${
-                      already ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "hover:bg-blue-50 text-slate-800"
-                    }`}
-                  >
-                    <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${chap.bg} ${chap.text}`}>
-                      {item.code}
-                    </span>
-                    <span className="flex-1 text-xs leading-snug">{item.name}</span>
-                    <span className="flex items-center gap-1 shrink-0 mt-0.5">
-                      {!mapped && !already && (
-                        <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
-                          Physician referral needed
+            <div className="py-1 max-h-64 overflow-y-auto">
+
+              {/* ── Local quick-pick results (instant, no API needed) ── */}
+              {localResults.length > 0 && (
+                <>
+                  <div className="px-3 py-1 text-[10px] font-semibold text-green-700 bg-green-50 border-b border-green-100 flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    Quick pick
+                  </div>
+                  {localResults.map((item) => {
+                    const already = selectedItems.find((i) => i.code === item.code);
+                    return (
+                      <button
+                        key={item.code}
+                        onClick={() => addItem(item)}
+                        disabled={!!already}
+                        className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
+                          already ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "hover:bg-green-50 text-slate-800"
+                        }`}
+                      >
+                        {item.isRedFlag && <span className="text-sm shrink-0">🚨</span>}
+                        <span className="flex-1 text-sm leading-snug font-medium">{item.name}</span>
+                        {already
+                          ? <span className="text-xs text-slate-400 shrink-0">Added</span>
+                          : <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 rounded px-1.5 py-0.5 shrink-0">Built-in</span>
+                        }
+                      </button>
+                    );
+                  })}
+                </>
+              )}
+
+              {/* ── ICD-10 API results ── */}
+              {results.length > 0 && (
+                <>
+                  {localResults.length > 0 && (
+                    <div className="px-3 py-1 text-[10px] font-semibold text-slate-500 bg-slate-50 border-y border-slate-100">
+                      ICD-10 codes
+                    </div>
+                  )}
+                  {results.map((item) => {
+                    const already = selectedItems.find((i) => i.code === item.code);
+                    const chap = icdChapterColor(item.code);
+                    const mapped = mapToInternal(item.code, item.name, mode);
+                    return (
+                      <button
+                        key={item.code}
+                        onClick={() => addItem(item)}
+                        disabled={!!already}
+                        className={`w-full text-left px-3 py-2 text-sm flex items-start gap-2 transition-colors ${
+                          already ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "hover:bg-blue-50 text-slate-800"
+                        }`}
+                      >
+                        <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${chap.bg} ${chap.text}`}>
+                          {item.code}
                         </span>
-                      )}
-                      {already && <span className="text-xs text-slate-400">Added</span>}
-                    </span>
-                  </button>
-                );
-              })}
+                        <span className="flex-1 text-xs leading-snug">{item.name}</span>
+                        <span className="flex items-center gap-1 shrink-0 mt-0.5">
+                          {!mapped && !already && (
+                            <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
+                              Physician referral needed
+                            </span>
+                          )}
+                          {already && <span className="text-xs text-slate-400">Added</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </>
+              )}
             </div>
+
             <div className="border-t border-slate-100 px-3 py-1.5 flex items-center gap-1 text-xs text-slate-400 bg-slate-50">
               <ExternalLink className="w-3 h-3" />
-              ICD-10-CM · NLM Clinical Tables · {results.length} results
+              ICD-10-CM · NLM Clinical Tables
+              {localResults.length > 0 && (
+                <span className="ml-1 text-green-600">· {localResults.length} quick picks</span>
+              )}
             </div>
           </div>
         )}
@@ -205,7 +314,8 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
       {selectedItems.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selectedItems.map((item) => {
-            const chap = icdChapterColor(item.code);
+            const isLocal = item.code.startsWith("SX:");
+            const chap = isLocal ? null : icdChapterColor(item.code);
             return (
               <div
                 key={item.code}
@@ -213,11 +323,11 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                 title={item.name}
               >
                 <span className={`font-mono font-bold px-1 py-0.5 rounded text-[10px] ${colors.badge}`}>
-                  {item.code}
+                  {isLocal ? "✓" : item.code}
                 </span>
                 <span className="text-slate-800">{item.name}</span>
                 {!item.internalId && (
-                  <span className={`text-[10px] italic px-1 rounded ${chap.bg} ${chap.text}`}>•</span>
+                  <span className={`text-[10px] italic px-1 rounded ${chap?.bg ?? ""} ${chap?.text ?? ""}`}>•</span>
                 )}
                 <button onClick={() => removeItem(item.code)} className="ml-0.5 text-slate-400 hover:text-slate-700">
                   <X className="w-3 h-3" />
