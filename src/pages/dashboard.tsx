@@ -18,6 +18,8 @@ import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
 import { getTherapyFor, getFallbackTherapyForIcd, type ConditionTherapy } from "@/lib/who-eml-therapy";
 import { getUaePricing, STATUS_CONFIG } from "@/lib/uae-pricing";
+import { UaeBrandLookup } from "@/components/uae-brand-lookup";
+
 
 // ─── Chip selector ───
 function ChipSelector({
@@ -694,6 +696,18 @@ export default function Dashboard() {
     grouped.forEach(({ therapy, codes }, label) => out.push({ id: `fallback-${label}`, therapy, fallback: true, codes }));
     return out;
   }, [effectiveProfile.selectedConditions, icdConditions, icdSymptoms]);
+
+  // Generic / INN names fed into the UAE registry lookup
+  const directoryGenerics = useMemo(() => {
+    const names = [
+      ...[...recommended, ...caution].map((r) => getUaePricing(r.medication.id)?.genericName ?? r.medication.name),
+      ...whoTherapies.flatMap((t) => t.therapy.options.map((o) => o.drug)),
+    ];
+    return names.map((n) => n.replace(/\(.*?\)/g, "").trim()).filter(Boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result, whoTherapies]);
+
+
 
 
   // Panel is visible when any clinical data is present — not just when engine matches
@@ -1521,6 +1535,10 @@ export default function Dashboard() {
                       <Info className="w-3 h-3 mt-0.5 shrink-0" />
                       <span>Approximate UAE retail prices (AED). Prices vary by pharmacy chain and may change. All prescription (Rx) and controlled medicines require a valid prescription under UAE Federal Law.</span>
                     </div>
+
+                    {/* Official UAE registry: every registered brand + public price */}
+                    <UaeBrandLookup generics={directoryGenerics} />
+
 
                     {/* Legend */}
                     <div className="flex flex-wrap gap-2 text-xs">
