@@ -384,6 +384,25 @@ export default function MedicationSearch({ selectedDrugs, onDrugsChange }: Medic
         <p className="text-xs text-slate-400 italic">No medications added yet. Search above to add.</p>
       )}
 
+      {/* Therapeutic duplication warning */}
+      {duplicates.length > 0 && (
+        <div className="space-y-2">
+          {duplicates.map((d) => (
+            <div
+              key={d.label + d.drugs.join()}
+              className="text-xs rounded-lg px-3 py-2 border bg-red-50 border-red-200 text-red-800"
+            >
+              <div className="font-semibold flex items-center gap-1.5">
+                <span>🚫</span>
+                {d.sameDrug ? "Duplicate therapy" : "Same-class overlap"} — {d.label}
+              </div>
+              <div className="mt-1 text-red-700">{d.drugs.join("  +  ")}</div>
+              <div className="mt-1 text-red-700/90">{d.risk}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Unmatched warning */}
       {selectedDrugs.some((d) => !d.internalId) && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
