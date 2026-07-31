@@ -85,6 +85,66 @@ function classLabel(internalId: string | null): { label: string; color: string }
   return internalId ? (map[internalId] ?? null) : null;
 }
 
+// ── Therapeutic duplication / same-class detection ───────────────────────────
+type DupGroup = { key: string; label: string; risk: string };
+
+// Drug classes that must not be doubled up (same class or overlapping pharmacology)
+const CLASS_GROUPS: Record<string, DupGroup> = {
+  nsaids:            { key: "nsaid",        label: "NSAIDs",                     risk: "Two NSAIDs together give no extra analgesia but multiply GI bleeding, renal impairment and cardiovascular risk. Use only one." },
+  aspirin_cardio:    { key: "nsaid",        label: "NSAIDs / Aspirin",           risk: "Aspirin plus another NSAID markedly increases GI bleeding and blunts aspirin's cardioprotective effect. Avoid or add gastroprotection." },
+  paracetamol:       { key: "paracetamol",  label: "Paracetamol",                risk: "Duplicate paracetamol (including combination/brand products) risks exceeding 4 g/day — hepatotoxicity. Check every product for hidden paracetamol." },
+  ace_inhibitors:    { key: "raas",         label: "RAAS blockers",              risk: "Dual RAAS blockade (ACE inhibitor + ARB) increases hyperkalaemia, hypotension and acute kidney injury without outcome benefit." },
+  arbs:              { key: "raas",         label: "RAAS blockers",              risk: "Dual RAAS blockade (ACE inhibitor + ARB) increases hyperkalaemia, hypotension and acute kidney injury without outcome benefit." },
+  ssri:              { key: "serotonergic", label: "Serotonergic agents",        risk: "Combining serotonergic drugs (SSRI/SNRI/TCA/MAOI) risks serotonin syndrome — agitation, hyperthermia, clonus. Avoid overlap and observe washout periods." },
+  snri:              { key: "serotonergic", label: "Serotonergic agents",        risk: "Combining serotonergic drugs (SSRI/SNRI/TCA/MAOI) risks serotonin syndrome — agitation, hyperthermia, clonus. Avoid overlap and observe washout periods." },
+  tricyclics:        { key: "serotonergic", label: "Serotonergic agents",        risk: "Combining serotonergic drugs (SSRI/SNRI/TCA/MAOI) risks serotonin syndrome plus additive anticholinergic and cardiac conduction effects." },
+  maoi:              { key: "serotonergic", label: "Serotonergic agents",        risk: "MAOI with any other serotonergic drug is contraindicated — potentially fatal serotonin syndrome / hypertensive crisis." },
+  warfarin:          { key: "anticoag",     label: "Anticoagulants",             risk: "Two anticoagulants together cause major bleeding. Never overlap except in a supervised bridging protocol." },
+  dabigatran_rivaroxaban: { key: "anticoag", label: "Anticoagulants",            risk: "Two anticoagulants together cause major bleeding. Never overlap except in a supervised bridging protocol." },
+  clopidogrel:       { key: "antiplatelet", label: "Antiplatelets",              risk: "Dual antiplatelet therapy is only appropriate for a defined indication and duration — otherwise bleeding risk outweighs benefit." },
+  metformin:         { key: "antidiabetic", label: "Oral antidiabetics",         risk: "Multiple glucose-lowering agents increase hypoglycaemia risk (especially sulfonylureas). Confirm the regimen is intentional and monitor glucose." },
+  insulin:           { key: "antidiabetic", label: "Antidiabetics",              risk: "Insulin plus oral hypoglycaemics increases hypoglycaemia risk — verify dosing and educate on symptoms." },
+  beta_blockers:     { key: "beta_blocker", label: "Beta blockers",              risk: "Two beta blockers cause additive bradycardia, hypotension and heart block. Use only one." },
+  calcium_channel_blockers: { key: "ccb",   label: "Calcium channel blockers",   risk: "Two CCBs (especially a rate-limiting plus a dihydropyridine) risk bradycardia, heart block and oedema." },
+  diuretics:         { key: "diuretic",     label: "Diuretics",                  risk: "Multiple diuretics cause additive volume depletion and electrolyte disturbance — check U&Es if intentional (e.g. sequential nephron blockade)." },
+  corticosteroids:   { key: "steroid",      label: "Corticosteroids",            risk: "Overlapping systemic/inhaled steroids increase cumulative exposure — adrenal suppression, hyperglycaemia, osteoporosis." },
+  statins:           { key: "statin",       label: "Statins",                    risk: "Two statins together add no benefit and multiply myopathy/rhabdomyolysis risk." },
+  omeprazole_ppi:    { key: "ppi",          label: "Proton pump inhibitors",     risk: "Duplicate PPI therapy is unnecessary — deprescribe to a single agent." },
+  antiepileptics:    { key: "aed",          label: "Antiepileptics",             risk: "Polytherapy is sometimes intentional, but adds sedation and enzyme-mediated interactions — confirm it is a planned regimen." },
+  quinolone_antibiotics: { key: "quinolone", label: "Quinolone antibiotics",     risk: "Two quinolones give no added cover and increase tendinopathy, QT prolongation and CNS effects." },
+  azole_antifungals: { key: "azole",        label: "Azole antifungals",          risk: "Two azoles add no benefit and compound CYP3A4 inhibition and QT prolongation." },
+};
+
+export interface DuplicateWarning {
+  label: string;
+  drugs: string[];
+  risk: string;
+  sameDrug: boolean;
+}
+
+export function findDuplicateTherapy(drugs: SelectedDrug[]): DuplicateWarning[] {
+  const byGroup = new Map<string, { group: DupGroup; items: SelectedDrug[] }>();
+  for (const d of drugs) {
+    const group = d.internalId ? CLASS_GROUPS[d.internalId] : undefined;
+    if (!group) continue;
+    const entry = byGroup.get(group.key);
+    if (entry) entry.items.push(d);
+    else byGroup.set(group.key, { group, items: [d] });
+  }
+  const out: DuplicateWarning[] = [];
+  for (const { group, items } of byGroup.values()) {
+    if (items.length < 2) continue;
+    const ids = new Set(items.map((i) => i.internalId));
+    out.push({
+      label: group.label,
+      drugs: items.map((i) => i.name),
+      risk: group.risk,
+      sameDrug: ids.size === 1,
+    });
+  }
+  return out;
+}
+
 // ── Inline dose editor on a single chip ──────────────────────────────────────
 function DrugChip({
   drug,
@@ -244,6 +304,8 @@ export default function MedicationSearch({ selectedDrugs, onDrugsChange }: Medic
 
   const removeDrug = (rxcui: string) => onDrugsChange(selectedDrugs.filter((d) => d.rxcui !== rxcui));
 
+  const duplicates = findDuplicateTherapy(selectedDrugs);
+
   const updateDose = (rxcui: string, dose: string) => {
     onDrugsChange(selectedDrugs.map((d) => d.rxcui === rxcui ? { ...d, dose: dose || undefined } : d));
   };
@@ -322,6 +384,25 @@ export default function MedicationSearch({ selectedDrugs, onDrugsChange }: Medic
         </div>
       ) : (
         <p className="text-xs text-slate-400 italic">No medications added yet. Search above to add.</p>
+      )}
+
+      {/* Therapeutic duplication warning */}
+      {duplicates.length > 0 && (
+        <div className="space-y-2">
+          {duplicates.map((d) => (
+            <div
+              key={d.label + d.drugs.join()}
+              className="text-xs rounded-lg px-3 py-2 border bg-red-50 border-red-200 text-red-800"
+            >
+              <div className="font-semibold flex items-center gap-1.5">
+                <span>🚫</span>
+                {d.sameDrug ? "Duplicate therapy" : "Same-class overlap"} — {d.label}
+              </div>
+              <div className="mt-1 text-red-700">{d.drugs.join("  +  ")}</div>
+              <div className="mt-1 text-red-700/90">{d.risk}</div>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Unmatched warning */}
