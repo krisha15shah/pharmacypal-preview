@@ -759,6 +759,11 @@ export default function Dashboard() {
                 <Calculator className="w-4 h-4 mr-1" /> Calculators
               </Button>
             </Link>
+            <Link href="/insurance-portals">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Shield className="w-4 h-4 mr-1" /> Insurance Portals
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
