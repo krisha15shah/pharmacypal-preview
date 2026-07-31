@@ -243,9 +243,9 @@ export default function InsurancePortals() {
             {filtered.map((portal) => (
               <Card
                 key={portal.shortName}
-                className="border-slate-200 hover:shadow-md transition-shadow flex flex-col aspect-square"
+                className="border-slate-200 hover:shadow-md transition-shadow flex flex-col aspect-square justify-center"
               >
-                <CardHeader className="pb-2 flex-1">
+                <CardHeader className="pb-2">
                   <div className="flex flex-col items-center text-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-[#0B3D91]/10 flex items-center justify-center">
                       <Building className="w-6 h-6 text-[#0B3D91]" />
@@ -258,7 +258,7 @@ export default function InsurancePortals() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0 mt-auto">
+                <CardContent className="pt-0">
                   <a
                     href={portal.url || "#"}
                     target={portal.url ? "_blank" : undefined}
