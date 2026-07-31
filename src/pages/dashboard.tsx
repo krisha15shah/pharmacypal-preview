@@ -4,7 +4,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
   Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical, HeartPulse,
-  Calculator
+  Calculator, Shield
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -757,6 +757,11 @@ export default function Dashboard() {
             <Link href="/calculators">
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                 <Calculator className="w-4 h-4 mr-1" /> Calculators
+              </Button>
+            </Link>
+            <Link href="/insurance-portals">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Shield className="w-4 h-4 mr-1" /> Insurance Portals
               </Button>
             </Link>
             <Button
