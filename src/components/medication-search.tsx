@@ -304,6 +304,8 @@ export default function MedicationSearch({ selectedDrugs, onDrugsChange }: Medic
 
   const removeDrug = (rxcui: string) => onDrugsChange(selectedDrugs.filter((d) => d.rxcui !== rxcui));
 
+  const duplicates = findDuplicateTherapy(selectedDrugs);
+
   const updateDose = (rxcui: string, dose: string) => {
     onDrugsChange(selectedDrugs.map((d) => d.rxcui === rxcui ? { ...d, dose: dose || undefined } : d));
   };
