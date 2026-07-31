@@ -4,7 +4,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, Info, ChevronDown, ChevronUp,
   Pill, User, Baby, Clock, Activity, ShieldAlert, BookOpen, MessageSquare,
   Stethoscope, RotateCcw, PillBottle, RefreshCw, FlaskConical, HeartPulse,
-  Calculator
+  Calculator, Shield
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
