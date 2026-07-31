@@ -1,7 +1,9 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ExternalLink, Shield, Building } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, ExternalLink, Shield, Building, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface Portal {
   name: string;
@@ -11,6 +13,18 @@ interface Portal {
 }
 
 const UAE_INSURANCE_PORTALS: Portal[] = [
+  {
+    name: "Riyaiti",
+    shortName: "Riyaiti",
+    description: "Dubai Health Authority (DHA) portal for claims, approvals, and insurance services.",
+    url: "",
+  },
+  {
+    name: "Nextcare",
+    shortName: "Nextcare",
+    description: "Leading UAE health insurance third-party administrator and claims platform.",
+    url: "",
+  },
   {
     name: "Daman - National Health Insurance Company",
     shortName: "Daman",
@@ -65,9 +79,106 @@ const UAE_INSURANCE_PORTALS: Portal[] = [
     description: "Healthcare network with linked insurance and patient services.",
     url: "",
   },
+  {
+    name: "Al Buhaira National Insurance Company",
+    shortName: "Al Buhaira",
+    description: "Sharjah-based insurer offering health and medical coverage in the UAE.",
+    url: "",
+  },
+  {
+    name: "Orient Insurance",
+    shortName: "Orient",
+    description: "Part of Al-Futtaim Group, providing health and general insurance.",
+    url: "",
+  },
+  {
+    name: "Qatar Insurance Company (QIC) UAE",
+    shortName: "QIC UAE",
+    description: "International insurer with health and medical products in the UAE.",
+    url: "",
+  },
+  {
+    name: "Watania",
+    shortName: "Watania",
+    description: "UAE national insurance company offering health and general takaful.",
+    url: "",
+  },
+  {
+    name: "Dubai Insurance",
+    shortName: "Dubai Insurance",
+    description: "Dubai-based insurer providing health and group medical coverage.",
+    url: "",
+  },
+  {
+    name: "Emirates Insurance Company",
+    shortName: "Emirates Insurance",
+    description: "Abu Dhabi-based insurer with health and medical insurance plans.",
+    url: "",
+  },
+  {
+    name: "Aman Insurance",
+    shortName: "Aman",
+    description: "Takaful and health insurance provider operating in the UAE.",
+    url: "",
+  },
+  {
+    name: "Insurance House",
+    shortName: "Insurance House",
+    description: "UAE insurer offering health, medical, and general insurance solutions.",
+    url: "",
+  },
+  {
+    name: "Cigna",
+    shortName: "Cigna",
+    description: "Global health services company with UAE health insurance plans.",
+    url: "",
+  },
+  {
+    name: "MetLife Alico",
+    shortName: "MetLife",
+    description: "International insurer providing health and life coverage in the UAE.",
+    url: "",
+  },
+  {
+    name: "Axa Gulf / GIG Gulf",
+    shortName: "GIG Gulf",
+    description: "Major regional health and general insurer formerly known as Axa Gulf.",
+    url: "",
+  },
+  {
+    name: "National Takaful Company (Watania)",
+    shortName: "Watania Takaful",
+    description: "Islamic insurance (takaful) provider for health and medical plans.",
+    url: "",
+  },
+  {
+    name: "MedNet UAE",
+    shortName: "MedNet",
+    description: "Health benefits management and third-party administrator in the UAE.",
+    url: "",
+  },
+  {
+    name: "Pentacare",
+    shortName: "Pentacare",
+    description: "Healthcare management and TPA serving UAE health insurance members.",
+    url: "",
+  },
 ];
 
 export default function InsurancePortals() {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return UAE_INSURANCE_PORTALS;
+    return UAE_INSURANCE_PORTALS.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.shortName.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+    );
+  }, [query]);
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       {/* Header */}
@@ -100,19 +211,54 @@ export default function InsurancePortals() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {UAE_INSURANCE_PORTALS.map((portal) => (
-              <Card key={portal.shortName} className="border-slate-200 hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#0B3D91]/10 flex items-center justify-center">
-                      <Building className="w-4 h-4 text-[#0B3D91]" />
+          {/* Search bar */}
+          <div className="relative mb-6 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search portals (e.g. Riyaiti, Nextcare...)"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9 pr-9 bg-white border-slate-200"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Results count */}
+          <div className="text-xs text-slate-500 mb-3">
+            {filtered.length} {filtered.length === 1 ? "portal" : "portals"} found
+          </div>
+
+          {/* Square portal grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {filtered.map((portal) => (
+              <Card
+                key={portal.shortName}
+                className="border-slate-200 hover:shadow-md transition-shadow flex flex-col aspect-square"
+              >
+                <CardHeader className="pb-2 flex-1">
+                  <div className="flex flex-col items-center text-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-[#0B3D91]/10 flex items-center justify-center">
+                      <Building className="w-6 h-6 text-[#0B3D91]" />
                     </div>
-                    <CardTitle className="text-sm font-bold text-slate-800">{portal.shortName}</CardTitle>
+                    <div>
+                      <CardTitle className="text-sm font-bold text-slate-800 leading-tight">
+                        {portal.shortName}
+                      </CardTitle>
+                      <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{portal.description}</p>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-xs text-slate-600 mb-4 min-h-[2.5rem]">{portal.description}</p>
+                <CardContent className="pt-0 mt-auto">
                   <a
                     href={portal.url || "#"}
                     target={portal.url ? "_blank" : undefined}
@@ -125,8 +271,8 @@ export default function InsurancePortals() {
                       className="w-full text-[#0B3D91] border-[#0B3D91]/30 hover:bg-[#0B3D91]/5"
                       disabled={!portal.url}
                     >
-                      Go to portal
-                      <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                      Go
+                      <ExternalLink className="w-3.5 h-3.5 ml-1" />
                     </Button>
                   </a>
                 </CardContent>
@@ -134,17 +280,20 @@ export default function InsurancePortals() {
             ))}
           </div>
 
-          {/* Add placeholder card */}
-          <Card className="mt-6 border-dashed border-slate-300 bg-slate-50/50">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="text-sm text-slate-600">
-                Need more provider portals? Add links here as they become available.
-              </div>
-              <Button variant="ghost" size="sm" className="text-slate-500" disabled>
-                + Add portal
+          {filtered.length === 0 && (
+            <div className="text-center py-12 text-slate-500">
+              <Building className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+              <p className="text-sm">No portals match your search.</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 text-[#0B3D91]"
+                onClick={() => setQuery("")}
+              >
+                Clear search
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>
