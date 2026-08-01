@@ -217,8 +217,18 @@ export function icdToConditionId(code: string): string | null {
   if (c.startsWith("E78")) return "hyperlipidemia";
 
   // ─── Endocrine ──────────────────────────────────────────────────
-  if (c.startsWith("E11") || c.startsWith("E13")) return "diabetes_t2";
+  // Diabetes: E08 (due to underlying condition), E09 (drug/chemical-induced),
+  // E11 (type 2), E12 (malnutrition-related), E13 (other specified) all follow
+  // type-2 style management; E10 is type 1 (insulin-dependent).
   if (c.startsWith("E10")) return "diabetes_t1";
+  if (
+    c.startsWith("E08") || c.startsWith("E09") || c.startsWith("E11") ||
+    c.startsWith("E12") || c.startsWith("E13")
+  ) return "diabetes_t2";
+  // Gestational diabetes & prediabetes / abnormal glucose
+  if (c.startsWith("O24")) return "diabetes_t2";
+  if (c.startsWith("R73")) return "diabetes_t2";
+
   if (c.startsWith("E00") || c.startsWith("E01") || c.startsWith("E02") || c.startsWith("E03")) return "hypothyroidism";
   if (c.startsWith("E05")) return "hyperthyroidism";
   if (c.startsWith("E04") || c.startsWith("E06") || c.startsWith("E07")) return "thyroid_disease";
