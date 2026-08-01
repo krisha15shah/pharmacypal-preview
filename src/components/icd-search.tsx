@@ -34,7 +34,10 @@ const CHILLS_FEVER_COMBO: IcdResult = {
 };
 
 function mapToInternal(code: string, name: string, mode: IcdMode): string | null {
-  if (mode === "symptom") return icdToSymptomId(code, name);
+  // Symptom search often surfaces diagnosis codes (e.g. "diabetes"). Fall back to
+  // the condition mapping so those still resolve to therapy guidance instead of
+  // being flagged as unmapped.
+  if (mode === "symptom") return icdToSymptomId(code, name) ?? icdToConditionId(code);
   if (mode === "condition") return icdToConditionId(code);
   return icdToAllergyId(code);
 }

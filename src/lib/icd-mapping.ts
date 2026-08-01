@@ -227,6 +227,8 @@ export function icdToConditionId(code: string): string | null {
   ) return "diabetes_t2";
   // Gestational diabetes & prediabetes / abnormal glucose
   if (c.startsWith("O24")) return "diabetes_t2";
+  if (c.startsWith("P70")) return "diabetes_t2";
+  if (c.startsWith("E23.2") || c.startsWith("N25.1")) return "diabetes_insipidus";
   if (c.startsWith("R73")) return "diabetes_t2";
 
   if (c.startsWith("E00") || c.startsWith("E01") || c.startsWith("E02") || c.startsWith("E03")) return "hypothyroidism";
