@@ -138,6 +138,16 @@ export const CONDITION_THERAPIES: Record<string, ConditionTherapy> = {
     ],
     referralNote: "All T1DM patients need endocrinology follow-up and structured education.",
   },
+  diabetes_insipidus: {
+    label: "Diabetes insipidus (arginine vasopressin deficiency/resistance)",
+    source: "WHO EML 22 \u00b7 Endocrine Society",
+    options: [
+      { drug: "Desmopressin (DDAVP)", drugClass: "Vasopressin analogue", adultDose: "Oral 100\u2013200 mcg 2\u20133\u00d7 daily; intranasal 10\u201320 mcg 1\u20132\u00d7 daily", rx: "Rx", note: "Central DI only. Titrate to urine output; watch for hyponatraemia." },
+      { drug: "Hydrochlorothiazide (\u00b1 amiloride)", drugClass: "Thiazide diuretic", adultDose: "25 mg PO daily", rx: "Rx", note: "Nephrogenic DI \u2014 paradoxically reduces urine volume with low-salt diet." },
+      { drug: "Indometacin", drugClass: "NSAID", adultDose: "25 mg PO TDS", rx: "Rx", note: "Adjunct in nephrogenic DI; monitor renal function." },
+    ],
+    referralNote: "Ensure free access to water. Endocrinology review required; confirm central vs nephrogenic type.",
+  },
   hypothyroidism: {
     label: "Hypothyroidism",
     source: "WHO EML 22 · ATA 2014",
