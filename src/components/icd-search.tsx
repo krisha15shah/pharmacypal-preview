@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, X, Loader2, ExternalLink, Zap } from "lucide-react";
 import { icdToSymptomId, icdToConditionId, icdToAllergyId, icdChapterColor } from "@/lib/icd-mapping";
 import { SYMPTOMS } from "@/lib/clinical-data";
+import { getFallbackTherapyForIcd } from "@/lib/who-eml-therapy";
 
 export interface SelectedIcdItem {
   code: string;
@@ -274,6 +275,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                     const already = selectedItems.find((i) => i.code === item.code);
                     const chap = icdChapterColor(item.code);
                     const mapped = mapToInternal(item.code, item.name, mode);
+                    const hasChapterGuidance = mode !== "allergy" && !!getFallbackTherapyForIcd(item.code);
                     return (
                       <button
                         key={item.code}
@@ -288,9 +290,14 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                         </span>
                         <span className="flex-1 text-xs leading-snug">{item.name}</span>
                         <span className="flex items-center gap-1 shrink-0 mt-0.5">
-                          {!mapped && !already && (
+                          {!mapped && hasChapterGuidance && !already && (
+                            <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 whitespace-nowrap">
+                              General guidance
+                            </span>
+                          )}
+                          {!mapped && !hasChapterGuidance && !already && (
                             <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
-                              Physician referral needed
+                              Clinical review
                             </span>
                           )}
                           {already && <span className="text-xs text-slate-400">Added</span>}
@@ -342,11 +349,11 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
       )}
 
       {/* Note for codes outside the engine rule set */}
-      {selectedItems.some((i) => !i.internalId) && (
-        <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 flex gap-1.5">
+      {selectedItems.some((i) => !i.internalId && mode !== "allergy") && (
+        <div className="text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 flex gap-1.5">
           <span>⚕️</span>
           <span>
-            One or more selected codes fall outside the automated OTC rule set. <strong>Physician referral is recommended</strong> — these conditions typically require prescription therapy or clinical evaluation.
+            One or more selected codes use <strong>chapter-level clinical guidance</strong>. Review the recommendation panel and confirm the diagnosis before choosing condition-specific treatment.
           </span>
         </div>
       )}
