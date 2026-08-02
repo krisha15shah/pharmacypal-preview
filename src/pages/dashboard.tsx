@@ -14,6 +14,8 @@ import { Slider } from "@/components/ui/slider";
 import { SYMPTOMS, CONDITIONS, ALLERGIES, CURRENT_MEDICATIONS } from "@/lib/clinical-data";
 import { runClinicalEngine, calcBMI, bmiCategory, type PatientProfile, type MedicationResult } from "@/lib/clinical-engine";
 import MedicationSearch, { type SelectedDrug } from "@/components/medication-search";
+import MedicationReconciliation from "@/components/medication-reconciliation";
+
 import IcdSearch, { type SelectedIcdItem } from "@/components/icd-search";
 import { LAB_CATEGORIES, getLabStatus, getRefRangeText, type LabDef } from "@/lib/lab-data";
 import { getTherapyFor, getFallbackTherapyForIcd, type ConditionTherapy } from "@/lib/who-eml-therapy";
@@ -991,6 +993,10 @@ export default function Dashboard() {
               />
             </CardContent>
           </Card>
+
+          {/* Medication Reconciliation */}
+          <MedicationReconciliation drugs={selectedDrugs} />
+
 
           {/* Allergies */}
           <Card className="border-slate-200">
