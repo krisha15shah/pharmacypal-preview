@@ -937,6 +937,20 @@ const CHAPTER_FALLBACKS: ChapterFallback[] = [
  */
 export function getFallbackTherapyForIcd(code: string): ConditionTherapy | null {
   const hit = CHAPTER_FALLBACKS.find((f) => f.test(code));
-  if (!hit) return null;
-  return { label: hit.label, source: hit.source + " · chapter-level guidance", options: hit.options, referralNote: hit.referralNote };
+  if (hit) {
+    return { label: hit.label, source: hit.source + " · chapter-level guidance", options: hit.options, referralNote: hit.referralNote };
+  }
+
+  // External-cause and uncommon extension codes (including V–Y) do not have a
+  // medication-specific ICD chapter. Still return a safe clinical pathway so
+  // every selectable ICD result produces guidance rather than a dead end.
+  return {
+    label: "General clinical management",
+    source: "WHO EML 22 · general guidance",
+    options: [
+      { drug: "Paracetamol (acetaminophen)", drugClass: "Analgesic / antipyretic", adultDose: "500–1000 mg PO q6h, max 4 g/24 h (max 2 g with hepatic impairment or heavy alcohol use)", pediatricDose: "15 mg/kg/dose q6h, max 60 mg/kg/day", rx: "OTC", note: "Use only when pain or fever is present and no contraindication applies." },
+      { drug: "Medication and diagnosis review", drugClass: "Clinical assessment", adultDose: "Individualise to the confirmed diagnosis and patient factors", rx: "Rx / specialist", note: "This code does not identify a condition-specific medicine pathway by itself." },
+    ],
+    referralNote: "Confirm the underlying diagnosis and severity before selecting condition-specific treatment; refer urgently when red flags or acute deterioration are present.",
+  };
 }
