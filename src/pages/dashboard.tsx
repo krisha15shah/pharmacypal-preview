@@ -992,6 +992,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* Medication Reconciliation */}
+          <MedicationReconciliation drugs={selectedDrugs} />
+
+
           {/* Allergies */}
           <Card className="border-slate-200">
             <CardHeader className="pb-2 pt-4 px-4">
