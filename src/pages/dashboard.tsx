@@ -485,7 +485,6 @@ function optionFlags(
     flags.push({ label: "Not for children", tone: "red" });
   if (profile.age >= 65 && /nsaid|ibuprofen|diclofenac|benzodiazepine|diazepam|amitriptyline|tricyclic|anticholinergic/.test(hay))
     flags.push({ label: "Beers-list caution in elderly", tone: "amber" });
-  if (profile.age >= 65 && /^$/.test("")) { /* no-op */ }
   return flags;
 }
 
