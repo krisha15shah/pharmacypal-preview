@@ -48,8 +48,8 @@ const ALLERGY_DEFAULT_TERM = "Z88";
 
 /** Common clinical abbreviations → the wording used in ICD-10-CM titles. */
 const ABBREVIATIONS: Record<string, string> = {
-  adhd: "attention-deficit hyperactivity",
-  add: "attention-deficit",
+  adhd: "hyperactivity",
+  add: "hyperactivity",
   asd: "autistic",
   ocd: "obsessive-compulsive",
   ptsd: "post-traumatic stress",
