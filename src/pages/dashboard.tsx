@@ -452,6 +452,43 @@ function LabCategoryBlock({
   );
 }
 
+// ─── Patient-tailored dose helpers for the WHO EML recommendation panel ───
+/** Extract mg/kg values from a paediatric dose string and resolve them for this weight. */
+function resolveWeightDose(pediatricDose: string | undefined, weight: number | undefined): string | null {
+  if (!pediatricDose || !weight || weight <= 0) return null;
+  const matches = [...pediatricDose.matchAll(/(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?\s*mg\/kg/gi)];
+  if (matches.length === 0) return null;
+  const round = (n: number) => (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10);
+  const parts = matches.map((m) => {
+    const lo = round(parseFloat(m[1]) * weight);
+    const hi = m[2] ? round(parseFloat(m[2]) * weight) : null;
+    return hi ? `${lo}–${hi} mg` : `${lo} mg`;
+  });
+  return `${parts.join(" then ")} at ${weight} kg`;
+}
+
+/** Age/pregnancy/renal-style cautions surfaced next to each therapy option. */
+function optionFlags(
+  opt: { drug: string; drugClass: string; note?: string; rx: string },
+  profile: { age: number; isPregnant: boolean; isBreastfeeding: boolean }
+): { label: string; tone: "red" | "amber" }[] {
+  const flags: { label: string; tone: "red" | "amber" }[] = [];
+  const hay = `${opt.drug} ${opt.drugClass} ${opt.note ?? ""}`.toLowerCase();
+  if (profile.isPregnant) {
+    if (/ace inhibitor|arb|nsaid|ibuprofen|diclofenac|warfarin|statin|tetracycline|doxycycline|methotrexate|isotretinoin|valproate/.test(hay))
+      flags.push({ label: "Contraindicated in pregnancy", tone: "red" });
+    else flags.push({ label: "Check pregnancy safety", tone: "amber" });
+  }
+  if (profile.isBreastfeeding && /codeine|tramadol|opioid|tetracycline|doxycycline|methotrexate|lithium/.test(hay))
+    flags.push({ label: "Avoid while breastfeeding", tone: "red" });
+  if (profile.age < 12 && /aspirin|tetracycline|doxycycline|quinolone|ciprofloxacin|levofloxacin|codeine/.test(hay))
+    flags.push({ label: "Not for children", tone: "red" });
+  if (profile.age >= 65 && /nsaid|ibuprofen|diclofenac|benzodiazepine|diazepam|amitriptyline|tricyclic|anticholinergic/.test(hay))
+    flags.push({ label: "Beers-list caution in elderly", tone: "amber" });
+  return flags;
+}
+
+
 // ─── MAIN DASHBOARD ───
 const DEFAULT_PROFILE: PatientProfile = {
   age: 35,
@@ -1240,7 +1277,11 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-2 mt-3">
-                        {therapy.options.map((opt, i) => (
+                        {therapy.options.map((opt, i) => {
+                          const isChild = profile.age < 18;
+                          const calcDose = isChild ? resolveWeightDose(opt.pediatricDose, profile.weight) : null;
+                          const flags = optionFlags(opt, profile);
+                          return (
                           <div key={i} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50">
                             <div className="flex items-center justify-between gap-2 flex-wrap">
                               <div className="text-sm font-semibold text-slate-800">{opt.drug}</div>
@@ -1251,15 +1292,36 @@ export default function Dashboard() {
                               }`}>{opt.rx}</span>
                             </div>
                             <div className="text-[11px] text-slate-500 italic">{opt.drugClass}</div>
-                            <div className="text-xs text-slate-700 mt-1"><span className="font-semibold">Adult:</span> {opt.adultDose}</div>
-                            {opt.pediatricDose && <div className="text-xs text-slate-700"><span className="font-semibold">Paeds:</span> {opt.pediatricDose}</div>}
+                            <div className={`text-xs mt-1 ${isChild ? "text-slate-400" : "text-slate-700"}`}><span className="font-semibold">Adult:</span> {opt.adultDose}</div>
+                            {opt.pediatricDose && <div className={`text-xs ${isChild ? "text-slate-700" : "text-slate-400"}`}><span className="font-semibold">Paeds:</span> {opt.pediatricDose}</div>}
+                            {calcDose && (
+                              <div className="mt-1.5 rounded bg-indigo-50 border border-indigo-200 px-2 py-1 text-xs text-indigo-900">
+                                <span className="font-bold">For this patient:</span> {calcDose}
+                              </div>
+                            )}
+                            {isChild && opt.pediatricDose && !calcDose && (
+                              <div className="mt-1.5 text-[11px] text-indigo-700">Enter patient weight to calculate the paediatric dose.</div>
+                            )}
+                            {flags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {flags.map((f, fi) => (
+                                  <span key={fi} className={`text-[10px] font-semibold rounded px-1.5 py-0.5 border ${
+                                    f.tone === "red"
+                                      ? "bg-red-50 text-red-700 border-red-200"
+                                      : "bg-amber-50 text-amber-800 border-amber-200"
+                                  }`}>{f.label}</span>
+                                ))}
+                              </div>
+                            )}
                             {opt.note && <div className="text-[11px] text-slate-600 mt-1">💡 {opt.note}</div>}
                             {opt.rx !== "OTC" && (
                               <div className="text-[10px] text-blue-700 mt-1 font-medium">⚕️ Valid prescription required before dispensing.</div>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
+
                       {therapy.referralNote && (
                         <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mt-2">
                           ⚠️ {therapy.referralNote}
