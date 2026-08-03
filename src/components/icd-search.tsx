@@ -144,7 +144,9 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const searchIcd = useCallback(async (term: string, forceDefault = false) => {
-    const searchTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
+    const rawTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
+    const searchTerm = expandAbbreviation(rawTerm);
+
 
     // Always update local symptom results immediately (no debounce needed)
     if (mode === "symptom") {
