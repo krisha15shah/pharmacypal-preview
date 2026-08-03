@@ -46,6 +46,45 @@ function mapToInternal(code: string, name: string, mode: IcdMode): string | null
 // For allergy mode only: pre-populate with Z88 drug allergy codes on focus
 const ALLERGY_DEFAULT_TERM = "Z88";
 
+/** Common clinical abbreviations → the wording used in ICD-10-CM titles. */
+const ABBREVIATIONS: Record<string, string> = {
+  adhd: "hyperactivity",
+  add: "hyperactivity",
+  asd: "autistic",
+  ocd: "obsessive-compulsive",
+  ptsd: "post-traumatic stress",
+  gad: "generalized anxiety",
+  copd: "chronic obstructive pulmonary",
+  gerd: "gastro-esophageal reflux",
+  gord: "gastro-esophageal reflux",
+  uti: "urinary tract infection",
+  urti: "upper respiratory infection",
+  ibs: "irritable bowel",
+  ibd: "crohn",
+  ckd: "chronic kidney disease",
+  chf: "heart failure",
+  htn: "hypertension",
+  dm: "diabetes mellitus",
+  t2dm: "type 2 diabetes",
+  t1dm: "type 1 diabetes",
+  mi: "myocardial infarction",
+  af: "atrial fibrillation",
+  ra: "rheumatoid arthritis",
+  oa: "osteoarthritis",
+  bph: "prostatic hyperplasia",
+  osa: "sleep apnea",
+  pcos: "polycystic ovarian",
+  dvt: "deep vein thrombosis",
+  tia: "transient cerebral ischemic",
+  gi: "gastrointestinal",
+};
+
+function expandAbbreviation(term: string): string {
+  const key = term.trim().toLowerCase().replace(/[.\s]/g, "");
+  return ABBREVIATIONS[key] ?? term;
+}
+
+
 const PLACEHOLDERS: Record<IcdMode, string> = {
   symptom: "Search symptom (e.g. itching, headache, cough…)",
   condition: "Search ICD-10 diagnosis (e.g. hypertension, asthma…)",
@@ -105,7 +144,9 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const searchIcd = useCallback(async (term: string, forceDefault = false) => {
-    const searchTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
+    const rawTerm = term.trim() || (forceDefault && mode === "allergy" ? ALLERGY_DEFAULT_TERM : "");
+    const searchTerm = expandAbbreviation(rawTerm);
+
 
     // Always update local symptom results immediately (no debounce needed)
     if (mode === "symptom") {

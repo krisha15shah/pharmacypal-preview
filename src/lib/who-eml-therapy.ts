@@ -475,6 +475,18 @@ export const CONDITION_THERAPIES: Record<string, ConditionTherapy> = {
       { drug: "Lamotrigine", drugClass: "Antiepileptic", adultDose: "Titrate to 200 mg/day", rx: "Rx / specialist", note: "Effective for bipolar depression maintenance." },
     ],
   },
+  adhd: {
+    label: "ADHD (attention-deficit / hyperactivity disorder)",
+    source: "WHO EML 22 · NICE NG87",
+    options: [
+      { drug: "Methylphenidate", drugClass: "CNS stimulant", adultDose: "IR 5 mg BD–TDS titrated to 20–60 mg/day; MR 18–72 mg once daily", pediatricDose: "Age ≥6 y: 5 mg once–twice daily, titrate weekly; max 60 mg/day (0.7–1 mg/kg/day)", rx: "Rx / specialist", note: "First-line drug therapy. Controlled substance in the UAE — specialist initiation and monitoring of BP, pulse, weight and height required." },
+      { drug: "Lisdexamfetamine / Dexamfetamine", drugClass: "CNS stimulant", adultDose: "Lisdexamfetamine 30 mg once daily, titrate to 70 mg/day", pediatricDose: "Age ≥6 y: 30 mg once daily in the morning, titrate to response", rx: "Rx / specialist", note: "Second-line if methylphenidate response is inadequate after adequate titration." },
+      { drug: "Atomoxetine", drugClass: "Selective noradrenaline reuptake inhibitor", adultDose: "40 mg daily for 7 days, then 80–100 mg daily", pediatricDose: "0.5 mg/kg/day for 7 days, then 1.2 mg/kg/day (max 100 mg/day)", rx: "Rx", note: "Non-stimulant option — preferred with tics, substance-misuse risk, or stimulant intolerance. Counsel on suicidal ideation and hepatic warning signs." },
+      { drug: "Guanfacine (prolonged release)", drugClass: "Alpha-2A agonist", adultDose: "1 mg once daily, titrate weekly to 4–7 mg/day", pediatricDose: "Age ≥6 y: 1 mg once daily, titrate by 1 mg/week (0.05–0.12 mg/kg/day)", rx: "Rx / specialist", note: "Non-stimulant; monitor for sedation, hypotension and bradycardia." },
+    ],
+    referralNote: "Diagnosis and drug initiation are specialist-led. Behavioural/parent-training and educational support come first in children under 5 and alongside medicines at all ages. Refer for cardiac assessment before stimulants if there is structural heart disease or a family history of sudden death.",
+  },
+
   neuropathic_pain_chronic: {
     label: "Chronic neuropathic pain",
     source: "WHO EML 22 · NICE CG173",

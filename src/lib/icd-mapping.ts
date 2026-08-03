@@ -288,6 +288,8 @@ export function icdToConditionId(code: string): string | null {
   if (c.startsWith("F41") || c.startsWith("F40")) return "anxiety";
   if (c.startsWith("F20") || c.startsWith("F22") || c.startsWith("F23") || c.startsWith("F25") || c.startsWith("F29")) return "schizophrenia";
   if (c.startsWith("F31")) return "bipolar";
+  if (c.startsWith("F90")) return "adhd";
+
 
   // ─── MSK / Rheum ────────────────────────────────────────────────
   if (c.startsWith("M10") || c.startsWith("M1A")) return "gout";
