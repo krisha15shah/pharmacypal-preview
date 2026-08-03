@@ -296,14 +296,15 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
                             </span>
                           )}
                           {!mapped && !hasChapterGuidance && !already && (
-                            <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 whitespace-nowrap">
-                              Clinical review
+                            <span className="text-[10px] text-slate-600 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 whitespace-nowrap">
+                              {mode === "allergy" ? "Recorded" : "General guidance"}
                             </span>
                           )}
                           {already && <span className="text-xs text-slate-400">Added</span>}
                         </span>
                       </button>
                     );
+
                   })}
                 </>
               )}
