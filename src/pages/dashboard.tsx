@@ -452,6 +452,44 @@ function LabCategoryBlock({
   );
 }
 
+// ─── Patient-tailored dose helpers for the WHO EML recommendation panel ───
+/** Extract mg/kg values from a paediatric dose string and resolve them for this weight. */
+function resolveWeightDose(pediatricDose: string | undefined, weight: number | undefined): string | null {
+  if (!pediatricDose || !weight || weight <= 0) return null;
+  const matches = [...pediatricDose.matchAll(/(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?\s*mg\/kg/gi)];
+  if (matches.length === 0) return null;
+  const round = (n: number) => (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10);
+  const parts = matches.map((m) => {
+    const lo = round(parseFloat(m[1]) * weight);
+    const hi = m[2] ? round(parseFloat(m[2]) * weight) : null;
+    return hi ? `${lo}–${hi} mg` : `${lo} mg`;
+  });
+  return `${parts.join(" then ")} at ${weight} kg`;
+}
+
+/** Age/pregnancy/renal-style cautions surfaced next to each therapy option. */
+function optionFlags(
+  opt: { drug: string; drugClass: string; note?: string; rx: string },
+  profile: { age: number; isPregnant: boolean; isBreastfeeding: boolean }
+): { label: string; tone: "red" | "amber" }[] {
+  const flags: { label: string; tone: "red" | "amber" }[] = [];
+  const hay = `${opt.drug} ${opt.drugClass} ${opt.note ?? ""}`.toLowerCase();
+  if (profile.isPregnant) {
+    if (/ace inhibitor|arb|nsaid|ibuprofen|diclofenac|warfarin|statin|tetracycline|doxycycline|methotrexate|isotretinoin|valproate/.test(hay))
+      flags.push({ label: "Contraindicated in pregnancy", tone: "red" });
+    else flags.push({ label: "Check pregnancy safety", tone: "amber" });
+  }
+  if (profile.isBreastfeeding && /codeine|tramadol|opioid|tetracycline|doxycycline|methotrexate|lithium/.test(hay))
+    flags.push({ label: "Avoid while breastfeeding", tone: "red" });
+  if (profile.age < 12 && /aspirin|tetracycline|doxycycline|quinolone|ciprofloxacin|levofloxacin|codeine/.test(hay))
+    flags.push({ label: "Not for children", tone: "red" });
+  if (profile.age >= 65 && /nsaid|ibuprofen|diclofenac|benzodiazepine|diazepam|amitriptyline|tricyclic|anticholinergic/.test(hay))
+    flags.push({ label: "Beers-list caution in elderly", tone: "amber" });
+  if (profile.age >= 65 && /^$/.test("")) { /* no-op */ }
+  return flags;
+}
+
+
 // ─── MAIN DASHBOARD ───
 const DEFAULT_PROFILE: PatientProfile = {
   age: 35,
