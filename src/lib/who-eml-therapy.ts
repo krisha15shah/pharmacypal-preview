@@ -950,7 +950,7 @@ const CHAPTER_FALLBACKS: ChapterFallback[] = [
 export function getFallbackTherapyForIcd(code: string): ConditionTherapy | null {
   const hit = CHAPTER_FALLBACKS.find((f) => f.test(code));
   if (hit) {
-    return { label: hit.label, source: hit.source + " · chapter-level guidance", options: hit.options, referralNote: hit.referralNote };
+    return { label: hit.label, source: hit.source + " · general guidance for this condition group", options: hit.options, referralNote: hit.referralNote };
   }
 
   // External-cause and uncommon extension codes (including V–Y) do not have a
