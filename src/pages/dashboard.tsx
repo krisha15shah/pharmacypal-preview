@@ -1266,10 +1266,11 @@ export default function Dashboard() {
                           <div className="text-sm font-bold text-slate-800">{therapy.label}</div>
                           <div className="text-[11px] text-slate-500">{therapy.source}</div>
                           {fallback && codes && (
-                            <div className="text-[11px] text-slate-500 mt-1">
-                              Class-level guidance for {codes.join(", ")} — no code-specific protocol; confirm the working diagnosis.
+                            <div className="text-[11px] text-slate-600 mt-1 leading-snug">
+                              We don't have a treatment protocol for {codes.join(", ")} specifically, so these are the medicines usually used for this group of conditions. Confirm the diagnosis before choosing one.
                             </div>
                           )}
+
                         </div>
                         <span className={`text-[10px] font-semibold uppercase tracking-wide rounded px-2 py-0.5 shrink-0 ${fallback ? "bg-slate-100 text-slate-600" : "bg-indigo-100 text-indigo-700"}`}>
                           {fallback ? "General guidance" : "WHO EML"}
