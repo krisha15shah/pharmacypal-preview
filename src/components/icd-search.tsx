@@ -395,7 +395,7 @@ export default function IcdSearch({ mode, selectedItems, onItemsChange, label }:
         <div className="text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 flex gap-1.5">
           <span>⚕️</span>
           <span>
-            One or more selected codes use <strong>chapter-level clinical guidance</strong>. Review the recommendation panel and confirm the diagnosis before choosing condition-specific treatment.
+            Some selected codes have no exact treatment protocol, so the panel shows the <strong>medicines usually used for that group of conditions</strong>. Confirm the diagnosis before choosing a treatment.
           </span>
         </div>
       )}
